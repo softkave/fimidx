@@ -4,9 +4,15 @@ import { Duration } from "date-fns";
 import { drizzle } from "drizzle-orm/libsql";
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { v7 as uuidv7 } from "uuid";
+import { WebSocketAccessType } from "../definitions/configurations";
 import { LogPartFilterList } from "../definitions/log";
 import { MemberStatus } from "../definitions/members";
 import { IMonitorReportsTo, MonitorStatus } from "../definitions/monitor";
+import { RoomAccessType } from "../definitions/room";
+import {
+  ConnectedAuthItemAccessType,
+  HashedAuthIdUsage,
+} from "../definitions/websocket";
 
 const fmlogsDbURL = process.env.FMLOGS_DB_TURSO_DATABASE_URL;
 const fmlogsDbAuthToken = process.env.FMLOGS_DB_TURSO_AUTH_TOKEN;
@@ -212,4 +218,194 @@ export const monitor = sqliteTable("monitor", {
     .$type<IMonitorReportsTo[]>()
     .notNull(),
   duration: text("duration", { mode: "json" }).$type<Duration>().notNull(),
+});
+
+export const callbacks = sqliteTable("callback", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => uuidv7()),
+  createdAt: integer("createdAt", { mode: "timestamp_ms" }).notNull(),
+  updatedAt: integer("updatedAt", { mode: "timestamp_ms" }).notNull(),
+  orgId: text("orgId")
+    .references(() => orgs.id, { onDelete: "cascade" })
+    .notNull(),
+  appId: text("appId")
+    .references(() => apps.id, { onDelete: "cascade" })
+    .notNull(),
+  clientTokenId: text("clientTokenId")
+    .references(() => clientTokens.id)
+    .notNull(),
+  url: text("url").notNull(),
+  method: text("method").notNull(),
+  requestHeaders: text("requestHeaders", { mode: "json" }).$type<
+    Record<string, string>
+  >(),
+  requestBody: text("requestBody"),
+  responseHeaders: text("responseHeaders", { mode: "json" }).$type<
+    Record<string, string>
+  >(),
+  responseBody: text("responseBody"),
+  responseStatusCode: integer("responseStatusCode"),
+  executedAt: integer("executedAt", { mode: "timestamp_ms" }),
+});
+
+export const hashedAuthIds = sqliteTable("hashedAuthId", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => uuidv7()),
+  createdAt: integer("createdAt", { mode: "timestamp_ms" }).notNull(),
+  updatedAt: integer("updatedAt", { mode: "timestamp_ms" }).notNull(),
+  hashedAuthId: text("hashedAuthId").notNull(),
+  appId: text("appId")
+    .references(() => apps.id, { onDelete: "cascade" })
+    .notNull(),
+  usage: text("usage").$type<HashedAuthIdUsage>().notNull(),
+  name: text("name").notNull(),
+  description: text("description"),
+  clientTokenId: text("clientTokenId")
+    .references(() => clientTokens.id)
+    .notNull(),
+  orgId: text("orgId")
+    .references(() => orgs.id, { onDelete: "cascade" })
+    .notNull(),
+});
+
+export const rooms = sqliteTable("room", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => uuidv7()),
+  createdAt: integer("createdAt", { mode: "timestamp_ms" }).notNull(),
+  updatedAt: integer("updatedAt", { mode: "timestamp_ms" }).notNull(),
+  orgId: text("orgId")
+    .references(() => orgs.id, { onDelete: "cascade" })
+    .notNull(),
+  appId: text("appId")
+    .references(() => apps.id, { onDelete: "cascade" })
+    .notNull(),
+  accessType: text("accessType").$type<RoomAccessType>().notNull(),
+  name: text("name").notNull(),
+  nameLower: text("nameLower").notNull(),
+  description: text("description"),
+  clientTokenId: text("clientTokenId")
+    .references(() => clientTokens.id)
+    .notNull(),
+});
+
+export const connectedAuthItems = sqliteTable("connectedAuthItem", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => uuidv7()),
+  createdAt: integer("createdAt", { mode: "timestamp_ms" }).notNull(),
+  updatedAt: integer("updatedAt", { mode: "timestamp_ms" }).notNull(),
+  orgId: text("orgId")
+    .references(() => orgs.id, { onDelete: "cascade" })
+    .notNull(),
+  appId: text("appId")
+    .references(() => apps.id, { onDelete: "cascade" })
+    .notNull(),
+  clientTokenId: text("clientTokenId")
+    .references(() => clientTokens.id)
+    .notNull(),
+  hashedAuthId: text("hashedAuthId")
+    .references(() => hashedAuthIds.id)
+    .notNull(),
+  roomId: text("roomId").references(() => rooms.id, { onDelete: "cascade" }),
+  accessType: text("accessType").$type<ConnectedAuthItemAccessType>().notNull(),
+});
+
+export const connectedSockets = sqliteTable("connectedSocket", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => uuidv7()),
+  createdAt: integer("createdAt", { mode: "timestamp_ms" }).notNull(),
+  updatedAt: integer("updatedAt", { mode: "timestamp_ms" }).notNull(),
+  orgId: text("orgId")
+    .references(() => orgs.id, { onDelete: "cascade" })
+    .notNull(),
+  appId: text("appId")
+    .references(() => apps.id, { onDelete: "cascade" })
+    .notNull(),
+  hashedAuthId: text("hashedAuthId").references(() => hashedAuthIds.id),
+  socketId: text("socketId").notNull(),
+});
+
+export const roomSubscriptions = sqliteTable("roomSubscription", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => uuidv7()),
+  createdAt: integer("createdAt", { mode: "timestamp_ms" }).notNull(),
+  updatedAt: integer("updatedAt", { mode: "timestamp_ms" }).notNull(),
+  roomId: text("roomId")
+    .references(() => rooms.id, { onDelete: "cascade" })
+    .notNull(),
+  socketId: text("socketId").references(() => connectedSockets.socketId, {
+    onDelete: "cascade",
+  }),
+  hashedAuthId: text("hashedAuthId").references(() => hashedAuthIds.id, {
+    onDelete: "cascade",
+  }),
+  orgId: text("orgId")
+    .references(() => orgs.id, { onDelete: "cascade" })
+    .notNull(),
+  appId: text("appId")
+    .references(() => apps.id, { onDelete: "cascade" })
+    .notNull(),
+});
+
+export const appWebSocketConfigurations = sqliteTable(
+  "appWebSocketConfiguration",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => uuidv7()),
+    createdAt: integer("createdAt", { mode: "timestamp_ms" }).notNull(),
+    createdBy: text("createdBy").notNull(),
+    updatedAt: integer("updatedAt", { mode: "timestamp_ms" }).notNull(),
+    updatedBy: text("updatedBy").notNull(),
+    orgId: text("orgId")
+      .references(() => orgs.id, { onDelete: "cascade" })
+      .notNull(),
+    appId: text("appId")
+      .references(() => apps.id, { onDelete: "cascade" })
+      .notNull(),
+    websocketAccessType: text("websocketAccessType")
+      .$type<WebSocketAccessType>()
+      .notNull(),
+  }
+);
+
+export const messages = sqliteTable("message", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => uuidv7()),
+  createdAt: integer("createdAt", { mode: "timestamp_ms" }).notNull(),
+  updatedAt: integer("updatedAt", { mode: "timestamp_ms" }).notNull(),
+  orgId: text("orgId")
+    .references(() => orgs.id, { onDelete: "cascade" })
+    .notNull(),
+  appId: text("appId")
+    .references(() => apps.id, { onDelete: "cascade" })
+    .notNull(),
+  roomId: text("roomId").references(() => rooms.id, { onDelete: "cascade" }),
+  fromSocketId: text("fromSocketId").references(
+    () => connectedSockets.socketId
+  ),
+  fromHashedAuthId: text("fromHashedAuthId").references(() => hashedAuthIds.id),
+  toSocketId: text("toSocketId").references(() => connectedSockets.socketId),
+  toHashedAuthId: text("toHashedAuthId").references(() => hashedAuthIds.id),
+  message: text("message").notNull(),
+});
+
+export const messageAcks = sqliteTable("messageAck", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => uuidv7()),
+  acked: integer("acked", { mode: "boolean" }).notNull(),
+  ackedAt: integer("ackedAt", { mode: "timestamp_ms" }).notNull(),
+  messageId: text("messageId")
+    .references(() => messages.id, { onDelete: "cascade" })
+    .notNull(),
+  socketId: text("socketId").references(() => connectedSockets.socketId, {
+    onDelete: "cascade",
+  }),
 });

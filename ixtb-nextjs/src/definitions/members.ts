@@ -46,6 +46,7 @@ export interface IFetchedMember extends IMember {
 }
 
 export const addMemberSchema = z.object({
+  orgId: z.string(),
   email: z.string().email(),
   permissions: z.array(z.string()),
 });
@@ -59,6 +60,7 @@ export const getMemberByIdSchema = z.object({
 });
 
 export const updateMemberSchema = z.object({
+  id: z.string().min(1),
   permissions: z.array(z.string()).optional(),
 });
 
@@ -67,10 +69,12 @@ export const removeMemberSchema = z.object({
 });
 
 export const respondToMemberRequestSchema = z.object({
+  requestId: z.string().min(1),
   status: z.enum([kMemberStatus.accepted, kMemberStatus.rejected]),
 });
 
 export const getMembersSchema = z.object({
+  orgId: z.string(),
   page: z.number().min(1).optional(),
   limit: z.number().min(1).optional(),
 });

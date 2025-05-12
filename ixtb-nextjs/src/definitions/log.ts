@@ -75,6 +75,7 @@ export const logPartFilterItemSchema = z.object({
 export const logPartFilterListSchema = z.array(logPartFilterItemSchema);
 
 export const getLogsSchema = z.object({
+  appId: z.string(),
   logIds: z.array(z.string()).optional(),
   filter: logPartFilterListSchema.optional(),
   page: z.number().optional(),
@@ -90,6 +91,7 @@ export const getLogByIdSchema = z.object({
 });
 
 export const getLogFieldValuesSchema = z.object({
+  appId: z.string(),
   fieldName: z.string(),
   page: z.number().optional(),
   limit: z.number().optional(),

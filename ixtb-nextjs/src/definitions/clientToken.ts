@@ -16,15 +16,21 @@ export interface IClientToken {
 export const addClientTokenSchema = z.object({
   name: z.string().optional(),
   description: z.string().optional(),
+  appId: z.string(),
 });
 
 export const updateClientTokenSchema = z.object({
+  id: z.string(),
   name: z.string().optional(),
   description: z.string().optional(),
 });
 
 export const deleteClientTokenSchema = z.object({
-  id: z.string(),
+  id: z.string().optional(),
+  orgId: z.string().optional(),
+  appId: z.string().optional(),
+  acknowledgeDeleteAllInApp: z.boolean().optional(),
+  acknowledgeDeleteAllInOrg: z.boolean().optional(),
 });
 
 export const getClientTokenSchema = z.object({
@@ -32,11 +38,13 @@ export const getClientTokenSchema = z.object({
 });
 
 export const getClientTokensSchema = z.object({
+  appId: z.string(),
   page: z.number().optional(),
   limit: z.number().optional(),
 });
 
 export const encodeClientTokenJWTSchema = z.object({
+  id: z.string(),
   refresh: z.boolean().optional(),
   expiresAt: z.date().optional(),
 });

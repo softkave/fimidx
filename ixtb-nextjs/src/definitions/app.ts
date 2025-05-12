@@ -13,17 +13,21 @@ export interface IApp {
 }
 
 export const addAppSchema = z.object({
+  orgId: z.string(),
   name: z.string(),
   description: z.string().optional(),
 });
 
 export const updateAppSchema = z.object({
+  id: z.string(),
   name: z.string().optional(),
   description: z.string().optional(),
 });
 
 export const deleteAppSchema = z.object({
-  id: z.string(),
+  id: z.string().optional(),
+  orgId: z.string().optional(),
+  acknowledgeDeleteAll: z.boolean().optional(),
 });
 
 export const getAppSchema = z.object({
@@ -31,6 +35,7 @@ export const getAppSchema = z.object({
 });
 
 export const getAppsSchema = z.object({
+  orgId: z.string(),
   page: z.number().optional(),
   limit: z.number().optional(),
 });

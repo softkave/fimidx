@@ -38,6 +38,7 @@ export interface IMonitor {
 }
 
 export const createMonitorSchema = z.object({
+  appId: z.string(),
   name: z.string().min(1),
   description: z.string().optional(),
   filters: logPartFilterListSchema,
@@ -47,6 +48,7 @@ export const createMonitorSchema = z.object({
 });
 
 export const updateMonitorSchema = z.object({
+  id: z.string().min(1),
   name: z.string().min(1).optional(),
   description: z.string().min(1).optional(),
   filters: logPartFilterListSchema.optional(),
@@ -60,12 +62,15 @@ export const getMonitorByIdSchema = z.object({
 });
 
 export const getMonitorsSchema = z.object({
+  appId: z.string(),
   page: z.number().min(1).optional(),
   limit: z.number().min(1).optional(),
 });
 
 export const deleteMonitorSchema = z.object({
-  id: z.string().min(1),
+  id: z.string().optional(),
+  appId: z.string().optional(),
+  acknowledgeDeleteAllInApp: z.boolean().optional(),
 });
 
 export type CreateMonitorEndpointArgs = z.infer<typeof createMonitorSchema>;
