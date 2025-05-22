@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { MemberRequestListPage } from "@/src/components/member/user-requests/member-request-list-page";
-import { kAppConstants } from "@/src/definitions/appConstants";
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
+import { kAppConstants } from "fmdx-core/definitions/appConstants";
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
 

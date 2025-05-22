@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { SignInContainerClient } from "@/src/components/account/sign-in-container-client.tsx";
-import { kAppConstants } from "@/src/definitions/appConstants.ts";
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths.ts";
+import { kAppConstants } from "fmdx-core/definitions/appConstants";
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { JSX } from "react";

@@ -1,8 +1,8 @@
 "use client";
 
-import { IFetchedMember } from "@/src/definitions/members.ts";
-import { kPermissions } from "@/src/definitions/permissions.ts";
 import { useHasPermission } from "@/src/lib/clientHooks/permissionHooks.tsx";
+import { IFetchedMember } from "fmdx-core/definitions/members";
+import { kPermissions } from "fmdx-core/definitions/permissions";
 import { Fragment, ReactNode, useMemo, useState } from "react";
 import { PrefixSuffixNode } from "../internal/prefix-suffix-node.tsx";
 import { AddMemberBtn } from "./add-member-btn.tsx";

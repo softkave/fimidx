@@ -1,5 +1,5 @@
-import { IClientToken } from "@/src/definitions/clientToken";
 import { useEncodeClientTokenJWT } from "@/src/lib/clientApi/clientToken";
+import { IClientToken } from "fmdx-core/definitions/clientToken";
 import { useCallback } from "react";
 import { Copyable } from "../internal/copyable";
 import { ObfuscateText } from "../internal/obfuscate-text";
@@ -12,14 +12,14 @@ export interface IClientTokenProps {
 
 export function ClientToken(props: IClientTokenProps) {
   const encodeClientTokenJWT = useEncodeClientTokenJWT({
-    orgId: props.clientToken.orgId,
-    appId: props.clientToken.appId,
     clientTokenId: props.clientToken.id,
   });
 
   const handleEncodeClientTokenJWT = useCallback(async () => {
-    await encodeClientTokenJWT.trigger({});
-  }, [encodeClientTokenJWT]);
+    await encodeClientTokenJWT.trigger({
+      id: props.clientToken.id,
+    });
+  }, [encodeClientTokenJWT, props.clientToken.id]);
 
   const { data } = encodeClientTokenJWT;
 

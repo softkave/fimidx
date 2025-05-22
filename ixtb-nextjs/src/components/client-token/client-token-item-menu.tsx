@@ -1,11 +1,11 @@
 "use client";
 
-import { IClientToken } from "@/src/definitions/clientToken";
-import { kPermissions } from "@/src/definitions/permissions";
 import { useDeleteClientToken } from "@/src/lib/clientApi/clientToken";
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
 import { useHasPermission } from "@/src/lib/clientHooks/permissionHooks";
 import { cn } from "@/src/lib/utils";
+import { IClientToken } from "fmdx-core/definitions/clientToken";
+import { kPermissions } from "fmdx-core/definitions/permissions";
 import { isString } from "lodash-es";
 import { Ellipsis, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -52,7 +52,6 @@ export function ClientTokenItemMenu(props: IClientTokenItemMenuProps) {
   const [isEditing, setIsEditing] = useState(false);
   const deleteClientTokenHook = useDeleteClientToken({
     appId: appId,
-    orgId: clientToken.orgId,
     clientTokenId: clientToken.id,
     onSuccess: () => {
       toast.success("ClientToken deleted");
@@ -72,7 +71,7 @@ export function ClientTokenItemMenu(props: IClientTokenItemMenuProps) {
 
   const handleDelete = () => {
     onDeleting?.();
-    deleteClientTokenHook.trigger();
+    deleteClientTokenHook.trigger({ id: clientToken.id });
   };
 
   const deleteClientTokenDialog = useDeleteResourceDialog({

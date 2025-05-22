@@ -9,7 +9,6 @@ export function AppSidebarGroupContainer(props: {
 }) {
   return (
     <AppContainer
-      orgId={props.orgId}
       appId={props.appId}
       render={({ app }) => (
         <AppSidebarGroup orgId={app.orgId} appId={app.id} name={app.name} />

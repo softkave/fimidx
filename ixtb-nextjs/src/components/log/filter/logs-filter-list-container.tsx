@@ -37,7 +37,7 @@ export function LogsFilterListContainer({
   hijackApplyButtonOnClick,
   applyButtonLoading,
 }: ILogsFilterListContainerProps) {
-  const getLogFieldsHook = useGetLogFields({ orgId, appId });
+  const getLogFieldsHook = useGetLogFields({ appId });
 
   return (
     <div className={cn("flex flex-col items-center w-full", className)}>

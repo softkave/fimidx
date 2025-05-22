@@ -1,11 +1,11 @@
 "use client";
 
-import { IMember } from "@/src/definitions/members.ts";
 import {
   UpdateMemberOnSuccessParams,
   useUpdateMemberById,
 } from "@/src/lib/clientApi/member.ts";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { IMember } from "fmdx-core/definitions/members";
 import { useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -55,10 +55,11 @@ export function UpdateMemberForm(props: IUpdateMemberFormProps) {
   const onSubmit = useCallback(
     async (values: z.infer<typeof updateMemberFormSchema>) => {
       await updateMemberHook.trigger({
+        id: member.id,
         permissions: values.permissions,
       });
     },
-    [updateMemberHook]
+    [updateMemberHook, member.id]
   );
 
   return (

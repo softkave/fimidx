@@ -1,8 +1,9 @@
-import { kPermissions } from "@/src/definitions/permissions";
+import { kPermissions } from "fmdx-core/definitions/permissions";
 import { useMemo } from "react";
 import { convertToArray } from "softkave-js-utils";
 import { useGetMemberByUserId } from "../clientApi/member";
 import { useAppSession } from "./userHooks";
+
 /** `undefined` is returned if the permission is not loaded yet. */
 export function useHasPermission(opts: {
   orgId: string;
@@ -12,8 +13,8 @@ export function useHasPermission(opts: {
   const { op = "any" } = opts;
   const { userId } = useAppSession();
   const getMemberByUserIdHook = useGetMemberByUserId({
+    userId,
     orgId: opts.orgId,
-    memberUserId: userId,
   });
 
   const checks = useMemo(() => {

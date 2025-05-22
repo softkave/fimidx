@@ -1,4 +1,4 @@
-import { IClientToken } from "@/src/definitions/clientToken";
+import { IClientToken } from "fmdx-core/definitions/clientToken";
 import { PageMessage } from "../internal/page-message.tsx";
 import {
   ClientTokenItem,
@@ -11,7 +11,7 @@ export interface IClientTokensProps {
 
 export function ClientTokenItemEmpty() {
   return (
-    <div className="w-full">
+    <div className="w-full px-4">
       <PageMessage
         title="No client tokens found"
         message="Add a client token to get started"

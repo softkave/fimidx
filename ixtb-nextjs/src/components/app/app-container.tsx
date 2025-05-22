@@ -1,7 +1,7 @@
 "use client";
 
-import { IApp } from "@/src/definitions/app";
 import { useGetApp } from "@/src/lib/clientApi/app";
+import { IApp } from "fmdx-core/definitions/app";
 import { useCallback, useMemo } from "react";
 import { WrapLoader } from "../internal/wrap-loader";
 import { App, AppTab, kAppTabs } from "./app";
@@ -11,7 +11,6 @@ export interface IAppContainerRenderProps {
 }
 
 export interface IAppContainerProps {
-  orgId: string;
   appId: string;
   defaultTab?: AppTab;
   render?: (response: IAppContainerRenderProps) => React.ReactNode;
@@ -21,13 +20,12 @@ export interface IAppContainerProps {
 
 export function AppContainer(props: IAppContainerProps) {
   const {
-    orgId,
     appId,
     defaultTab = kAppTabs.logs,
     renderLoading,
     renderError,
   } = props;
-  const getAppHook = useGetApp({ orgId, appId });
+  const getAppHook = useGetApp({ appId });
 
   const error = getAppHook.error;
   const isLoading = getAppHook.isLoading;

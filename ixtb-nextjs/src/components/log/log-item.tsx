@@ -1,6 +1,6 @@
-import { IFetchedLog } from "@/src/definitions/log.ts";
-import { formatDate } from "@/src/lib/common/date.ts";
 import { cn } from "@/src/lib/utils";
+import { formatDate } from "fmdx-core/common/date";
+import { IFetchedLog } from "fmdx-core/definitions/log";
 import { Skeleton } from "../ui/skeleton.tsx";
 
 export interface ILogItemProps {

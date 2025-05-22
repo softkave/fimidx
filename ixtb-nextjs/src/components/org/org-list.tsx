@@ -1,4 +1,4 @@
-import { IOrg } from "@/src/definitions/org";
+import { IOrg } from "fmdx-core/definitions/org";
 import { PageMessage } from "../internal/page-message";
 import { OrgItem, OrgItemSkeleton } from "./org-item";
 
@@ -8,7 +8,7 @@ export interface IOrgsProps {
 
 export function OrgItemEmpty() {
   return (
-    <div className="w-full">
+    <div className="w-full px-4">
       <PageMessage
         title="No organizations found"
         message="Add an organization to get started"

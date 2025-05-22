@@ -1,7 +1,7 @@
 "use client";
 
-import { IFetchedLog } from "@/src/definitions/log";
 import { useGetLogById } from "@/src/lib/clientApi/log";
+import { IFetchedLog } from "fmdx-core/definitions/log";
 import { useCallback, useMemo } from "react";
 import { WrapLoader } from "../internal/wrap-loader";
 import { Log } from "./log";
@@ -11,8 +11,6 @@ export interface ILogContainerRenderProps {
 }
 
 export interface ILogContainerProps {
-  orgId: string;
-  appId: string;
   logId: string;
   render?: (response: ILogContainerRenderProps) => React.ReactNode;
   renderLoading?: () => React.ReactNode;
@@ -20,8 +18,8 @@ export interface ILogContainerProps {
 }
 
 export function LogContainer(props: ILogContainerProps) {
-  const { orgId, appId, logId, renderLoading, renderError } = props;
-  const getLogHook = useGetLogById({ orgId, appId, logId });
+  const { logId, renderLoading, renderError } = props;
+  const getLogHook = useGetLogById({ logId });
 
   const error = getLogHook.error;
   const isLoading = getLogHook.isLoading;

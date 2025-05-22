@@ -1,5 +1,5 @@
-import { IApp } from "@/src/definitions/app";
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
+import { IApp } from "fmdx-core/definitions/app";
 import Link from "next/link";
 import { ValueOf } from "type-fest";
 import { ClientTokensPage } from "../client-token/client-tokens-page";
@@ -54,8 +54,8 @@ export function App(props: IAppProps) {
         </TabsList>
         <TabsContent value={kAppTabs.clientTokens} className="pt-3">
           <ClientTokensPage
-            orgId={props.app.orgId}
             appId={props.app.id}
+            orgId={props.app.orgId}
             className="gap-8"
           />
         </TabsContent>

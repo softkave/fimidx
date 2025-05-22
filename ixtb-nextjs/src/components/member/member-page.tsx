@@ -9,7 +9,7 @@ export interface IMemberPageProps {
 export function MemberPage(props: IMemberPageProps) {
   return (
     <AppPage>
-      <MemberContainer orgId={props.orgId} memberId={props.memberId} />
+      <MemberContainer memberId={props.memberId} />
     </AppPage>
   );
 }

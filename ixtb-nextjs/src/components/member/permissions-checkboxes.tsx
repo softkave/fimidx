@@ -1,5 +1,8 @@
-import { kPermissions, kPermissionsList } from "@/src/definitions/permissions";
 import { cn } from "@/src/lib/utils";
+import {
+  kPermissions,
+  kPermissionsList,
+} from "fmdx-core/definitions/permissions";
 import { Checkbox } from "../ui/checkbox";
 
 const kPermissionsLabels = {

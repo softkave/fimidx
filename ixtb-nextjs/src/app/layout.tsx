@@ -1,9 +1,9 @@
 import { Toaster } from "@/src/components/ui/sonner.tsx";
+import { kAppConstants } from "fmdx-core/definitions/appConstants";
 import type { Metadata } from "next";
 import { SessionProvider } from "next-auth/react";
 import { Geist, Geist_Mono } from "next/font/google";
 import { SidebarProvider } from "../components/ui/sidebar";
-import { kAppConstants } from "../definitions/appConstants";
 import "./globals.css";
 
 const geistSans = Geist({

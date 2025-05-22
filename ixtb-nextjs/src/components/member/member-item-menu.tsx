@@ -1,11 +1,11 @@
 "use client";
 
-import { IFetchedMember } from "@/src/definitions/members";
-import { kPermissions } from "@/src/definitions/permissions";
 import { useDeleteMemberById } from "@/src/lib/clientApi/member";
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
 import { useHasPermission } from "@/src/lib/clientHooks/permissionHooks";
 import { cn } from "@/src/lib/utils";
+import { IFetchedMember } from "fmdx-core/definitions/members";
+import { kPermissions } from "fmdx-core/definitions/permissions";
 import { isString } from "lodash-es";
 import { Ellipsis, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -65,7 +65,9 @@ export function MemberItemMenu(props: IMemberItemMenuProps) {
 
   const handleDelete = () => {
     onDeleting?.();
-    deleteMemberHook.trigger();
+    deleteMemberHook.trigger({
+      id: member.id,
+    });
   };
 
   const deleteMemberDialog = useDeleteResourceDialog({

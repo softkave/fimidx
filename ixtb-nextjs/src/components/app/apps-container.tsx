@@ -1,14 +1,15 @@
 "use client";
 
-import { GetAppsEndpointArgs, IApp } from "@/src/definitions/app.ts";
 import { useGetApps } from "@/src/lib/clientApi/app.ts";
 import { cn } from "@/src/lib/utils.ts";
+import { GetAppsEndpointArgs, IApp } from "fmdx-core/definitions/app";
 import { useState } from "react";
 import { OmitFrom } from "softkave-js-utils";
 import ListPagination from "../internal/list-pagination.tsx";
 import { PageMessage } from "../internal/page-message.tsx";
 import { WrapLoader } from "../internal/wrap-loader.tsx";
 import { Apps } from "./apps-list.tsx";
+
 export type IAppListContainerFilter = OmitFrom<
   GetAppsEndpointArgs,
   "page" | "limit"
@@ -53,12 +54,14 @@ export function AppListContainer({
         isLoading={appHooks.isLoading}
         error={appHooks.error}
         data={appHooks.data}
+        errorClassName="px-4"
+        loadingClassName="px-4"
         render={(data) =>
           data.apps.length === 0 && showNoAppsMessage ? (
             <PageMessage
               title="No apps"
               message="No apps found"
-              className="px-0 flex flex-col items-center justify-center py-32"
+              className="px-4 flex flex-col items-center justify-center py-32"
             />
           ) : (
             <div

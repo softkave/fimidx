@@ -1,10 +1,10 @@
 "use client";
 
-import { IOrg } from "@/src/definitions/org";
 import { useGetOrg } from "@/src/lib/clientApi/org";
 import { useCallback, useMemo } from "react";
 import { WrapLoader } from "../internal/wrap-loader";
 import { kOrgTabs, Org, OrgTab } from "./org";
+import { IOrg } from "fmdx-core/definitions/org";
 
 export interface IOrgContainerRenderProps {
   org: IOrg;

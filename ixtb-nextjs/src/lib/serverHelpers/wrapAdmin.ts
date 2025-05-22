@@ -1,15 +1,15 @@
 import { NextAuthRequest } from "@/auth.ts";
 import assert from "assert";
 import { AnyFn, AnyObject } from "softkave-js-utils";
-import { OwnServerError } from "../common/error.ts";
-import { assertCheckIsAdminEmail } from "./isAdmin.ts";
-import { wrapAuthenticated } from "./wrapAuthenticated.ts";
+import { wrapUserAuthenticated } from "./wrapAuthenticated.ts";
 import { IRouteContext } from "./wrapRoute.ts";
+import { OwnServerError } from "fmdx-core/common/error";
+import { assertCheckIsAdminEmail } from "fmdx-core/serverHelpers/isAdmin";
 
 export const wrapAdmin = (
   routeFn: AnyFn<[NextAuthRequest, IRouteContext], Promise<AnyObject | void>>
 ) =>
-  wrapAuthenticated((req, ctx, session) => {
+  wrapUserAuthenticated((req, ctx, session) => {
     assert.ok(session, new OwnServerError("Unauthorized", 401));
     assert.ok(
       session.user?.email,

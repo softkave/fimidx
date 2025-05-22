@@ -1,7 +1,7 @@
 "use client";
 
-import { IClientToken } from "@/src/definitions/clientToken";
 import { useGetClientToken } from "@/src/lib/clientApi/clientToken";
+import { IClientToken } from "fmdx-core/definitions/clientToken";
 import { useCallback, useMemo } from "react";
 import { WrapLoader } from "../internal/wrap-loader";
 import { ClientToken } from "./client-token";
@@ -11,8 +11,6 @@ export interface IClientTokenContainerRenderProps {
 }
 
 export interface IClientTokenContainerProps {
-  orgId: string;
-  appId: string;
   clientTokenId: string;
   render?: (response: IClientTokenContainerRenderProps) => React.ReactNode;
   renderLoading?: () => React.ReactNode;
@@ -20,8 +18,8 @@ export interface IClientTokenContainerProps {
 }
 
 export function ClientTokenContainer(props: IClientTokenContainerProps) {
-  const { orgId, appId, clientTokenId, renderLoading, renderError } = props;
-  const getClientTokenHook = useGetClientToken({ orgId, appId, clientTokenId });
+  const { clientTokenId, renderLoading, renderError } = props;
+  const getClientTokenHook = useGetClientToken({ clientTokenId });
 
   const error = getClientTokenHook.error;
   const isLoading = getClientTokenHook.isLoading;

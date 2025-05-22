@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { MonitorPage } from "@/src/components/monitor/monitor-page";
-import { kAppConstants } from "@/src/definitions/appConstants";
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
+import { kAppConstants } from "fmdx-core/definitions/appConstants";
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { JSX } from "react";
@@ -34,5 +34,5 @@ export default async function Page(
     );
   }
 
-  return <MonitorPage orgId={orgId} appId={appId} monitorId={monitorId} />;
+  return <MonitorPage monitorId={monitorId} />;
 }

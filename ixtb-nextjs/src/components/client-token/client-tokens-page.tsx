@@ -4,8 +4,8 @@ import { ClientTokenListContainer } from "./client-tokens-container.tsx";
 import { ClientTokensHeader } from "./client-tokens-header.tsx";
 
 export function ClientTokensPage(props: {
-  orgId: string;
   appId: string;
+  orgId: string;
   className?: string;
 }) {
   return (
@@ -15,11 +15,10 @@ export function ClientTokensPage(props: {
       >
         <ClientTokensHeader
           className="p-4"
-          orgId={props.orgId}
           appId={props.appId}
+          orgId={props.orgId}
         />
         <ClientTokenListContainer
-          orgId={props.orgId}
           appId={props.appId}
           showNoClientTokensMessage={false}
         />

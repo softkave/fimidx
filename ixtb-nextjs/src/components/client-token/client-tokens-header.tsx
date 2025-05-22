@@ -1,9 +1,9 @@
 "use client";
 
-import { kPermissions } from "@/src/definitions/permissions";
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
 import { useHasPermission } from "@/src/lib/clientHooks/permissionHooks";
 import { cn } from "@/src/lib/utils";
+import { kPermissions } from "fmdx-core/definitions/permissions";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "../ui/button";
@@ -33,7 +33,7 @@ export function ClientTokensHeader(props: {
           router.push(
             kClientPaths.app.org.app.clientToken.single(
               clientToken.orgId,
-              props.appId,
+              clientToken.appId,
               clientToken.id
             )
           );

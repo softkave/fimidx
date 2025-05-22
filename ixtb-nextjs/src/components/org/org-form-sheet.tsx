@@ -1,6 +1,5 @@
 "use client";
 
-import { IOrg } from "@/src/definitions/org.ts";
 import { useCallback } from "react";
 import { ScrollArea } from "../ui/scroll-area.tsx";
 import {
@@ -12,6 +11,7 @@ import {
 } from "../ui/sheet.tsx";
 import { AddOrgForm } from "./add-org-form.tsx";
 import { UpdateOrgForm } from "./update-org-form.tsx";
+import { IOrg } from "fmdx-core/definitions/org";
 
 export interface IOrgFormSheetProps {
   org?: IOrg;

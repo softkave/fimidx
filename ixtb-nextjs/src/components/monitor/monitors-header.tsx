@@ -1,6 +1,5 @@
 "use client";
 
-import { kPermissions } from "@/src/definitions/permissions";
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
 import { useHasPermission } from "@/src/lib/clientHooks/permissionHooks";
 import { cn } from "@/src/lib/utils";
@@ -8,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "../ui/button";
 import { AddMonitorFormSheet } from "./add-monitor-form-sheet";
+import { kPermissions } from "fmdx-core/definitions/permissions";
 
 export function MonitorsHeader(props: {
   className?: string;

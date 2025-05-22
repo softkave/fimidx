@@ -1,8 +1,8 @@
 "use client";
 
-import { IMemberRequest } from "@/src/definitions/members";
 import { useGetUserRequests } from "@/src/lib/clientApi/member";
 import { cn } from "@/src/lib/utils";
+import { IMemberRequest } from "fmdx-core/definitions/members";
 import { useState } from "react";
 import ListPagination from "../../internal/list-pagination";
 import { WrapLoader } from "../../internal/wrap-loader";
@@ -39,7 +39,7 @@ export function MemberRequestListContainer(props: {
           ) : (
             <div
               className={cn(
-                "flex flex-col items-center w-full",
+                "flex flex-col items-center w-full px-4",
                 props.membersContainerClassName
               )}
             >

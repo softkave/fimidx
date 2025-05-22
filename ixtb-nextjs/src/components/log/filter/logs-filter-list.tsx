@@ -1,9 +1,9 @@
+import assert from "assert";
 import {
   ILogField,
   LogPartFilterItem,
   LogPartFilterList,
-} from "@/src/definitions/log";
-import assert from "assert";
+} from "fmdx-core/definitions/log";
 import { Loader2, PlusIcon, XIcon } from "lucide-react";
 import { ComponentProps, useMemo, useState } from "react";
 import { Button } from "../../ui/button";

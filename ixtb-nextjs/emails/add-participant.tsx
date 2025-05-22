@@ -1,4 +1,3 @@
-import { kAppConstants } from "@/src/definitions/appConstants";
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
 import {
   Body,
@@ -10,6 +9,7 @@ import {
   Preview,
   Tailwind,
 } from "@react-email/components";
+import { kAppConstants } from "fmdx-core/definitions/appConstants";
 
 export interface AddParticipantEmailProps {
   orgName: string;

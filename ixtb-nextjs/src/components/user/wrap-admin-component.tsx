@@ -1,12 +1,12 @@
 "use client";
 
-import { IUser } from "@/src/definitions/user.ts";
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths.ts";
 import { useAppSession } from "@/src/lib/clientHooks/userHooks.ts";
 import { redirect, usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { PageError } from "../internal/error.ts";
 import { PageLoading } from "../internal/loading.ts";
+import { IUser } from "fmdx-core/definitions/user";
 
 interface IWrapAdminComponentProps {
   render?: React.ReactNode | ((user: IUser) => React.ReactNode);

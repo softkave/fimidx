@@ -1,11 +1,11 @@
 "use client";
 
-import { IMonitor, kMonitorStatus } from "@/src/definitions/monitor.ts";
 import {
   AddMonitorOnSuccessParams,
   useAddMonitor,
 } from "@/src/lib/clientApi/monitor.ts";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { IMonitor, kMonitorStatus } from "fmdx-core/definitions/monitor";
 import { useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -34,7 +34,7 @@ export const addMonitorFormSchema = z.object({
 });
 
 export function AddMonitorForm(props: IAddMonitorFormProps) {
-  const { orgId, appId, onSubmitComplete } = props;
+  const { appId, onSubmitComplete } = props;
 
   const form = useForm<z.infer<typeof addMonitorFormSchema>>({
     resolver: zodResolver(addMonitorFormSchema),
@@ -53,13 +53,13 @@ export function AddMonitorForm(props: IAddMonitorFormProps) {
 
   const addMonitorHook = useAddMonitor({
     onSuccess: handleSuccess,
-    orgId: orgId,
-    appId: appId,
+    appId,
   });
 
   const onSubmit = useCallback(
     async (values: z.infer<typeof addMonitorFormSchema>) => {
       await addMonitorHook.trigger({
+        appId,
         name: values.name,
         description: values.description,
         status: kMonitorStatus.disabled,
@@ -68,7 +68,7 @@ export function AddMonitorForm(props: IAddMonitorFormProps) {
         filters: [],
       });
     },
-    [addMonitorHook]
+    [addMonitorHook, appId]
   );
 
   return (

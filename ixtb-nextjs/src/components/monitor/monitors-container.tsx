@@ -1,11 +1,11 @@
 "use client";
 
+import { useGetMonitors } from "@/src/lib/clientApi/monitor.ts";
+import { cn } from "@/src/lib/utils.ts";
 import {
   GetMonitorsEndpointArgs,
   IMonitor,
-} from "@/src/definitions/monitor.ts";
-import { useGetMonitors } from "@/src/lib/clientApi/monitor.ts";
-import { cn } from "@/src/lib/utils.ts";
+} from "fmdx-core/definitions/monitor";
 import { useState } from "react";
 import { OmitFrom } from "softkave-js-utils";
 import ListPagination from "../internal/list-pagination.tsx";
@@ -34,15 +34,13 @@ export function MonitorListContainer({
   filter,
   className,
   monitorsContainerClassName,
-  orgId,
   appId,
 }: IMonitorListContainerProps) {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
   const monitorHooks = useGetMonitors({
-    orgId: orgId,
-    appId: appId,
+    appId,
     page,
     limit: pageSize,
     ...filter,
@@ -65,7 +63,7 @@ export function MonitorListContainer({
             <PageMessage
               title="No monitors"
               message="No monitors found"
-              className="px-0 flex flex-col items-center justify-center py-32"
+              className="px-4 flex flex-col items-center justify-center py-32"
             />
           ) : (
             <div

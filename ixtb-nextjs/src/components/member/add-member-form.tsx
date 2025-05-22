@@ -1,11 +1,11 @@
 "use client";
 
-import { IMember } from "@/src/definitions/members.ts";
 import {
   AddMemberOnSuccessParams,
   useAddMember,
 } from "@/src/lib/clientApi/member.ts";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { IMember } from "fmdx-core/definitions/members";
 import { useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -51,18 +51,19 @@ export function AddMemberForm(props: IAddMemberFormProps) {
   );
 
   const addMemberHook = useAddMember({
+    orgId,
     onSuccess: handleSuccess,
-    orgId: orgId,
   });
 
   const onSubmit = useCallback(
     async (values: z.infer<typeof addMemberFormSchema>) => {
       await addMemberHook.trigger({
+        orgId,
         email: values.email,
         permissions: values.permissions,
       });
     },
-    [addMemberHook]
+    [addMemberHook, orgId]
   );
 
   return (

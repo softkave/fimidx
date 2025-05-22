@@ -1,8 +1,8 @@
 "use client";
 
-import { GetOrgsEndpointArgs, IOrg } from "@/src/definitions/org.ts";
 import { useGetOrgs } from "@/src/lib/clientApi/org.ts";
 import { cn } from "@/src/lib/utils.ts";
+import { GetOrgsEndpointArgs, IOrg } from "fmdx-core/definitions/org";
 import { useState } from "react";
 import { OmitFrom } from "softkave-js-utils";
 import ListPagination from "../internal/list-pagination.tsx";
@@ -52,7 +52,7 @@ export function OrgListContainer({
             <PageMessage
               title="No organizations"
               message="No organizations found"
-              className="px-0 flex flex-col items-center justify-center py-32"
+              className="px-4 flex flex-col items-center justify-center py-32"
             />
           ) : (
             <div

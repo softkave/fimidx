@@ -3,7 +3,7 @@ import {
   AddParticipantEmailProps,
   getAddParticipantEmailTitle,
 } from "@/emails/add-participant";
-import { kEmailRecordReason } from "@/src/definitions/email";
+import { kEmailRecordReason } from "fmdx-core/definitions/email";
 import { sendEmail } from "./sendEmail";
 
 export const sendAddParticipantEmail = async (params: {

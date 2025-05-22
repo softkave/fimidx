@@ -1,12 +1,12 @@
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import assert from "assert";
+import { authDb } from "fmdx-core/db/auth-schema";
+import { checkIsAdminEmail } from "fmdx-core/serverHelpers/isAdmin";
 import NextAuth, { Session } from "next-auth";
 import Google from "next-auth/providers/google";
 import Resend from "next-auth/providers/resend";
 import type { NextRequest } from "next/server";
-import { authDb } from "./src/db/auth-schema.ts";
-import { sendVerificationRequestEmail } from "./src/lib/serverHelpers/emails/sendVerificationRequestEmail.tsx";
-import { checkIsAdminEmail } from "./src/lib/serverHelpers/isAdmin.ts";
+import { sendVerificationRequestEmail } from "./src/lib/serverHelpers/emails/sendVerificationRequestEmail";
 
 const fromEmail = process.env.RESEND_FROM_EMAIL;
 assert(fromEmail, "RESEND_FROM_EMAIL is not set");

@@ -1,8 +1,8 @@
 "use client";
 
-import { IApp } from "@/src/definitions/app.ts";
 import { AddAppOnSuccessParams, useAddApp } from "@/src/lib/clientApi/app.ts";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { IApp } from "fmdx-core/definitions/app";
 import { useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -55,11 +55,12 @@ export function AddAppForm(props: IAddAppFormProps) {
   const onSubmit = useCallback(
     async (values: z.infer<typeof addAppFormSchema>) => {
       await addAppHook.trigger({
+        orgId: orgId,
         name: values.name,
         description: values.description,
       });
     },
-    [addAppHook]
+    [addAppHook, orgId]
   );
 
   return (

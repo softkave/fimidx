@@ -1,11 +1,11 @@
 "use client";
 
-import { IMonitor } from "@/src/definitions/monitor";
-import { kPermissions } from "@/src/definitions/permissions";
 import { useDeleteMonitor } from "@/src/lib/clientApi/monitor";
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
 import { useHasPermission } from "@/src/lib/clientHooks/permissionHooks";
 import { cn } from "@/src/lib/utils";
+import { IMonitor } from "fmdx-core/definitions/monitor";
+import { kPermissions } from "fmdx-core/definitions/permissions";
 import { isString } from "lodash-es";
 import { Ellipsis, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -45,8 +45,7 @@ export function MonitorItemMenu(props: IMonitorItemMenuProps) {
 
   const router = useRouter();
   const deleteMonitorHook = useDeleteMonitor({
-    appId: appId,
-    orgId: monitor.orgId,
+    appId,
     monitorId: monitor.id,
     onSuccess: () => {
       toast.success("Monitor deleted");
@@ -63,7 +62,9 @@ export function MonitorItemMenu(props: IMonitorItemMenuProps) {
 
   const handleDelete = () => {
     onDeleting?.();
-    deleteMonitorHook.trigger();
+    deleteMonitorHook.trigger({
+      id: monitor.id,
+    });
   };
 
   const deleteMonitorDialog = useDeleteResourceDialog({

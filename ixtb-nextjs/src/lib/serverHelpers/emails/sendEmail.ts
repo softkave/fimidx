@@ -1,16 +1,16 @@
+import assert from "assert";
+import { eq } from "drizzle-orm";
 import {
   db,
   emailBlockLists as emailBlockListTable,
   emailRecords as emailRecordTable,
-} from "@/src/db/fmlogs-schema";
+} from "fmdx-core/db/fmdx-schema";
 import {
   EmailRecordReason,
   EmailRecordStatus,
   kEmailRecordProvider,
   kEmailRecordStatus,
-} from "@/src/definitions/email";
-import assert from "assert";
-import { eq } from "drizzle-orm";
+} from "fmdx-core/definitions/email";
 import { Resend } from "resend";
 import { AnyObject, convertToArray, OmitFrom } from "softkave-js-utils";
 

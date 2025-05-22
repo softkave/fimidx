@@ -1,11 +1,11 @@
 "use client";
 
+import { useGetMembers } from "@/src/lib/clientApi/member.ts";
+import { cn } from "@/src/lib/utils.ts";
 import {
   GetMembersEndpointArgs,
   IFetchedMember,
-} from "@/src/definitions/members.ts";
-import { useGetMembers } from "@/src/lib/clientApi/member.ts";
-import { cn } from "@/src/lib/utils.ts";
+} from "fmdx-core/definitions/members";
 import { useState } from "react";
 import { OmitFrom } from "softkave-js-utils";
 import ListPagination from "../internal/list-pagination.tsx";
@@ -58,7 +58,7 @@ export function MemberListContainer({
       <PageMessage
         title="No members"
         message="No members found"
-        className="px-0 flex flex-col items-center justify-center py-32"
+        className="px-4 flex flex-col items-center justify-center py-32"
       />
     );
   };

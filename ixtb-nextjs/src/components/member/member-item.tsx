@@ -1,9 +1,3 @@
-import { kEmailRecordStatus } from "@/src/definitions/email";
-import {
-  IFetchedMember,
-  kMemberStatus,
-  kMemberStatusLabels,
-} from "@/src/definitions/members";
 import { cn } from "@/src/lib/utils";
 import { cva, type VariantProps } from "class-variance-authority";
 import { formatDistanceToNow } from "date-fns";
@@ -12,6 +6,12 @@ import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
 import { MemberItemMenu } from "./member-item-menu";
+import { kEmailRecordStatus } from "fmdx-core/definitions/email";
+import {
+  IFetchedMember,
+  kMemberStatusLabels,
+  kMemberStatus,
+} from "fmdx-core/definitions/members";
 
 const memberItemVariants = cva(
   "flex justify-between items-center gap-2 hover:bg-muted/50 transition-colors rounded-md px-4 py-2",

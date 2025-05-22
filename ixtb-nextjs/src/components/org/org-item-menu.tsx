@@ -1,11 +1,11 @@
 "use client";
 
-import { IOrg } from "@/src/definitions/org";
-import { kPermissions } from "@/src/definitions/permissions";
 import { useDeleteOrg } from "@/src/lib/clientApi/org";
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
 import { useHasPermission } from "@/src/lib/clientHooks/permissionHooks";
 import { cn } from "@/src/lib/utils";
+import { IOrg } from "fmdx-core/definitions/org";
+import { kPermissions } from "fmdx-core/definitions/permissions";
 import { isString } from "lodash-es";
 import { Ellipsis, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -57,7 +57,9 @@ export function OrgItemMenu(props: IOrgItemMenuProps) {
 
   const handleDelete = () => {
     onDeleting?.();
-    deleteOrgHook.trigger();
+    deleteOrgHook.trigger({
+      id: org.id,
+    });
   };
 
   const deleteOrgDialog = useDeleteResourceDialog({

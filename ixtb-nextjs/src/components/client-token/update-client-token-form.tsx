@@ -1,11 +1,11 @@
 "use client";
 
-import { IClientToken } from "@/src/definitions/clientToken.ts";
 import {
   UpdateClientTokenOnSuccessParams,
   useUpdateClientToken,
 } from "@/src/lib/clientApi/clientToken.ts";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { IClientToken } from "fmdx-core/definitions/clientToken";
 import { useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -53,18 +53,18 @@ export function UpdateClientTokenForm(props: IUpdateClientTokenFormProps) {
   const updateClientTokenHook = useUpdateClientToken({
     onSuccess: handleSuccess,
     clientTokenId: clientToken.id,
-    orgId: clientToken.orgId,
     appId: clientToken.appId,
   });
 
   const onSubmit = useCallback(
     async (values: z.infer<typeof addClientTokenFormSchema>) => {
       await updateClientTokenHook.trigger({
+        id: clientToken.id,
         name: values.name,
         description: values.description,
       });
     },
-    [updateClientTokenHook]
+    [updateClientTokenHook, clientToken.id]
   );
 
   return (

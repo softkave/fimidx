@@ -1,4 +1,3 @@
-import { kMonitorStatus, MonitorStatus } from "@/src/definitions/monitor";
 import {
   Select,
   SelectContent,
@@ -6,6 +5,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@radix-ui/react-select";
+import { kMonitorStatus, MonitorStatus } from "fmdx-core/definitions/monitor";
 import { FormControl } from "../ui/form";
 
 export const kMonitorStatusLabels = {

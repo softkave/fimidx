@@ -2,7 +2,7 @@ import {
   ILogField,
   LogPartFilterItemOp,
   logPartFilterItemOpSchema,
-} from "@/src/definitions/log";
+} from "fmdx-core/definitions/log";
 import { flatten } from "lodash-es";
 import { XIcon } from "lucide-react";
 import { useMemo } from "react";
@@ -63,7 +63,7 @@ export interface ILogsFilterItemProps {
 }
 
 export function LogsFilterItem(props: ILogsFilterItemProps) {
-  const { fields, item, onChange, onRemove, orgId, appId, disabled } = props;
+  const { fields, item, onChange, onRemove, appId, disabled } = props;
 
   const field = useMemo(() => {
     return fields.find((f) => f.name === item.name);
@@ -142,7 +142,6 @@ export function LogsFilterItem(props: ILogsFilterItemProps) {
       case kOps.not_in:
         return (
           <InInputContainer
-            orgId={orgId}
             appId={appId}
             value={item.value ?? []}
             onChange={(value) => onChange({ ...item, value })}

@@ -1,6 +1,6 @@
 "use client";
 
-import { IUser } from "@/src/definitions/user.ts";
+import { IUser } from "fmdx-core/definitions/user";
 import { useSession } from "next-auth/react";
 
 export function useAppSession() {

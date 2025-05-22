@@ -1,4 +1,4 @@
-import { IGetUserEndpointResponse } from "@/src/definitions/user.ts";
+import { IGetUserEndpointResponse } from "fmdx-core/definitions/user";
 import useSWR from "swr";
 import { useAppSession } from "../clientHooks/userHooks.ts";
 import { handleResponse } from "./utils.ts";
@@ -9,7 +9,7 @@ export const kApiUserSWRKeys = {
 
 async function getUser(url: string) {
   const response = await fetch(url, {
-    method: "GET",
+    method: "POST",
   });
 
   return await handleResponse<IGetUserEndpointResponse>(response);

@@ -1,0 +1,1 @@
+ALTER TABLE `callback` ADD `timeout` integer;
