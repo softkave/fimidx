@@ -1,6 +1,6 @@
 "use client";
 
-import { IApp } from "@/src/definitions/app.ts";
+import { IApp } from "fmdx-core/definitions/app";
 import { useCallback } from "react";
 import { ScrollArea } from "../ui/scroll-area.tsx";
 import {

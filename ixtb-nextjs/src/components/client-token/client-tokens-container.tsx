@@ -1,11 +1,11 @@
 "use client";
 
+import { useGetClientTokens } from "@/src/lib/clientApi/clientToken.ts";
+import { cn } from "@/src/lib/utils.ts";
 import {
   GetClientTokensEndpointArgs,
   IClientToken,
-} from "@/src/definitions/clientToken.ts";
-import { useGetClientTokens } from "@/src/lib/clientApi/clientToken.ts";
-import { cn } from "@/src/lib/utils.ts";
+} from "fmdx-core/definitions/clientToken";
 import { useState } from "react";
 import { OmitFrom } from "softkave-js-utils";
 import ListPagination from "../internal/list-pagination.tsx";
@@ -24,7 +24,6 @@ export interface IClientTokenListContainerProps {
   filter?: IClientTokenListContainerFilter;
   className?: string;
   clientTokensContainerClassName?: string;
-  orgId: string;
   appId: string;
 }
 
@@ -34,14 +33,12 @@ export function ClientTokenListContainer({
   filter,
   className,
   clientTokensContainerClassName,
-  orgId,
   appId,
 }: IClientTokenListContainerProps) {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
   const clientTokenHooks = useGetClientTokens({
-    orgId: orgId,
     appId: appId,
     page,
     limit: pageSize,
@@ -65,7 +62,7 @@ export function ClientTokenListContainer({
             <PageMessage
               title="No clientTokens"
               message="No clientTokens found"
-              className="px-0 flex flex-col items-center justify-center py-32"
+              className="px-4 flex flex-col items-center justify-center py-32"
             />
           ) : (
             <div

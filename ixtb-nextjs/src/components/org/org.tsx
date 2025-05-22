@@ -1,10 +1,10 @@
-import { IOrg } from "@/src/definitions/org";
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@radix-ui/react-tabs";
 import Link from "next/link";
 import { ValueOf } from "type-fest";
 import { AppsPage } from "../app/apps-page";
 import { OrgItemMenu } from "./org-item-menu";
+import { IOrg } from "fmdx-core/definitions/org";
 
 export const kOrgTabs = {
   apps: "apps",

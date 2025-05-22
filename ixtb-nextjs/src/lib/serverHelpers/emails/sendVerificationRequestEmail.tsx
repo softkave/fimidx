@@ -6,7 +6,7 @@ import {
 import {
   kEmailRecordReason,
   kGeneralEmailCallerId,
-} from "@/src/definitions/email";
+} from "fmdx-core/definitions/email";
 import { sendEmail } from "./sendEmail";
 
 export const sendVerificationRequestEmail = async (params: {

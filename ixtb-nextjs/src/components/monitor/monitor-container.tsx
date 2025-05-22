@@ -1,7 +1,7 @@
 "use client";
 
-import { IMonitor } from "@/src/definitions/monitor";
 import { useGetMonitor } from "@/src/lib/clientApi/monitor";
+import { IMonitor } from "fmdx-core/definitions/monitor";
 import { useCallback, useMemo } from "react";
 import { WrapLoader } from "../internal/wrap-loader";
 import { Monitor } from "./monitor";
@@ -11,8 +11,6 @@ export interface IMonitorContainerRenderProps {
 }
 
 export interface IMonitorContainerProps {
-  orgId: string;
-  appId: string;
   monitorId: string;
   render?: (response: IMonitorContainerRenderProps) => React.ReactNode;
   renderLoading?: () => React.ReactNode;
@@ -20,8 +18,8 @@ export interface IMonitorContainerProps {
 }
 
 export function MonitorContainer(props: IMonitorContainerProps) {
-  const { orgId, appId, monitorId, renderLoading, renderError } = props;
-  const getMonitorHook = useGetMonitor({ orgId, appId, monitorId });
+  const { monitorId, renderLoading, renderError } = props;
+  const getMonitorHook = useGetMonitor({ id: monitorId });
 
   const error = getMonitorHook.error;
   const isLoading = getMonitorHook.isLoading;

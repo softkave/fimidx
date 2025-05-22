@@ -1,9 +1,9 @@
+import { cn } from "@/src/lib/utils";
 import {
   DurationUnit,
   kDurationUnits,
   kDurationUnitsToLabel,
-} from "@/src/definitions/other";
-import { cn } from "@/src/lib/utils";
+} from "fmdx-core/definitions/other";
 import { Input } from "../ui/input";
 import {
   Select,

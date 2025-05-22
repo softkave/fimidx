@@ -6,25 +6,21 @@ import { WrapLoader } from "../../internal/wrap-loader";
 import { InInput } from "./in-input";
 
 export function InInputContainer(props: {
-  orgId: string;
   appId: string;
   value: string[];
   onChange: (value: string[]) => void;
   fieldName: string;
   disabled?: boolean;
 }) {
-  const { orgId, appId, value, onChange, fieldName, disabled } = props;
+  const { appId, value, onChange, fieldName, disabled } = props;
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
   const getLogFieldValuesHook = useGetLogFieldValues({
-    orgId,
     appId,
-    args: {
-      fieldName,
-      page,
-      limit: pageSize,
-    },
+    fieldName,
+    page,
+    limit: pageSize,
   });
 
   return (

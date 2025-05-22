@@ -1,11 +1,11 @@
+import { useRespondToMemberRequest } from "@/src/lib/clientApi/member";
+import { cn } from "@/src/lib/utils";
+import { formatDistanceToNow } from "date-fns";
 import {
   IMemberRequest,
   kMemberStatus,
   kMemberStatusLabels,
-} from "@/src/definitions/members";
-import { useRespondToMemberRequest } from "@/src/lib/clientApi/member";
-import { cn } from "@/src/lib/utils";
-import { formatDistanceToNow } from "date-fns";
+} from "fmdx-core/definitions/members";
 import { Loader2 } from "lucide-react";
 import { useRef } from "react";
 import { toast } from "sonner";
@@ -39,6 +39,7 @@ export function MemberRequestItem(props: IMemberRequestItemProps) {
     selectedStatusRef.current = status;
     props.onResponding?.();
     respondToMemberRequestHook.trigger({
+      requestId: props.item.requestId,
       status,
     });
   };

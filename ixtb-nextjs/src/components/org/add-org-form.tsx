@@ -1,6 +1,5 @@
 "use client";
 
-import { IOrg } from "@/src/definitions/org.ts";
 import { AddOrgOnSuccessParams, useAddOrg } from "@/src/lib/clientApi/org.ts";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCallback } from "react";
@@ -18,6 +17,7 @@ import {
 } from "../ui/form.tsx";
 import { Input } from "../ui/input.tsx";
 import { Textarea } from "../ui/textarea.tsx";
+import { IOrg } from "fmdx-core/definitions/org";
 
 export interface IAddOrgFormProps {
   onSubmitComplete: (org: IOrg) => void;

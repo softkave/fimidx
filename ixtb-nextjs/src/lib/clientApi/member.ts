@@ -1,19 +1,22 @@
 import {
   addMemberSchema,
+  GetMemberByUserIdEndpointArgs,
   IAddMemberEndpointResponse,
   IGetMemberEndpointResponse,
   IGetMembersEndpointResponse,
   IGetUserMemberRequestsEndpointResponse,
   IRespondToMemberRequestEndpointResponse,
   IUpdateMemberEndpointResponse,
+  removeMemberSchema,
   respondToMemberRequestSchema,
   updateMemberSchema,
-} from "@/src/definitions/members.ts";
+} from "fmdx-core/definitions/members";
 import { convertToArray } from "softkave-js-utils";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
 import { z } from "zod";
-import { kApiMemberSWRKeys } from "./keys.ts";
+import { kApiMemberKeys } from "./apikeys.ts";
+import { kMemberSWRKeys } from "./swrkeys.ts";
 import {
   getRegExpForSWRKey,
   handleResponse,
@@ -22,12 +25,12 @@ import {
 } from "./utils.ts";
 
 async function addMember(
-  url: string,
+  key: ReturnType<typeof kMemberSWRKeys.addMember>,
   params: {
     arg: z.infer<typeof addMemberSchema>;
   }
 ) {
-  const res = await fetch(url, {
+  const res = await fetch(key, {
     method: "POST",
     body: JSON.stringify(params.arg),
   });
@@ -46,22 +49,26 @@ export function useAddMember(
   const mutationHandler = useMutationHandler(addMember, {
     ...opts,
     invalidate: [
-      getRegExpForSWRKey(kApiMemberSWRKeys.getMembers(opts.orgId)),
+      kMemberSWRKeys.getMembers({ orgId: opts.orgId }),
       ...convertToArray(opts.invalidate || []),
     ],
   });
 
   const { trigger, data, error, isMutating, reset } = useSWRMutation(
-    kApiMemberSWRKeys.addMember(opts.orgId),
+    kMemberSWRKeys.addMember(),
     mutationHandler
   );
 
   return { trigger, data, error, isMutating, reset };
 }
 
-export async function getMembers(url: string) {
+export async function getMembers(
+  key: ReturnType<typeof kMemberSWRKeys.getMembers>
+) {
+  const [url, args] = key;
   const res = await fetch(url, {
-    method: "GET",
+    method: "POST",
+    body: JSON.stringify(args),
   });
 
   return await handleResponse<IGetMembersEndpointResponse>(res);
@@ -73,48 +80,61 @@ export function useGetMembers(opts: {
   limit?: number;
 }) {
   const { data, error, isLoading, isValidating, mutate } = useSWR(
-    kApiMemberSWRKeys.getMembers(opts.orgId, opts.page, opts.limit),
+    kMemberSWRKeys.getMembers({
+      orgId: opts.orgId,
+      page: opts.page,
+      limit: opts.limit,
+    }),
     getMembers
   );
 
   return { data, error, isLoading, isValidating, mutate };
 }
 
-async function getMemberByUserId(url: string) {
+async function getMemberByUserId(
+  key: ReturnType<typeof kMemberSWRKeys.getMemberByUserId>
+) {
+  const [url, args] = key;
   const res = await fetch(url, {
-    method: "GET",
+    method: "POST",
+    body: JSON.stringify(args),
   });
 
   return await handleResponse<IGetMemberEndpointResponse>(res);
 }
 
-export function useGetMemberByUserId(opts: {
-  orgId: string;
-  memberUserId?: string;
-}) {
+export function useGetMemberByUserId(
+  opts: Partial<GetMemberByUserIdEndpointArgs>
+) {
   const { data, error, isLoading, isValidating, mutate } = useSWR(
-    opts.memberUserId
-      ? kApiMemberSWRKeys.getMemberByUserId(opts.orgId, opts.memberUserId)
+    opts.userId && opts.orgId
+      ? kMemberSWRKeys.getMemberByUserId({
+          userId: opts.userId,
+          orgId: opts.orgId,
+        })
       : null,
-    getMemberByUserId
+    getMemberByUserId,
+    {
+      keepPreviousData: true,
+    }
   );
 
   return { data, error, isLoading, isValidating, mutate };
 }
 
-async function getMemberById(url: string) {
-  const res = await fetch(url, {
+async function getMemberById(
+  key: ReturnType<typeof kMemberSWRKeys.getMemberById>
+) {
+  const res = await fetch(key, {
     method: "GET",
   });
 
   return await handleResponse<IGetMemberEndpointResponse>(res);
 }
 
-export function useGetMemberById(opts: { orgId: string; memberId?: string }) {
+export function useGetMemberById(opts: { memberId?: string }) {
   const { data, error, isLoading, isValidating, mutate } = useSWR(
-    opts.memberId
-      ? kApiMemberSWRKeys.getMemberById(opts.orgId, opts.memberId)
-      : null,
+    opts.memberId ? kMemberSWRKeys.getMemberById(opts.memberId) : null,
     getMemberById
   );
 
@@ -122,12 +142,12 @@ export function useGetMemberById(opts: { orgId: string; memberId?: string }) {
 }
 
 async function updateMemberById(
-  url: string,
+  key: ReturnType<typeof kMemberSWRKeys.updateMemberById>,
   params: {
     arg: z.infer<typeof updateMemberSchema>;
   }
 ) {
-  const res = await fetch(url, {
+  const res = await fetch(key, {
     method: "PATCH",
     body: JSON.stringify(params.arg),
   });
@@ -149,24 +169,30 @@ export function useUpdateMemberById(
   const mutationHandler = useMutationHandler(updateMemberById, {
     ...opts,
     invalidate: [
-      getRegExpForSWRKey(kApiMemberSWRKeys.getMembers(opts.orgId)),
-      getRegExpForSWRKey(kApiMemberSWRKeys.getMemberByUserId(opts.orgId, ".*")),
-      kApiMemberSWRKeys.getMemberById(opts.orgId, opts.memberId),
+      kMemberSWRKeys.getMembers({ orgId: opts.orgId }),
+      getRegExpForSWRKey(kApiMemberKeys.getMemberByUserId(".*")),
+      kMemberSWRKeys.getMemberById(opts.memberId),
       ...convertToArray(opts.invalidate || []),
     ],
   });
 
   const { trigger, data, error, isMutating, reset } = useSWRMutation(
-    kApiMemberSWRKeys.updateMemberById(opts.orgId, opts.memberId),
+    kMemberSWRKeys.updateMemberById(opts.memberId),
     mutationHandler
   );
 
   return { trigger, data, error, isMutating, reset };
 }
 
-async function deleteMemberById(url: string) {
-  const res = await fetch(url, {
+async function deleteMemberById(
+  key: ReturnType<typeof kMemberSWRKeys.removeMember>,
+  params: {
+    arg: z.infer<typeof removeMemberSchema>;
+  }
+) {
+  const res = await fetch(key, {
     method: "DELETE",
+    body: JSON.stringify(params.arg),
   });
 
   return await handleResponse(res);
@@ -186,24 +212,27 @@ export function useDeleteMemberById(
   const mutationHandler = useMutationHandler(deleteMemberById, {
     ...opts,
     invalidate: [
-      getRegExpForSWRKey(kApiMemberSWRKeys.getMembers(opts.orgId)),
-      getRegExpForSWRKey(kApiMemberSWRKeys.getMemberByUserId(opts.orgId, ".*")),
-      kApiMemberSWRKeys.getMemberById(opts.orgId, opts.memberId),
+      kMemberSWRKeys.getMembers({ orgId: opts.orgId }),
+      kMemberSWRKeys.getMemberById(opts.memberId),
       ...convertToArray(opts.invalidate || []),
     ],
   });
 
   const { trigger, data, error, isMutating, reset } = useSWRMutation(
-    kApiMemberSWRKeys.removeMemberById(opts.orgId, opts.memberId),
+    kMemberSWRKeys.removeMember(),
     mutationHandler
   );
 
   return { trigger, data, error, isMutating, reset };
 }
 
-async function getUserRequests(url: string) {
+async function getUserRequests(
+  key: ReturnType<typeof kMemberSWRKeys.getUserRequests>
+) {
+  const [url, args] = key;
   const res = await fetch(url, {
-    method: "GET",
+    method: "POST",
+    body: JSON.stringify(args),
   });
 
   return await handleResponse<IGetUserMemberRequestsEndpointResponse>(res);
@@ -211,7 +240,10 @@ async function getUserRequests(url: string) {
 
 export function useGetUserRequests(opts: { page?: number; limit?: number }) {
   const { data, error, isLoading, isValidating, mutate } = useSWR(
-    kApiMemberSWRKeys.getUserRequests(opts.page, opts.limit),
+    kMemberSWRKeys.getUserRequests({
+      page: opts.page,
+      limit: opts.limit,
+    }),
     getUserRequests
   );
 
@@ -246,13 +278,13 @@ export function useRespondToMemberRequest(
   const mutationHandler = useMutationHandler(respondToMemberRequest, {
     ...opts,
     invalidate: [
-      getRegExpForSWRKey(kApiMemberSWRKeys.getUserRequests()),
+      kMemberSWRKeys.getUserRequests({}),
       ...convertToArray(opts.invalidate || []),
     ],
   });
 
   const { trigger, data, error, isMutating, reset } = useSWRMutation(
-    kApiMemberSWRKeys.respondToMemberRequest(opts.orgId, opts.memberId),
+    kMemberSWRKeys.respondToMemberRequest(opts.memberId),
     mutationHandler
   );
 

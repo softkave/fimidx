@@ -1,7 +1,7 @@
 "use client";
 
-import { IFetchedMember } from "@/src/definitions/members.ts";
 import { cn } from "@/src/lib/utils.ts";
+import { IFetchedMember } from "fmdx-core/definitions/members";
 import { Check, Loader2, PlusIcon, UserPlus } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Button } from "../ui/button.tsx";

@@ -1,6 +1,6 @@
-import { IApp } from "@/src/definitions/app";
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
 import { cn } from "@/src/lib/utils";
+import { IApp } from "fmdx-core/definitions/app";
 import Link from "next/link";
 import { Skeleton } from "../ui/skeleton";
 import { AppItemMenu } from "./app-item-menu.tsx";

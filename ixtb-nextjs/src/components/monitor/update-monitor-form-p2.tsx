@@ -1,12 +1,12 @@
 "use client";
 
-import { logPartFilterListSchema } from "@/src/definitions/log.ts";
-import { IMonitor } from "@/src/definitions/monitor.ts";
 import {
   UpdateMonitorOnSuccessParams,
   useUpdateMonitor,
 } from "@/src/lib/clientApi/monitor.ts";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { logPartFilterListSchema } from "fmdx-core/definitions/log";
+import { IMonitor } from "fmdx-core/definitions/monitor";
 import { useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -51,17 +51,17 @@ export function UpdateMonitorFormP2(props: IUpdateMonitorFormP2Props) {
   const updateMonitorHook = useUpdateMonitor({
     onSuccess: handleSuccess,
     monitorId: monitor.id,
-    orgId: monitor.orgId,
     appId: monitor.appId,
   });
 
   const onSubmit = useCallback(
     async (values: z.infer<typeof updateMonitorFormP1Schema>) => {
       await updateMonitorHook.trigger({
+        id: monitor.id,
         filters: values.filters,
       });
     },
-    [updateMonitorHook]
+    [updateMonitorHook, monitor.id]
   );
 
   return (

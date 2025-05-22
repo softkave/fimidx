@@ -1,32 +1,32 @@
 import {
   AddClientTokenEndpointResponse,
   addClientTokenSchema,
+  deleteClientTokenSchema,
   EncodeClientTokenJWTEndpointResponse,
   encodeClientTokenJWTSchema,
   GetClientTokenEndpointResponse,
   GetClientTokensEndpointResponse,
   UpdateClientTokenEndpointResponse,
   updateClientTokenSchema,
-} from "@/src/definitions/clientToken.ts";
+} from "fmdx-core/definitions/clientToken";
 import { convertToArray } from "softkave-js-utils";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
 import { z } from "zod";
-import { kApiClientTokenSWRKeys } from "./keys.ts";
+import { kClientTokenSWRKeys } from "./swrkeys.ts";
 import {
-  getRegExpForSWRKey,
   handleResponse,
   IUseMutationHandlerOpts,
   useMutationHandler,
 } from "./utils.ts";
 
 async function addClientToken(
-  url: string,
+  key: ReturnType<typeof kClientTokenSWRKeys.addClientToken>,
   params: {
     arg: z.infer<typeof addClientTokenSchema>;
   }
 ) {
-  const res = await fetch(url, {
+  const res = await fetch(key, {
     method: "POST",
     body: JSON.stringify(params.arg),
   });
@@ -41,74 +41,69 @@ export type AddClientTokenOnSuccessParams = [
 
 export function useAddClientToken(
   opts: IUseMutationHandlerOpts<typeof addClientToken> & {
-    orgId: string;
     appId: string;
   }
 ) {
   const mutationHandler = useMutationHandler(addClientToken, {
     ...opts,
     invalidate: [
-      getRegExpForSWRKey(
-        kApiClientTokenSWRKeys.getClientTokens(opts.orgId, opts.appId)
-      ),
+      kClientTokenSWRKeys.getClientTokens({
+        appId: opts.appId,
+      }),
       ...convertToArray(opts.invalidate || []),
     ],
   });
 
   const { trigger, data, error, isMutating, reset } = useSWRMutation(
-    kApiClientTokenSWRKeys.addClientToken(opts.orgId, opts.appId),
+    kClientTokenSWRKeys.addClientToken(),
     mutationHandler
   );
 
   return { trigger, data, error, isMutating, reset };
 }
 
-export async function getClientTokens(url: string) {
+export async function getClientTokens(
+  key: ReturnType<typeof kClientTokenSWRKeys.getClientTokens>
+) {
+  const [url, opts] = key;
   const res = await fetch(url, {
-    method: "GET",
+    method: "POST",
+    body: JSON.stringify(opts),
   });
 
   return await handleResponse<GetClientTokensEndpointResponse>(res);
 }
 
 export function useGetClientTokens(opts: {
-  orgId: string;
   appId: string;
   page?: number;
   limit?: number;
 }) {
   const { data, error, isLoading, isValidating, mutate } = useSWR(
-    kApiClientTokenSWRKeys.getClientTokens(
-      opts.orgId,
-      opts.appId,
-      opts.page,
-      opts.limit
-    ),
+    kClientTokenSWRKeys.getClientTokens({
+      appId: opts.appId,
+      page: opts.page,
+      limit: opts.limit,
+    }),
     getClientTokens
   );
 
   return { data, error, isLoading, isValidating, mutate };
 }
 
-async function getClientToken(url: string) {
-  const res = await fetch(url, {
+async function getClientToken(
+  key: ReturnType<typeof kClientTokenSWRKeys.getClientToken>
+) {
+  const res = await fetch(key, {
     method: "GET",
   });
 
   return await handleResponse<GetClientTokenEndpointResponse>(res);
 }
 
-export function useGetClientToken(opts: {
-  orgId: string;
-  appId: string;
-  clientTokenId: string;
-}) {
+export function useGetClientToken(opts: { clientTokenId: string }) {
   const { data, error, isLoading, isValidating, mutate } = useSWR(
-    kApiClientTokenSWRKeys.getClientToken(
-      opts.orgId,
-      opts.appId,
-      opts.clientTokenId
-    ),
+    kClientTokenSWRKeys.getClientToken(opts.clientTokenId),
     getClientToken
   );
 
@@ -116,12 +111,12 @@ export function useGetClientToken(opts: {
 }
 
 async function updateClientToken(
-  url: string,
+  key: ReturnType<typeof kClientTokenSWRKeys.updateClientToken>,
   params: {
     arg: z.infer<typeof updateClientTokenSchema>;
   }
 ) {
-  const res = await fetch(url, {
+  const res = await fetch(key, {
     method: "PATCH",
     body: JSON.stringify(params.arg),
   });
@@ -136,7 +131,6 @@ export type UpdateClientTokenOnSuccessParams = [
 
 export function useUpdateClientToken(
   opts: IUseMutationHandlerOpts<typeof updateClientToken> & {
-    orgId: string;
     appId: string;
     clientTokenId: string;
   }
@@ -144,33 +138,29 @@ export function useUpdateClientToken(
   const mutationHandler = useMutationHandler(updateClientToken, {
     ...opts,
     invalidate: [
-      getRegExpForSWRKey(
-        kApiClientTokenSWRKeys.getClientTokens(opts.orgId, opts.appId)
-      ),
-      kApiClientTokenSWRKeys.getClientToken(
-        opts.orgId,
-        opts.appId,
-        opts.clientTokenId
-      ),
+      kClientTokenSWRKeys.getClientTokens({ appId: opts.appId }),
+      kClientTokenSWRKeys.getClientToken(opts.clientTokenId),
       ...convertToArray(opts.invalidate || []),
     ],
   });
 
   const { trigger, data, error, isMutating, reset } = useSWRMutation(
-    kApiClientTokenSWRKeys.updateClientToken(
-      opts.orgId,
-      opts.appId,
-      opts.clientTokenId
-    ),
+    kClientTokenSWRKeys.updateClientToken(opts.clientTokenId),
     mutationHandler
   );
 
   return { trigger, data, error, isMutating, reset };
 }
 
-async function deleteClientToken(url: string) {
-  const res = await fetch(url, {
+async function deleteClientToken(
+  key: ReturnType<typeof kClientTokenSWRKeys.deleteClientToken>,
+  params: {
+    arg: z.infer<typeof deleteClientTokenSchema>;
+  }
+) {
+  const res = await fetch(key, {
     method: "DELETE",
+    body: JSON.stringify(params.arg),
   });
 
   return await handleResponse(res);
@@ -183,7 +173,6 @@ export type DeleteClientTokenOnSuccessParams = [
 
 export function useDeleteClientToken(
   opts: IUseMutationHandlerOpts<typeof deleteClientToken> & {
-    orgId: string;
     appId: string;
     clientTokenId: string;
   }
@@ -191,24 +180,14 @@ export function useDeleteClientToken(
   const mutationHandler = useMutationHandler(deleteClientToken, {
     ...opts,
     invalidate: [
-      getRegExpForSWRKey(
-        kApiClientTokenSWRKeys.getClientTokens(opts.orgId, opts.appId)
-      ),
-      kApiClientTokenSWRKeys.getClientToken(
-        opts.orgId,
-        opts.appId,
-        opts.clientTokenId
-      ),
+      kClientTokenSWRKeys.getClientTokens({ appId: opts.appId }),
+      kClientTokenSWRKeys.getClientToken(opts.clientTokenId),
       ...convertToArray(opts.invalidate || []),
     ],
   });
 
   const { trigger, data, error, isMutating, reset } = useSWRMutation(
-    kApiClientTokenSWRKeys.deleteClientToken(
-      opts.orgId,
-      opts.appId,
-      opts.clientTokenId
-    ),
+    kClientTokenSWRKeys.deleteClientToken(),
     mutationHandler
   );
 
@@ -216,12 +195,12 @@ export function useDeleteClientToken(
 }
 
 async function encodeClientTokenJWT(
-  url: string,
+  key: ReturnType<typeof kClientTokenSWRKeys.encodeClientTokenJWT>,
   params: {
     arg: z.infer<typeof encodeClientTokenJWTSchema>;
   }
 ) {
-  const res = await fetch(url, {
+  const res = await fetch(key, {
     method: "POST",
     body: JSON.stringify(params.arg),
   });
@@ -229,17 +208,9 @@ async function encodeClientTokenJWT(
   return await handleResponse<EncodeClientTokenJWTEndpointResponse>(res);
 }
 
-export function useEncodeClientTokenJWT(opts: {
-  orgId: string;
-  appId: string;
-  clientTokenId: string;
-}) {
+export function useEncodeClientTokenJWT(opts: { clientTokenId: string }) {
   const { trigger, data, error, isMutating, reset } = useSWRMutation(
-    kApiClientTokenSWRKeys.encodeClientTokenJWT(
-      opts.orgId,
-      opts.appId,
-      opts.clientTokenId
-    ),
+    kClientTokenSWRKeys.encodeClientTokenJWT(opts.clientTokenId),
     encodeClientTokenJWT
   );
 

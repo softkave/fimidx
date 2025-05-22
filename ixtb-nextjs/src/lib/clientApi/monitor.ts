@@ -1,30 +1,32 @@
 import {
   createMonitorSchema,
+  deleteMonitorSchema,
+  GetMonitorByIdEndpointArgs,
+  GetMonitorsEndpointArgs,
   ICreateMonitorEndpointResponse,
   IGetMonitorByIdEndpointResponse,
   IGetMonitorsEndpointResponse,
   IUpdateMonitorEndpointResponse,
   updateMonitorSchema,
-} from "@/src/definitions/monitor.ts";
+} from "fmdx-core/definitions/monitor";
 import { convertToArray } from "softkave-js-utils";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
 import { z } from "zod";
-import { kApiMonitorSWRKeys } from "./keys.ts";
+import { kMonitorSWRKeys } from "./swrkeys.ts";
 import {
-  getRegExpForSWRKey,
   handleResponse,
   IUseMutationHandlerOpts,
   useMutationHandler,
 } from "./utils.ts";
 
 async function addMonitor(
-  url: string,
+  key: ReturnType<typeof kMonitorSWRKeys.addMonitor>,
   params: {
     arg: z.infer<typeof createMonitorSchema>;
   }
 ) {
-  const res = await fetch(url, {
+  const res = await fetch(key, {
     method: "POST",
     body: JSON.stringify(params.arg),
   });
@@ -39,70 +41,59 @@ export type AddMonitorOnSuccessParams = [
 
 export function useAddMonitor(
   opts: IUseMutationHandlerOpts<typeof addMonitor> & {
-    orgId: string;
     appId: string;
   }
 ) {
   const mutationHandler = useMutationHandler(addMonitor, {
     ...opts,
     invalidate: [
-      getRegExpForSWRKey(
-        kApiMonitorSWRKeys.getMonitors(opts.orgId, opts.appId)
-      ),
+      kMonitorSWRKeys.getMonitors({ appId: opts.appId }),
       ...convertToArray(opts.invalidate || []),
     ],
   });
 
   const { trigger, data, error, isMutating, reset } = useSWRMutation(
-    kApiMonitorSWRKeys.addMonitor(opts.orgId, opts.appId),
+    kMonitorSWRKeys.addMonitor(),
     mutationHandler
   );
 
   return { trigger, data, error, isMutating, reset };
 }
 
-export async function getMonitors(url: string) {
+export async function getMonitors(
+  key: ReturnType<typeof kMonitorSWRKeys.getMonitors>
+) {
+  const [url, args] = key;
   const res = await fetch(url, {
-    method: "GET",
+    method: "POST",
+    body: JSON.stringify(args),
   });
 
   return await handleResponse<IGetMonitorsEndpointResponse>(res);
 }
 
-export function useGetMonitors(opts: {
-  orgId: string;
-  appId: string;
-  page?: number;
-  limit?: number;
-}) {
+export function useGetMonitors(opts: GetMonitorsEndpointArgs) {
   const { data, error, isLoading, isValidating, mutate } = useSWR(
-    kApiMonitorSWRKeys.getMonitors(
-      opts.orgId,
-      opts.appId,
-      opts.page,
-      opts.limit
-    ),
+    kMonitorSWRKeys.getMonitors(opts),
     getMonitors
   );
 
   return { data, error, isLoading, isValidating, mutate };
 }
 
-async function getMonitor(url: string) {
-  const res = await fetch(url, {
+async function getMonitor(
+  key: ReturnType<typeof kMonitorSWRKeys.getMonitorById>
+) {
+  const res = await fetch(key, {
     method: "GET",
   });
 
   return await handleResponse<IGetMonitorByIdEndpointResponse>(res);
 }
 
-export function useGetMonitor(opts: {
-  orgId: string;
-  appId: string;
-  monitorId: string;
-}) {
+export function useGetMonitor(opts: GetMonitorByIdEndpointArgs) {
   const { data, error, isLoading, isValidating, mutate } = useSWR(
-    kApiMonitorSWRKeys.getMonitorById(opts.orgId, opts.appId, opts.monitorId),
+    kMonitorSWRKeys.getMonitorById(opts.id),
     getMonitor
   );
 
@@ -110,12 +101,12 @@ export function useGetMonitor(opts: {
 }
 
 async function updateMonitor(
-  url: string,
+  key: ReturnType<typeof kMonitorSWRKeys.updateMonitor>,
   params: {
     arg: z.infer<typeof updateMonitorSchema>;
   }
 ) {
-  const res = await fetch(url, {
+  const res = await fetch(key, {
     method: "PATCH",
     body: JSON.stringify(params.arg),
   });
@@ -130,7 +121,6 @@ export type UpdateMonitorOnSuccessParams = [
 
 export function useUpdateMonitor(
   opts: IUseMutationHandlerOpts<typeof updateMonitor> & {
-    orgId: string;
     appId: string;
     monitorId: string;
   }
@@ -138,25 +128,29 @@ export function useUpdateMonitor(
   const mutationHandler = useMutationHandler(updateMonitor, {
     ...opts,
     invalidate: [
-      getRegExpForSWRKey(
-        kApiMonitorSWRKeys.getMonitors(opts.orgId, opts.appId)
-      ),
-      kApiMonitorSWRKeys.getMonitorById(opts.orgId, opts.appId, opts.monitorId),
+      kMonitorSWRKeys.getMonitors({ appId: opts.appId }),
+      kMonitorSWRKeys.getMonitorById(opts.monitorId),
       ...convertToArray(opts.invalidate || []),
     ],
   });
 
   const { trigger, data, error, isMutating, reset } = useSWRMutation(
-    kApiMonitorSWRKeys.updateMonitor(opts.orgId, opts.appId, opts.monitorId),
+    kMonitorSWRKeys.updateMonitor(opts.monitorId),
     mutationHandler
   );
 
   return { trigger, data, error, isMutating, reset };
 }
 
-async function deleteMonitor(url: string) {
-  const res = await fetch(url, {
+async function deleteMonitor(
+  key: ReturnType<typeof kMonitorSWRKeys.deleteMonitor>,
+  params: {
+    arg: z.infer<typeof deleteMonitorSchema>;
+  }
+) {
+  const res = await fetch(key, {
     method: "DELETE",
+    body: JSON.stringify(params.arg),
   });
 
   return await handleResponse(res);
@@ -169,7 +163,6 @@ export type DeleteMonitorOnSuccessParams = [
 
 export function useDeleteMonitor(
   opts: IUseMutationHandlerOpts<typeof deleteMonitor> & {
-    orgId: string;
     appId: string;
     monitorId: string;
   }
@@ -177,16 +170,14 @@ export function useDeleteMonitor(
   const mutationHandler = useMutationHandler(deleteMonitor, {
     ...opts,
     invalidate: [
-      getRegExpForSWRKey(
-        kApiMonitorSWRKeys.getMonitors(opts.orgId, opts.appId)
-      ),
-      kApiMonitorSWRKeys.getMonitorById(opts.orgId, opts.appId, opts.monitorId),
+      kMonitorSWRKeys.getMonitors({ appId: opts.appId }),
+      kMonitorSWRKeys.getMonitorById(opts.monitorId),
       ...convertToArray(opts.invalidate || []),
     ],
   });
 
   const { trigger, data, error, isMutating, reset } = useSWRMutation(
-    kApiMonitorSWRKeys.deleteMonitor(opts.orgId, opts.appId, opts.monitorId),
+    kMonitorSWRKeys.deleteMonitor(),
     mutationHandler
   );
 

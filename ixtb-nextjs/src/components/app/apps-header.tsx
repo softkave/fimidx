@@ -1,9 +1,9 @@
 "use client";
 
-import { kPermissions } from "@/src/definitions/permissions";
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
 import { useHasPermission } from "@/src/lib/clientHooks/permissionHooks";
 import { cn } from "@/src/lib/utils";
+import { kPermissions } from "fmdx-core/definitions/permissions";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "../ui/button";
@@ -25,7 +25,7 @@ export function AppsHeader(props: { className?: string; orgId: string }) {
         isOpen={openForm}
         onOpenChange={setOpenForm}
         onSubmitComplete={(app) => {
-          router.push(kClientPaths.app.org.app.single(app.orgId, app.id));
+          router.push(kClientPaths.app.org.app.single(props.orgId, app.id));
         }}
         orgId={props.orgId}
       />

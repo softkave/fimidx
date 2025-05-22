@@ -1,8 +1,8 @@
 import { AssertionError } from "assert";
+import { OwnServerError, OwnError } from "fmdx-core/common/error";
 import { NextRequest } from "next/server";
 import { AnyFn, AnyObject } from "softkave-js-utils";
 import { ZodError } from "zod";
-import { OwnError, OwnServerError } from "../common/error.ts";
 
 export interface IRouteContext {
   params: Promise<AnyObject>;

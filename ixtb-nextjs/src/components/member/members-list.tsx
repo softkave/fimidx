@@ -1,4 +1,4 @@
-import { IFetchedMember } from "@/src/definitions/members";
+import { IFetchedMember } from "fmdx-core/definitions/members";
 import { PageMessage } from "../internal/page-message";
 import { MemberItem, MemberItemSkeleton } from "./member-item";
 
@@ -18,6 +18,7 @@ export function MemberListEmpty() {
       title="No members found"
       message="Add a member to get started"
       variant="secondary"
+      className="px-4"
     />
   );
 }

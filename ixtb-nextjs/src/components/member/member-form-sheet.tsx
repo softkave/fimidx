@@ -1,6 +1,6 @@
 "use client";
 
-import { IMember } from "@/src/definitions/members.ts";
+import { IMember } from "fmdx-core/definitions/members";
 import { useCallback } from "react";
 import { ScrollArea } from "../ui/scroll-area.tsx";
 import {

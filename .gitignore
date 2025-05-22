@@ -42,3 +42,8 @@ next-env.d.ts
 
 # yalc
 .yalc
+
+# dist
+dist
+
+.env*

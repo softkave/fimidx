@@ -1,4 +1,3 @@
-import { kAppConstants } from "@/src/definitions/appConstants";
 import {
   Body,
   Button,
@@ -9,6 +8,7 @@ import {
   Preview,
   Tailwind,
 } from "@react-email/components";
+import { kAppConstants } from "fmdx-core/definitions/appConstants";
 
 export interface VerificationRequestEmailProps {
   url: string;

@@ -1,4 +1,4 @@
-import { IFetchedLog, LogPartFilterList } from "@/src/definitions/log.ts";
+import { IFetchedLog, LogPartFilterList } from "fmdx-core/definitions/log";
 import { useMemo } from "react";
 import { PageMessage } from "../internal/page-message.tsx";
 import {

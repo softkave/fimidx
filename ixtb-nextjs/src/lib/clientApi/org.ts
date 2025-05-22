@@ -1,30 +1,30 @@
 import {
   AddOrgEndpointResponse,
   addOrgSchema,
+  deleteOrgSchema,
   GetOrgEndpointResponse,
   GetOrgsEndpointResponse,
   UpdateOrgEndpointResponse,
   updateOrgSchema,
-} from "@/src/definitions/org.ts";
+} from "fmdx-core/definitions/org";
 import { convertToArray } from "softkave-js-utils";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
 import { z } from "zod";
-import { kApiOrgSWRKeys } from "./keys.ts";
+import { kOrgSWRKeys } from "./swrkeys.ts";
 import {
-  getRegExpForSWRKey,
   handleResponse,
   IUseMutationHandlerOpts,
   useMutationHandler,
 } from "./utils.ts";
 
 async function addOrg(
-  url: string,
+  key: ReturnType<typeof kOrgSWRKeys.addOrg>,
   params: {
     arg: z.infer<typeof addOrgSchema>;
   }
 ) {
-  const res = await fetch(url, {
+  const res = await fetch(key, {
     method: "POST",
     body: JSON.stringify(params.arg),
   });
@@ -41,22 +41,24 @@ export function useAddOrg(opts: IUseMutationHandlerOpts<typeof addOrg> = {}) {
   const mutationHandler = useMutationHandler(addOrg, {
     ...opts,
     invalidate: [
-      getRegExpForSWRKey(kApiOrgSWRKeys.getOrgs()),
+      kOrgSWRKeys.getOrgs({}),
       ...convertToArray(opts.invalidate || []),
     ],
   });
 
   const { trigger, data, error, isMutating, reset } = useSWRMutation(
-    kApiOrgSWRKeys.addOrg,
+    kOrgSWRKeys.addOrg(),
     mutationHandler
   );
 
   return { trigger, data, error, isMutating, reset };
 }
 
-export async function getOrgs(url: string) {
+export async function getOrgs(key: ReturnType<typeof kOrgSWRKeys.getOrgs>) {
+  const [url, args] = key;
   const res = await fetch(url, {
-    method: "GET",
+    method: "POST",
+    body: JSON.stringify(args),
   });
 
   return await handleResponse<GetOrgsEndpointResponse>(res);
@@ -64,15 +66,15 @@ export async function getOrgs(url: string) {
 
 export function useGetOrgs(opts: { page?: number; limit?: number } = {}) {
   const { data, error, isLoading, isValidating, mutate } = useSWR(
-    kApiOrgSWRKeys.getOrgs(opts.page, opts.limit),
+    kOrgSWRKeys.getOrgs(opts),
     getOrgs
   );
 
   return { data, error, isLoading, isValidating, mutate };
 }
 
-async function getOrg(url: string) {
-  const res = await fetch(url, {
+async function getOrg(key: ReturnType<typeof kOrgSWRKeys.getOrg>) {
+  const res = await fetch(key, {
     method: "GET",
   });
 
@@ -81,7 +83,7 @@ async function getOrg(url: string) {
 
 export function useGetOrg(opts: { orgId: string }) {
   const { data, error, isLoading, isValidating, mutate } = useSWR(
-    kApiOrgSWRKeys.getOrg(opts.orgId),
+    kOrgSWRKeys.getOrg(opts.orgId),
     getOrg
   );
 
@@ -89,12 +91,12 @@ export function useGetOrg(opts: { orgId: string }) {
 }
 
 async function updateOrg(
-  url: string,
+  key: ReturnType<typeof kOrgSWRKeys.updateOrg>,
   params: {
     arg: z.infer<typeof updateOrgSchema>;
   }
 ) {
-  const res = await fetch(url, {
+  const res = await fetch(key, {
     method: "PATCH",
     body: JSON.stringify(params.arg),
   });
@@ -113,23 +115,29 @@ export function useUpdateOrg(
   const mutationHandler = useMutationHandler(updateOrg, {
     ...opts,
     invalidate: [
-      getRegExpForSWRKey(kApiOrgSWRKeys.getOrgs()),
-      kApiOrgSWRKeys.getOrg(opts.orgId),
+      kOrgSWRKeys.getOrgs({}),
+      kOrgSWRKeys.getOrg(opts.orgId),
       ...convertToArray(opts.invalidate || []),
     ],
   });
 
   const { trigger, data, error, isMutating, reset } = useSWRMutation(
-    kApiOrgSWRKeys.updateOrg(opts.orgId),
+    kOrgSWRKeys.updateOrg(opts.orgId),
     mutationHandler
   );
 
   return { trigger, data, error, isMutating, reset };
 }
 
-async function deleteOrg(url: string) {
-  const res = await fetch(url, {
+async function deleteOrg(
+  key: ReturnType<typeof kOrgSWRKeys.deleteOrg>,
+  params: {
+    arg: z.infer<typeof deleteOrgSchema>;
+  }
+) {
+  const res = await fetch(key, {
     method: "DELETE",
+    body: JSON.stringify(params.arg),
   });
 
   return await handleResponse(res);
@@ -146,14 +154,14 @@ export function useDeleteOrg(
   const mutationHandler = useMutationHandler(deleteOrg, {
     ...opts,
     invalidate: [
-      getRegExpForSWRKey(kApiOrgSWRKeys.getOrgs()),
-      kApiOrgSWRKeys.getOrg(opts.orgId),
+      kOrgSWRKeys.getOrgs({}),
+      kOrgSWRKeys.getOrg(opts.orgId),
       ...convertToArray(opts.invalidate || []),
     ],
   });
 
   const { trigger, data, error, isMutating, reset } = useSWRMutation(
-    kApiOrgSWRKeys.deleteOrg(opts.orgId),
+    kOrgSWRKeys.deleteOrg(),
     mutationHandler
   );
 

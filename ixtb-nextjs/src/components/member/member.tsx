@@ -1,10 +1,10 @@
-import { kEmailRecordStatus } from "@/src/definitions/email";
+import { formatDistanceToNow } from "date-fns";
+import { kEmailRecordStatus } from "fmdx-core/definitions/email";
 import {
   IFetchedMember,
   kMemberStatus,
   kMemberStatusLabels,
-} from "@/src/definitions/members";
-import { formatDistanceToNow } from "date-fns";
+} from "fmdx-core/definitions/members";
 import { Badge } from "../ui/badge";
 import { MemberItemMenu } from "./member-item-menu";
 

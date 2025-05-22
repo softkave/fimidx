@@ -1,4 +1,3 @@
-import { IFetchedLog } from "@/src/definitions/log.ts";
 import { cn } from "@/src/lib/utils.ts";
 import { useMemo, useState } from "react";
 import { Badge } from "../ui/badge.tsx";
@@ -12,6 +11,7 @@ import {
   TableRow,
 } from "../ui/table.tsx";
 import { LogSheet } from "./log-sheet.tsx";
+import { IFetchedLog } from "fmdx-core/definitions/log";
 
 export interface ILogsTableProps {
   logs: IFetchedLog[];

@@ -1,4 +1,4 @@
-import { IFetchedLog } from "@/src/definitions/log";
+import { IFetchedLog } from "fmdx-core/definitions/log";
 
 export interface ILogProps {
   log: IFetchedLog;

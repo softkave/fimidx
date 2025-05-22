@@ -1,4 +1,4 @@
-import { IMemberRequest } from "@/src/definitions/members";
+import { IMemberRequest } from "fmdx-core/definitions/members";
 import { PageMessage } from "../../internal/page-message";
 import {
   MemberRequestItem,
@@ -15,6 +15,7 @@ export function MemberRequestListEmpty() {
       title="No member requests found"
       message="You will receive a notification when you are added as a member to an organization."
       variant="secondary"
+      className="px-4"
     />
   );
 }

@@ -1,4 +1,4 @@
-import { IMonitor } from "@/src/definitions/monitor";
+import { IMonitor } from "fmdx-core/definitions/monitor";
 import { PageMessage } from "../internal/page-message.tsx";
 import { MonitorItem, MonitorItemSkeleton } from "./monitor-item.tsx";
 
@@ -8,7 +8,7 @@ export interface IMonitorsProps {
 
 export function MonitorItemEmpty() {
   return (
-    <div className="w-full">
+    <div className="w-full px-4">
       <PageMessage
         title="No monitors found"
         message="Add a monitor to get started"

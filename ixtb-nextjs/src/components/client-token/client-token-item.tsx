@@ -1,6 +1,6 @@
-import { IClientToken } from "@/src/definitions/clientToken";
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
 import { cn } from "@/src/lib/utils";
+import { IClientToken } from "fmdx-core/definitions/clientToken";
 import Link from "next/link";
 import { Skeleton } from "../ui/skeleton.tsx";
 import { ClientTokenItemMenu } from "./client-token-item-menu.tsx";

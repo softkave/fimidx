@@ -1,11 +1,11 @@
 "use client";
 
-import { IOrg } from "@/src/definitions/org.ts";
 import {
   UpdateOrgOnSuccessParams,
   useUpdateOrg,
 } from "@/src/lib/clientApi/org.ts";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { IOrg } from "fmdx-core/definitions/org";
 import { useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";

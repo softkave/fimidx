@@ -1,11 +1,10 @@
 "use client";
 
-import { IApp } from "@/src/definitions/app";
-import { kPermissions } from "@/src/definitions/permissions";
 import { useDeleteApp } from "@/src/lib/clientApi/app";
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
 import { useHasPermission } from "@/src/lib/clientHooks/permissionHooks";
 import { cn } from "@/src/lib/utils";
+import { IApp } from "fmdx-core/definitions/app";
 import { isString } from "lodash-es";
 import { Ellipsis, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -20,6 +19,7 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { AppFormSheet } from "./app-form-sheet";
+import { kPermissions } from "fmdx-core/definitions/permissions";
 
 export interface IAppItemMenuProps {
   app: IApp;
@@ -58,7 +58,7 @@ export function AppItemMenu(props: IAppItemMenuProps) {
 
   const handleDelete = () => {
     onDeleting?.();
-    deleteAppHook.trigger();
+    deleteAppHook.trigger({ id: app.id });
   };
 
   const deleteAppDialog = useDeleteResourceDialog({

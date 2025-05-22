@@ -1,5 +1,5 @@
-import { kAppConstants } from "@/src/definitions/appConstants";
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
+import { kAppConstants } from "fmdx-core/definitions/appConstants";
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { JSX } from "react";
@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   description: kAppConstants.description,
 };
 
-type OrgIdPageProps = {
+type OrgIdAppIdPageProps = {
   params: Promise<{
     orgId: string;
     appId: string;
@@ -17,7 +17,7 @@ type OrgIdPageProps = {
 };
 
 export default async function Page(
-  props: OrgIdPageProps
+  props: OrgIdAppIdPageProps
 ): Promise<JSX.Element> {
   const { orgId, appId } = await props.params;
 

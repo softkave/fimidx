@@ -1,9 +1,9 @@
-import { IOrg } from "@/src/definitions/org";
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
 import { cn } from "@/src/lib/utils";
 import Link from "next/link";
 import { Skeleton } from "../ui/skeleton";
 import { OrgItemMenu } from "./org-item-menu";
+import { IOrg } from "fmdx-core/definitions/org";
 
 export interface IOrgItemProps {
   item: IOrg;

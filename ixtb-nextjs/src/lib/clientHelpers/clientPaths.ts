@@ -1,4 +1,4 @@
-const kBaseUrl = process.env.NEXT_PUBLIC_URL ?? "https://fmlogs.fimidara.com";
+const kBaseUrl = process.env.NEXT_PUBLIC_URL ?? "https://fmdx.fimidara.com";
 
 export const kClientPaths = {
   index: "/",
@@ -35,6 +35,12 @@ export const kClientPaths = {
             `/app/orgs/${orgId}/apps/${appId}/monitors`,
           single: (orgId: string, appId: string, monitorId: string) =>
             `/app/orgs/${orgId}/apps/${appId}/monitors/${monitorId}`,
+        },
+        callbacks: {
+          index: (orgId: string, appId: string) =>
+            `/app/orgs/${orgId}/apps/${appId}/callbacks`,
+          single: (orgId: string, appId: string, callbackId: string) =>
+            `/app/orgs/${orgId}/apps/${appId}/callbacks/${callbackId}`,
         },
       },
     },

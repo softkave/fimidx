@@ -1,5 +1,5 @@
+import { IWsBase } from "fmdx-core/common/ws";
 import { AnyFn, AnyObject } from "softkave-js-utils";
-import { IWsBase } from "../common/ws";
 
 export class WsBrowser implements IWsBase {
   protected ws: WebSocket;

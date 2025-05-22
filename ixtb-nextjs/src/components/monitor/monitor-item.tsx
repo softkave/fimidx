@@ -1,9 +1,9 @@
-import { IMonitor } from "@/src/definitions/monitor";
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
 import { cn } from "@/src/lib/utils";
 import Link from "next/link";
 import { Skeleton } from "../ui/skeleton.tsx";
 import { MonitorItemMenu } from "./monitor-item-menu.tsx";
+import { IMonitor } from "fmdx-core/definitions/monitor";
 
 export interface IMonitorItemProps {
   item: IMonitor;

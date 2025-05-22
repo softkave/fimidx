@@ -1,5 +1,3 @@
-import { IMonitor } from "@/src/definitions/monitor";
-import { kPermissions } from "@/src/definitions/permissions";
 import { useHasPermission } from "@/src/lib/clientHooks/permissionHooks";
 import { Pencil, XIcon } from "lucide-react";
 import { useState } from "react";
@@ -10,6 +8,8 @@ import { MonitorItemMenu } from "./monitor-item-menu";
 import { UpdateMonitorFormP1 } from "./update-monitor-form-p1";
 import { UpdateMonitorFormP2 } from "./update-monitor-form-p2";
 import { UpdateMonitorFormP3 } from "./update-monitor-form-p3";
+import { IMonitor } from "fmdx-core/definitions/monitor";
+import { kPermissions } from "fmdx-core/definitions/permissions";
 
 export interface IMonitorProps {
   monitor: IMonitor;

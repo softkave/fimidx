@@ -1,7 +1,8 @@
 {
-  "name": "fmlogs-nextjs",
+  "name": "ixtb-nextjs",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
@@ -9,9 +10,6 @@
     "lint": "next lint",
     "type-check": "tsc --noEmit",
     "start:prod": "env-cmd -f \".env.local\" pnpm start",
-    "db:generate": "env-cmd -f \".env.local\" npx drizzle-kit generate --config=fmlogs.drizzle.config.ts",
-    "db:migrate:dev": "env-cmd -f \".env.local\" npx drizzle-kit migrate --config=fmlogs.drizzle.config.ts",
-    "db:migrate:prod": "env-cmd -f \".env.prod\" npx drizzle-kit migrate --config=fmlogs.drizzle.config.ts",
     "email:build": "email build",
     "email:dev": "email dev",
     "email:export": "email export"
@@ -64,7 +62,8 @@
     "uuid": "^11.1.0",
     "winston": "^3.17.0",
     "winston-transport": "^4.9.0",
-    "zod": "^3.24.2"
+    "zod": "^3.24.2",
+    "fmdx-core": "workspace:*"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

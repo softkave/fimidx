@@ -1,6 +1,6 @@
 "use client";
 
-import { IFetchedLog } from "@/src/definitions/log.ts";
+import { IFetchedLog } from "fmdx-core/definitions/log";
 import { Sheet, SheetContent } from "../ui/sheet.tsx";
 import { Log } from "./log.tsx";
 

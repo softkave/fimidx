@@ -1,4 +1,4 @@
-import { IApp } from "@/src/definitions/app";
+import { IApp } from "fmdx-core/definitions/app";
 import { PageMessage } from "../internal/page-message";
 import { AppItem, AppItemSkeleton } from "./app-item";
 
@@ -8,7 +8,7 @@ export interface IAppsProps {
 
 export function AppItemEmpty() {
   return (
-    <div className="w-full">
+    <div className="w-full px-4">
       <PageMessage
         title="No apps found"
         message="Add a app to get started"

@@ -1,7 +1,7 @@
 "use client";
 
-import { IFetchedMember } from "@/src/definitions/members";
 import { useGetMemberById } from "@/src/lib/clientApi/member";
+import { IFetchedMember } from "fmdx-core/definitions/members";
 import { useCallback, useMemo } from "react";
 import { WrapLoader } from "../internal/wrap-loader";
 import { Member } from "./member";
@@ -11,7 +11,6 @@ export interface IMemberContainerRenderProps {
 }
 
 export interface IMemberContainerProps {
-  orgId: string;
   memberId: string;
   render?: (response: IMemberContainerRenderProps) => React.ReactNode;
   renderLoading?: () => React.ReactNode;
@@ -19,8 +18,8 @@ export interface IMemberContainerProps {
 }
 
 export function MemberContainer(props: IMemberContainerProps) {
-  const { orgId, memberId, renderLoading, renderError } = props;
-  const getMemberHook = useGetMemberById({ orgId, memberId });
+  const { memberId, renderLoading, renderError } = props;
+  const getMemberHook = useGetMemberById({ memberId });
 
   const error = getMemberHook.error;
   const isLoading = getMemberHook.isLoading;

@@ -1,13 +1,13 @@
 "use client";
 
+import { useGetLogs } from "@/src/lib/clientApi/log.ts";
+import { cn } from "@/src/lib/utils.ts";
 import {
   GetLogsEndpointArgs,
   getLogsSchema,
   IFetchedLog,
   LogPartFilterList,
-} from "@/src/definitions/log.ts";
-import { useGetLogs } from "@/src/lib/clientApi/log.ts";
-import { cn } from "@/src/lib/utils.ts";
+} from "fmdx-core/definitions/log";
 import { isNumber } from "lodash-es";
 import { ReactNode, useMemo, useState } from "react";
 import { OmitFrom } from "softkave-js-utils";
@@ -49,18 +49,15 @@ export function LogListContainer({
 
   const args = useMemo(
     (): z.infer<typeof getLogsSchema> => ({
+      appId,
       page,
       limit: pageSize,
       filter: filters.length > 0 ? filters : undefined,
     }),
-    [page, pageSize, filters]
+    [page, pageSize, filters, appId]
   );
 
-  const logHooks = useGetLogs({
-    orgId: orgId,
-    appId: appId,
-    args,
-  });
+  const logHooks = useGetLogs(args);
 
   const defaultRender = (logs: IFetchedLog[]) => {
     return (

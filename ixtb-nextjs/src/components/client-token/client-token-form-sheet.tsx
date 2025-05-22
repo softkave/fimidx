@@ -1,6 +1,5 @@
 "use client";
 
-import { IClientToken } from "@/src/definitions/clientToken.ts";
 import { useCallback } from "react";
 import { ScrollArea } from "../ui/scroll-area.tsx";
 import {
@@ -12,6 +11,7 @@ import {
 } from "../ui/sheet.tsx";
 import { AddClientTokenForm } from "./add-client-token-form.tsx";
 import { UpdateClientTokenForm } from "./update-client-token-form.tsx";
+import { IClientToken } from "fmdx-core/definitions/clientToken";
 
 export interface IClientTokenFormSheetProps {
   orgId: string;

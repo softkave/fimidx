@@ -1,6 +1,5 @@
 "use client";
 
-import { IMonitor } from "@/src/definitions/monitor.ts";
 import { useCallback } from "react";
 import { ScrollArea } from "../ui/scroll-area.tsx";
 import {
@@ -11,6 +10,7 @@ import {
   SheetTitle,
 } from "../ui/sheet.tsx";
 import { AddMonitorForm } from "./add-monitor-form.tsx";
+import { IMonitor } from "fmdx-core/definitions/monitor";
 
 export interface IAddMonitorFormSheetProps {
   orgId: string;
