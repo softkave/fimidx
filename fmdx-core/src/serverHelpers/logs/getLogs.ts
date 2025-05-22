@@ -253,7 +253,7 @@ export async function getLogIdsFromParts(params: {
   const query = getLogIdsFromPartsQuery({ args });
   if (!query) {
     return {
-      logIds: [],
+      logIds: undefined,
       hasMore: false,
     };
   }

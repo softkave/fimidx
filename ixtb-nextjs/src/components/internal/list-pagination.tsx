@@ -47,9 +47,16 @@ function ListPagination(props: IListPaginationProps) {
   let pNode: ReactElement = <></>;
   const maxPage = Math.ceil(count / pageSize);
   const pMax = Math.min(3, maxPage);
-  const pStart = Math.max(0, page - 1);
+  const pSide = Math.floor(pMax / 2);
+  const pEnd = Math.min(maxPage, page + pSide);
+  let pStart = Math.max(1, page - pSide);
+  if (pStart + pMax > maxPage) {
+    pStart = maxPage - pMax + 1;
+  }
+
   const pList = Array.from({ length: pMax }, (_, i) => pStart + i);
-  const hasEllipsis = pList.length < maxPage;
+  const hasEllipsisBefore = pStart > 1;
+  const hasEllipsisAfter = pEnd < maxPage;
 
   if (count > 0 && pList.length && maxPage > 1) {
     pNode = (
@@ -58,10 +65,15 @@ function ListPagination(props: IListPaginationProps) {
           <PaginationItem>
             <PaginationPrevious
               href="#"
-              disabled={page === 0 || disabled}
+              disabled={page === 1 || disabled}
               onClick={() => onPaginationChange(page - 1, pageSize)}
             />
           </PaginationItem>
+          {hasEllipsisBefore && (
+            <PaginationItem>
+              <PaginationEllipsis />
+            </PaginationItem>
+          )}
           {pList.map((p) => (
             <PaginationItem key={p}>
               <PaginationLink
@@ -70,11 +82,11 @@ function ListPagination(props: IListPaginationProps) {
                 disabled={disabled}
                 onClick={() => onPaginationChange(p, pageSize)}
               >
-                {p + 1}
+                {p}
               </PaginationLink>
             </PaginationItem>
           ))}
-          {hasEllipsis && (
+          {hasEllipsisAfter && (
             <PaginationItem>
               <PaginationEllipsis />
             </PaginationItem>
@@ -82,7 +94,7 @@ function ListPagination(props: IListPaginationProps) {
           <PaginationItem>
             <PaginationNext
               href="#"
-              disabled={page + 1 === maxPage || disabled}
+              disabled={page === maxPage || disabled}
               onClick={() => onPaginationChange(page + 1, pageSize)}
             />
           </PaginationItem>

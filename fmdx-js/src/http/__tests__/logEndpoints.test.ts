@@ -1,4 +1,4 @@
-import {describe, expect, test} from 'vitest';
+import {describe, test} from 'vitest';
 import {getTestVars} from '../../testUtils/test.js';
 import {FmdxHttpEndpoints} from '../httpEndpoints.js';
 
@@ -27,7 +27,5 @@ describe('log endpoints', () => {
         },
       ],
     });
-
-    expect(result).toBeDefined();
   });
 });

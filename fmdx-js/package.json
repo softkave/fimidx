@@ -1,5 +1,5 @@
 {
-  "name": "fmdx-js",
+  "name": "fmdx",
   "version": "0.1.0",
   "description": "fmdx js sdk",
   "author": {
@@ -57,7 +57,7 @@
     "env-cmd": "^10.1.0",
     "express": "^5.1.0",
     "gts": "^6.0.2",
-    "typescript": "^5.6.3",
+    "typescript": "^5.8.3",
     "vitest": "^3.1.4"
   },
   "dependencies": {

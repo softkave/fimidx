@@ -9,8 +9,6 @@ const addCallbackHttpEndpointSchema = z.object({
 });
 
 export function addCallbackEndpoint(req: Request, res: Response) {
-  console.log('addCallbackEndpoint', req);
-  console.log('addCallbackEndpoint', req.body);
   const {id, timeout} = addCallbackHttpEndpointSchema.parse(req.body);
   addCallback({id, timeoutDate: new Date(timeout)});
   const response: IHttpOutgoingSuccessResponse = {

@@ -53,8 +53,6 @@ export async function tryGetMember(params: {
   const { id, email, userId, orgId } = params;
   let member: IMember | null = null;
 
-  console.log(params);
-
   if (id) {
     member = await getMemberById({ id });
   }
