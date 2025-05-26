@@ -3,6 +3,7 @@ packages:
   - ixtb-nextjs
   - fmdx-node-server
   - fmdx-js
+  - fmdx-mfdoc
 onlyBuiltDependencies:
   - '@tailwindcss/oxide'
   - esbuild

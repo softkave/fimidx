@@ -80,10 +80,12 @@ export function useGetCallbacks(opts: GetCallbacksEndpointArgs) {
 }
 
 async function getCallback(
-  key: ReturnType<typeof kCallbackSWRKeys.getCallbackById>
+  key: ReturnType<typeof kCallbackSWRKeys.getCallback>
 ) {
-  const res = await fetch(key, {
-    method: "GET",
+  const [url, args] = key;
+  const res = await fetch(url, {
+    method: "POST",
+    body: JSON.stringify(args),
   });
 
   return await handleResponse<IGetCallbackEndpointResponse>(res);
@@ -91,7 +93,7 @@ async function getCallback(
 
 export function useGetCallback(opts: GetCallbackEndpointArgs) {
   const { data, error, isLoading, isValidating, mutate } = useSWR(
-    kCallbackSWRKeys.getCallbackById(opts.id),
+    kCallbackSWRKeys.getCallback(opts),
     getCallback
   );
 
@@ -127,7 +129,7 @@ export function useDeleteCallback(
     ...opts,
     invalidate: [
       kCallbackSWRKeys.getCallbacks({ appId: opts.appId }),
-      kCallbackSWRKeys.getCallbackById(opts.callbackId),
+      kCallbackSWRKeys.getCallback({ id: opts.callbackId }),
       ...convertToArray(opts.invalidate || []),
     ],
   });

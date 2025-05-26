@@ -1,7 +1,6 @@
 {
   "private": true,
   "scripts": {},
-  "devDependencies": {},
   "packageManager": "pnpm@10.6.1",
   "engines": {
     "node": ">=18"

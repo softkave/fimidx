@@ -11,17 +11,12 @@ export const getCallbackEndpoint: NextUserAuthenticatedEndpointFn<
   IGetCallbackEndpointResponse
 > = async (params) => {
   const {
-    ctx,
+    req,
     session: { userId },
   } = params;
-  const pathParams = (await ctx.params) as {
-    callbackId: string;
-  };
-  const input = getCallbackSchema.parse({
-    id: pathParams.callbackId,
-  });
+  const input = getCallbackSchema.parse(await req.json());
 
-  const callback = await getCallback({ id: input.id });
+  const callback = await getCallback(input);
   await checkPermission({
     userId,
     orgId: callback.orgId,

@@ -1,30 +1,35 @@
 import { OwnServerError } from "fmdx-core/common/error";
 import {
+  AddCallbackEndpointArgs,
   addCallbackSchema,
   IAddCallbackEndpointResponse,
   ICallback,
 } from "fmdx-core/definitions/index";
-import { addCallback } from "fmdx-core/serverHelpers/index";
+import { v7 as uuidv7 } from "uuid";
 import {
   getNodeServerInternalAccessKey,
   getNodeServerURL,
 } from "../../serverHelpers/nodeServer";
 import { NextClientTokenAuthenticatedEndpointFn } from "../types";
 
-async function callNodeServerAddCallback(callback: ICallback) {
-  if (!callback.timeout) {
-    return;
-  }
-
+async function callNodeServerAddCallback(params: {
+  item: AddCallbackEndpointArgs;
+  orgId: string;
+  clientTokenId: string;
+  idempotencyKey: string;
+}) {
   const nodeServerURL = getNodeServerURL();
   const nodeServerInternalAccessKey = getNodeServerInternalAccessKey();
-  const params = {
-    id: callback.id,
-    timeout: new Date(callback.timeout).toISOString(),
+  const callParams = {
+    item: params.item,
+    orgId: params.orgId,
+    clientTokenId: params.clientTokenId,
+    idempotencyKey: params.idempotencyKey,
   };
+
   const response = await fetch(`${nodeServerURL}/cb/addCallback`, {
     method: "POST",
-    body: JSON.stringify(params),
+    body: JSON.stringify(callParams),
     headers: {
       "X-Internal-Access-Key": nodeServerInternalAccessKey,
       "Content-Type": "application/json",
@@ -34,6 +39,9 @@ async function callNodeServerAddCallback(callback: ICallback) {
   if (!response.ok) {
     throw new OwnServerError("Failed to add callback", 500);
   }
+
+  const responseBody = await response.json();
+  return responseBody.callback as ICallback;
 }
 
 export const addCallbackEndpoint: NextClientTokenAuthenticatedEndpointFn<
@@ -44,15 +52,14 @@ export const addCallbackEndpoint: NextClientTokenAuthenticatedEndpointFn<
     session: { clientToken },
   } = params;
   const input = addCallbackSchema.parse(await req.json());
-
-  const callback = await addCallback({
-    args: input,
+  const idempotencyKey =
+    input.idempotencyKey ?? `__fmdx_generated_${uuidv7()}_${Date.now()}`;
+  const callback = await callNodeServerAddCallback({
+    item: input,
     orgId: clientToken.orgId,
-    appId: clientToken.appId,
     clientTokenId: clientToken.id,
+    idempotencyKey,
   });
-
-  await callNodeServerAddCallback(callback);
 
   const response: IAddCallbackEndpointResponse = {
     callback,

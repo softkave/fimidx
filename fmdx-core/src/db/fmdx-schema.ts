@@ -246,6 +246,9 @@ export const callbacks = sqliteTable("callback", {
   executedAt: integer("executedAt", { mode: "timestamp_ms" }),
   error: text("error"),
   timeout: integer("timeout", { mode: "timestamp_ms" }),
+  intervalFrom: integer("intervalFrom", { mode: "timestamp_ms" }),
+  intervalMs: integer("intervalMs"),
+  idempotencyKey: text("idempotencyKey"),
 });
 
 export const authIds = sqliteTable("authId", {

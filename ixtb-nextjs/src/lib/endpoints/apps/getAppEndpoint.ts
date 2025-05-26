@@ -9,7 +9,6 @@ export const getAppEndpoint: NextUserAuthenticatedEndpointFn<
   GetAppEndpointResponse
 > = async (params) => {
   const {
-    req,
     session: { userId },
     ctx,
   } = params;

@@ -32,3 +32,12 @@ export class OwnServerError extends OwnError {
     this.statusCode = statusCode;
   }
 }
+
+export const kOwnServerErrorCodes = {
+  InvalidRequest: 400,
+  Unauthorized: 401,
+  Forbidden: 403,
+  NotFound: 404,
+  MethodNotAllowed: 405,
+  InternalServerError: 500,
+} as const;

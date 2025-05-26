@@ -59,7 +59,7 @@ export const kApiMemberKeys = {
 export const kApiCallbackKeys = {
   getCallbacks: () => `/api/callbacks/fetch`,
   addCallback: () => `/api/callbacks`,
-  getCallbackById: (callbackId: string) => `/api/callbacks/${callbackId}`,
+  getCallback: () => `/api/callbacks/fetchOne`,
   deleteCallback: () => `/api/callbacks`,
   updateCallback: (callbackId: string) => `/api/callbacks/${callbackId}`,
 };

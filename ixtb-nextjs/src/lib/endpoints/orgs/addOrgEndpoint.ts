@@ -18,8 +18,6 @@ export const addOrgEndpoint: NextUserAuthenticatedEndpointFn<
   const org = await addOrg({
     args: input,
     userId,
-    userEmail: email,
-    userName: user?.name ?? "Unknown User",
   });
 
   await addMember({

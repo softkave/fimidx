@@ -1,5 +1,5 @@
 import assert from "assert";
-import { OwnServerError } from "fmdx-core/common/error";
+import { kOwnServerErrorCodes, OwnServerError } from "fmdx-core/common/error";
 import { deleteCallbackSchema, ICallback } from "fmdx-core/definitions/index";
 import { deleteCallback, getCallback } from "fmdx-core/serverHelpers/index";
 import {
@@ -37,16 +37,21 @@ export const deleteCallbackEndpoint: NextClientTokenAuthenticatedEndpointFn<
   } = params;
   const input = deleteCallbackSchema.parse(await req.json());
 
-  const callback = await getCallback({ id: input.id });
+  const callback = await getCallback({
+    id: input.id,
+    appId: input.appId,
+    idempotencyKey: input.idempotencyKey,
+  });
   assert(
     callback.appId === clientToken.appId,
-    new OwnServerError("Callback not found", 404)
+    new OwnServerError("Callback not found", kOwnServerErrorCodes.NotFound)
   );
 
   await deleteCallback({
     id: callback.id,
-    orgId: callback.orgId,
     appId: callback.appId,
+    idempotencyKey: input.idempotencyKey,
+    acknowledgeDeleteAllForApp: input.acknowledgeDeleteAllForApp,
   });
 
   await callNodeServerDeleteCallback(callback);

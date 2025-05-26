@@ -25,13 +25,11 @@ export const getCallbacksEndpoint: NextUserAuthenticatedEndpointFn<
 
   const { callbacks, total } = await getCallbackList({
     args: input,
-    orgId: app.orgId,
-    appId: input.appId,
   });
 
   const response: IGetCallbacksEndpointResponse = {
     callbacks,
-    total,
+    total: total ?? 0,
   };
 
   return response;

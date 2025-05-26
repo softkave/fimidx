@@ -13,12 +13,12 @@
   "scripts": {
     "test": "vitest",
     "lint": "gts lint",
-    "clean": "gts clean",
+    "clean": "gts clean && rm -f tsconfig.tsbuildinfo",
     "compile": "pnpm run clean && tsc",
     "fix": "gts fix",
     "pretest": "pnpm run compile",
     "posttest": "pnpm run lint",
-    "start": "pnpm run compile && env-cmd -f \".env.local\" node build/src/index.js"
+    "start": "pnpm run clean && tsc && env-cmd -f \".env.local\" node build/src/index.js"
   },
   "devDependencies": {
     "@faker-js/faker": "^9.5.0",
@@ -33,6 +33,7 @@
   },
   "dependencies": {
     "axios": "^1.9.0",
+    "date-fns": "^4.1.0",
     "env-cmd": "^10.1.0",
     "express": "^5.1.0",
     "fmdx-core": "workspace:*",

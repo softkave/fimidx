@@ -1,0 +1,33 @@
+{
+  "name": "fmdx-mfdoc",
+  "version": "0.1.0",
+  "description": "",
+  "main": "build/src/index.js",
+  "types": "build/src/index.d.ts",
+  "type": "module",
+  "files": [
+    "build/src"
+  ],
+  "license": "MIT",
+  "keywords": [],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "gts lint",
+    "clean": "gts clean && rm -f tsconfig.tsbuildinfo",
+    "compile": "tsc",
+    "fix": "gts fix",
+    "pretest": "npm run compile",
+    "posttest": "npm run lint",
+    "link:pkg": "npx yalc add"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.5",
+    "gts": "^6.0.2",
+    "typescript": "^5.6.3"
+  },
+  "dependencies": {
+    "fmdx-core": "workspace:*",
+    "mfdoc": "^0.2.0",
+    "softkave-js-utils": "^0.17.0"
+  }
+}

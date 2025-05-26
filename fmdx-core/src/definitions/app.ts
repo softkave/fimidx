@@ -27,7 +27,7 @@ export const updateAppSchema = z.object({
 export const deleteAppSchema = z.object({
   id: z.string().optional(),
   orgId: z.string().optional(),
-  acknowledgeDeleteAll: z.boolean().optional(),
+  acknowledgeDeleteAllForOrg: z.boolean().optional(),
 });
 
 export const getAppSchema = z.object({

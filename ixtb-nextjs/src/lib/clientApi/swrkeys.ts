@@ -1,5 +1,8 @@
 import { GetAppsEndpointArgs } from "fmdx-core/definitions/app";
-import { GetCallbacksEndpointArgs } from "fmdx-core/definitions/callback";
+import {
+  GetCallbackEndpointArgs,
+  GetCallbacksEndpointArgs,
+} from "fmdx-core/definitions/callback";
 import { GetClientTokensEndpointArgs } from "fmdx-core/definitions/clientToken";
 import {
   GetLogFieldsEndpointArgs,
@@ -97,8 +100,8 @@ export const kCallbackSWRKeys = {
   getCallbacks: (params: GetCallbacksEndpointArgs) =>
     [kApiCallbackKeys.getCallbacks(), params] as const,
   addCallback: () => kApiCallbackKeys.addCallback(),
-  getCallbackById: (callbackId: string) =>
-    kApiCallbackKeys.getCallbackById(callbackId),
+  getCallback: (params: GetCallbackEndpointArgs) =>
+    [kApiCallbackKeys.getCallback(), params] as const,
   deleteCallback: () => kApiCallbackKeys.deleteCallback(),
   updateCallback: (callbackId: string) =>
     kApiCallbackKeys.updateCallback(callbackId),

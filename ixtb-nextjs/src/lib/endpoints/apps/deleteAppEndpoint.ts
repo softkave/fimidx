@@ -1,4 +1,6 @@
-import { getAppSchema } from "fmdx-core/definitions/app";
+import assert from "assert";
+import { kOwnServerErrorCodes, OwnServerError } from "fmdx-core/common/error";
+import { deleteAppSchema } from "fmdx-core/definitions/app";
 import { kPermissions } from "fmdx-core/definitions/permissions";
 import {
   checkPermission,
@@ -14,14 +16,30 @@ export const deleteAppEndpoint: NextUserAuthenticatedEndpointFn<void> = async (
     req,
     session: { userId },
   } = params;
-  const input = getAppSchema.parse(await req.json());
+  const input = deleteAppSchema.parse(await req.json());
 
-  const app = await getApp({ id: input.id });
+  let orgId: string | undefined;
+  if (input.id) {
+    const app = await getApp({ id: input.id });
+    orgId = app.orgId;
+  } else if (input.orgId) {
+    orgId = input.orgId;
+  } else {
+    throw new OwnServerError(
+      "Invalid request",
+      kOwnServerErrorCodes.InvalidRequest
+    );
+  }
+
+  assert(
+    orgId,
+    new OwnServerError("Invalid request", kOwnServerErrorCodes.InvalidRequest)
+  );
   await checkPermission({
     userId,
-    orgId: app.orgId,
+    orgId,
     permission: kPermissions.app.delete,
   });
 
-  await deleteApp({ id: input.id });
+  await deleteApp(input);
 };

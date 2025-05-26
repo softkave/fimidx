@@ -8,7 +8,7 @@ const getEndpointFn = wrapUserAuthenticated(async (req, ctx, session) => {
   return getLogFieldsEndpoint({ req, ctx, session });
 });
 
-export const GET = getEndpointFn as unknown as AnyFn<
+export const POST = getEndpointFn as unknown as AnyFn<
   [NextRequest, IRouteContext],
   Promise<void | Response>
 >;

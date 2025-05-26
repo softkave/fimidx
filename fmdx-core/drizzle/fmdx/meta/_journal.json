@@ -15,6 +15,13 @@
       "when": 1747836604961,
       "tag": "0001_colorful_gideon",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1748231130757,
+      "tag": "0002_gray_golden_guardian",
+      "breakpoints": true
     }
   ]
 }

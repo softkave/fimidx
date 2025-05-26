@@ -1,18 +1,57 @@
-import assert from "assert";
-import { eq } from "drizzle-orm";
-import { OwnServerError } from "../../common/error.js";
+import { and, eq } from "drizzle-orm";
+import { kOwnServerErrorCodes, OwnServerError } from "../../common/error.js";
 import { callbacks as callbackTable, db } from "../../db/fmdx-schema.js";
-import type { ICallback } from "../../definitions/callback.js";
+import type {
+  GetCallbackEndpointArgs,
+  ICallback,
+} from "../../definitions/callback.js";
 
-export async function getCallback(params: { id: string }): Promise<ICallback> {
-  const { id } = params;
+export async function getCallback(
+  params: GetCallbackEndpointArgs & {
+    throwIfNotFound?: boolean;
+  }
+): Promise<ICallback> {
+  const { id, idempotencyKey, appId, throwIfNotFound = true } = params;
 
-  const [callback] = await db
-    .select()
-    .from(callbackTable)
-    .where(eq(callbackTable.id, id))
-    .limit(1);
+  if (id) {
+    const [callback] = await db
+      .select()
+      .from(callbackTable)
+      .where(eq(callbackTable.id, id))
+      .limit(1);
 
-  assert(callback, new OwnServerError("Callback not found", 404));
-  return callback;
+    if (!callback && throwIfNotFound) {
+      throw new OwnServerError(
+        "Callback not found",
+        kOwnServerErrorCodes.NotFound
+      );
+    }
+
+    return callback;
+  } else if (appId && idempotencyKey) {
+    const [callback] = await db
+      .select()
+      .from(callbackTable)
+      .where(
+        and(
+          eq(callbackTable.appId, appId),
+          eq(callbackTable.idempotencyKey, idempotencyKey)
+        )
+      )
+      .limit(1);
+
+    if (!callback && throwIfNotFound) {
+      throw new OwnServerError(
+        "Callback not found",
+        kOwnServerErrorCodes.NotFound
+      );
+    }
+
+    return callback;
+  }
+
+  throw new OwnServerError(
+    "Invalid parameters",
+    kOwnServerErrorCodes.InvalidRequest
+  );
 }

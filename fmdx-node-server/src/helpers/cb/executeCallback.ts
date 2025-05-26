@@ -18,7 +18,7 @@ export async function executeCallback(params: {callbackId: string}) {
         callback.method === callbackMethodSchema.Values.GET
           ? undefined
           : callback.requestBody,
-      headers: callback.requestHeaders ?? {},
+      headers: {...callback.requestHeaders, 'x-fmdx-callback-id': callbackId},
     });
 
     // separate execution to ensure the only error thrown is the one from axios

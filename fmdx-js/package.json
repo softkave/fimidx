@@ -35,16 +35,16 @@
   ],
   "scripts": {
     "lint": "gts lint",
-    "clean": "gts clean",
+    "clean": "gts clean && rm -f tsconfig.tsbuildinfo",
     "compile": "npm run clean && tsc",
     "fix": "gts fix",
+    "pretty": "prettier --write .",
     "pretest": "npm run compile",
-    "posttest": "npm run lint",
     "test": "env-cmd -f \".env.test\" vitest --config=./vitest.config.ts",
     "test:browser": "env-cmd -f \".env.test\" vitest --config=./vitest.browser.config.ts",
-    "publish:npm": "npm run compile && npm publish",
-    "publish:local": "npm run compile && yalc publish",
-    "show:packlist": "npm run compile && npm pack --dry-run"
+    "publish:npm": "npm run clean && tsc && npm publish",
+    "publish:local": "npm run clean && tsc && yalc publish",
+    "show:packlist": "npm run clean && tsc && npm pack --dry-run"
   },
   "engines": {
     "node": ">=13"
@@ -57,13 +57,13 @@
     "env-cmd": "^10.1.0",
     "express": "^5.1.0",
     "gts": "^6.0.2",
+    "prettier": "^3.5.3",
     "typescript": "^5.8.3",
     "vitest": "^3.1.4"
   },
   "dependencies": {
-    "axios": "^1.9.0",
     "lodash-es": "^4.17.21",
-    "softkave-js-utils": "^0.17.0",
-    "zod": "^3.24.2"
+    "mfdoc-js-sdk-base": "^0.1.0",
+    "softkave-js-utils": "^0.17.0"
   }
 }

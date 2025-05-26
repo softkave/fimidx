@@ -1,1 +1,1 @@
-export * from './http/index.js';
+export * from './endpoints/index.js';
