@@ -1,9 +1,9 @@
 import { auth } from "@/auth";
+import { kAppConstants } from "fmdx-core/definitions/appConstants";
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { SignInContainerServer } from "../components/account/sign-in-container-server.tsx";
 import { kClientPaths } from "../lib/clientHelpers/clientPaths.ts";
-import { kAppConstants } from "fmdx-core/definitions/appConstants";
+import { WebMain } from "../components/web/web-main.tsx";
 
 export const metadata: Metadata = {
   title: kAppConstants.name,
@@ -16,5 +16,5 @@ export default async function Page() {
     return redirect(kClientPaths.withURL(kClientPaths.app.index));
   }
 
-  return <SignInContainerServer />;
+  return <WebMain />;
 }

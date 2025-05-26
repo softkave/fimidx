@@ -1,5 +1,5 @@
 import { auth } from "@/auth";
-import { SignInContainerClient } from "@/src/components/account/sign-in-container-client.tsx";
+import { WebSignin } from "@/src/components/web/web-signin";
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths.ts";
 import { kAppConstants } from "fmdx-core/definitions/appConstants";
 import { Metadata } from "next";
@@ -17,5 +17,5 @@ export default async function SigninPage(): Promise<JSX.Element> {
     return redirect(kClientPaths.withURL(kClientPaths.app.index));
   }
 
-  return <SignInContainerClient />;
+  return <WebSignin />;
 }

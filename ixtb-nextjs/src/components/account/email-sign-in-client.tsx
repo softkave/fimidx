@@ -2,13 +2,15 @@
 
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { MailIcon } from "lucide-react";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { useCallback } from "react";
-import { Form, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "../ui/button.tsx";
 import {
+  Form,
   FormControl,
   FormDescription,
   FormField,
@@ -81,8 +83,9 @@ export function EmailSignInClient(props: IEmailSignInClientProps) {
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full" variant="outline">
-          Signin with Email
+        <Button type="submit" className="w-full" variant="default">
+          <MailIcon className="w-4 h-4" />
+          <span className="flex-1">Signin with Email</span>
         </Button>
       </form>
     </Form>
