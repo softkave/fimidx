@@ -404,3 +404,65 @@ export const messages = sqliteTable("message", {
   toServer: integer("toServer", { mode: "boolean" }),
   message: text("message").notNull(),
 });
+
+export const objFields = sqliteTable("objField", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => uuidv7()),
+  createdAt: integer("createdAt", { mode: "timestamp_ms" }).notNull(),
+  updatedAt: integer("updatedAt", { mode: "timestamp_ms" }).notNull(),
+  appId: text("appId")
+    .references(() => apps.id, { onDelete: "cascade" })
+    .notNull(),
+  orgId: text("orgId")
+    .references(() => orgs.id, { onDelete: "cascade" })
+    .notNull(),
+  field: text("field").notNull(),
+  fieldType: text("fieldType").notNull(),
+  valueType: text("valueType").notNull(),
+  tag: text("tag").notNull(),
+});
+
+export const objs = sqliteTable("obj", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => uuidv7()),
+  createdAt: integer("createdAt", { mode: "timestamp_ms" }).notNull(),
+  updatedAt: integer("updatedAt", { mode: "timestamp_ms" }).notNull(),
+  appId: text("appId")
+    .references(() => apps.id, { onDelete: "cascade" })
+    .notNull(),
+  orgId: text("orgId")
+    .references(() => orgs.id, { onDelete: "cascade" })
+    .notNull(),
+  createdBy: text("createdBy").notNull(),
+  updatedBy: text("updatedBy").notNull(),
+  tag: text("tag").notNull(),
+  createdByType: text("createdByType").notNull(),
+  updatedByType: text("updatedByType").notNull(),
+});
+
+export const objParts = sqliteTable("objPart", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => uuidv7()),
+  objId: text("objId")
+    .references(() => objs.id, { onDelete: "cascade" })
+    .notNull(),
+  field: text("field")
+    .references(() => objFields.field, { onDelete: "cascade" })
+    .notNull(),
+  value: text("value").notNull(),
+  valueNumber: integer("valueNumber"),
+  valueBoolean: integer("valueBoolean", { mode: "boolean" }),
+  type: text("type").notNull(),
+  appId: text("appId")
+    .references(() => apps.id, { onDelete: "cascade" })
+    .notNull(),
+  orgId: text("orgId")
+    .references(() => orgs.id, { onDelete: "cascade" })
+    .notNull(),
+  createdAt: integer("createdAt", { mode: "timestamp_ms" }).notNull(),
+  updatedAt: integer("updatedAt", { mode: "timestamp_ms" }).notNull(),
+  tag: text("tag").notNull(),
+});
