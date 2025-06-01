@@ -1,13 +1,51 @@
+import { inArray } from "drizzle-orm";
+import type { FilterQuery } from "mongoose";
+import { db, objParts as objPartsTable } from "../../db/fmdx-schema.js";
 import { objModel } from "../../db/mongo.js";
-import type { IObjQuery } from "../../definitions/obj.js";
+import type { IObj, IObjQuery } from "../../definitions/obj.js";
 import { getObjQueryFilter } from "./getObj.js";
 
 export async function deleteManyObjs(params: {
   objQuery: IObjQuery;
   tag: string;
-  date: Date;
+  date?: Date;
+  deletedBy: string;
+  deletedByType: string;
 }) {
-  const { objQuery, tag, date } = params;
+  const { objQuery, tag, date = new Date(), deletedBy, deletedByType } = params;
   const filter = getObjQueryFilter({ objQuery, date, tag });
-  await objModel.deleteMany(filter);
+  // await objModel.deleteMany(filter);
+  await objModel.updateMany(filter, {
+    $set: {
+      deletedAt: date,
+      deletedBy,
+      deletedByType,
+    },
+  });
+}
+
+export async function cleanupDeletedObjs() {
+  const filter: FilterQuery<IObj> = {
+    deletedAt: { $ne: null },
+  };
+
+  let batch: IObj[] = [];
+  let page = 0;
+  const batchSize = 1000;
+  do {
+    batch = await objModel
+      .find(filter)
+      .skip(page * batchSize)
+      .limit(batchSize)
+      .exec();
+    if (batch.length > 0) {
+      // TODO: delete objFields
+
+      const objIds = batch.map((obj) => obj.id);
+      await db
+        .delete(objPartsTable)
+        .where(inArray(objPartsTable.objId, objIds));
+      await objModel.deleteMany({ id: { $in: objIds } });
+    }
+  } while (batch.length > 0);
 }

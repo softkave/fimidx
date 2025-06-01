@@ -1,90 +1,35 @@
 import type { Primitive } from "type-fest";
 import { z } from "zod";
+import {
+  inputObjRecordArraySchema,
+  objPartLogicalQuerySchema,
+  objSortListSchema,
+  type IObj,
+  type IObjField,
+} from "./obj.js";
 
-export interface ILogPart {
-  id: string;
-  logId: string;
-  name: string;
-  /** string value */
-  value: string;
-  /** number value */
-  valueNumber?: number | null;
-  /** boolean value */
-  valueBoolean?: boolean | null;
-  type: string;
-  appId: string;
-  orgId: string;
-  createdAt: Date;
-}
-
-export interface ILogField {
-  id: string;
-  /** dot separated list of keys */
-  name: string;
-  /** dot separated list of types corresponding to the name */
-  nameType: string;
-  createdAt: Date;
-  updatedAt: Date;
-  appId: string;
-  /** comma separated list of encountered types */
-  valueType: string;
-  orgId: string;
-}
-
-export interface ILog {
-  id: string;
-  createdAt: Date;
-  updatedAt: Date;
-  createdBy: string;
-  createdByType: string;
+export interface ILog extends IObj {
   timestamp: Date;
-  appId: string;
-  orgId: string;
 }
 
-export interface IFetchedLog extends ILog {
-  parts: ILogPart[];
-}
-
-export const inputLogRecordSchema = z.record(z.string(), z.any());
-export const inputLogRecordArraySchema = z.array(inputLogRecordSchema);
-export const addLogsSchema = z.object({
+export const ingestLogsSchema = z.object({
   appId: z.string(),
-  logs: inputLogRecordArraySchema,
+  logs: inputObjRecordArraySchema,
 });
-
-export const logPartFilterItemOpSchema = z.enum([
-  "eq",
-  "neq",
-  "gt",
-  "gte",
-  "lt",
-  "lte",
-  "like",
-  "ilike",
-  "in",
-  "not_in",
-  "between",
-]);
-
-export const logPartFilterItemSchema = z.object({
-  name: z.string(),
-  value: z.array(z.string()).min(1),
-  op: logPartFilterItemOpSchema,
-});
-
-export const logPartFilterListSchema = z.array(logPartFilterItemSchema);
 
 export const getLogsSchema = z.object({
   appId: z.string(),
   logIds: z.array(z.string()).optional(),
-  filter: logPartFilterListSchema.optional(),
+  filter: objPartLogicalQuerySchema.optional(),
   page: z.number().optional(),
   limit: z.number().optional(),
+  sort: objSortListSchema.optional(),
 });
 
 export const getLogFieldsSchema = z.object({
   appId: z.string(),
+  page: z.number().optional(),
+  limit: z.number().optional(),
 });
 
 export const getLogByIdSchema = z.object({
@@ -98,14 +43,7 @@ export const getLogFieldValuesSchema = z.object({
   limit: z.number().optional(),
 });
 
-export type InputLogRecord = z.infer<typeof inputLogRecordSchema>;
-export type InputLogRecordArray = z.infer<typeof inputLogRecordArraySchema>;
-
-export type LogPartFilterItemOp = z.infer<typeof logPartFilterItemOpSchema>;
-export type LogPartFilterItem = z.infer<typeof logPartFilterItemSchema>;
-export type LogPartFilterList = z.infer<typeof logPartFilterListSchema>;
-
-export type AddLogsEndpointArgs = z.infer<typeof addLogsSchema>;
+export type AddLogsEndpointArgs = z.infer<typeof ingestLogsSchema>;
 export type GetLogsEndpointArgs = z.infer<typeof getLogsSchema>;
 export type GetLogFieldsEndpointArgs = z.infer<typeof getLogFieldsSchema>;
 export type GetLogByIdEndpointArgs = z.infer<typeof getLogByIdSchema>;
@@ -114,11 +52,11 @@ export type GetLogFieldValuesEndpointArgs = z.infer<
 >;
 
 export interface GetLogByIdEndpointResponse {
-  log: IFetchedLog;
+  log: ILog;
 }
 
 export interface GetLogsEndpointResponse {
-  logs: IFetchedLog[];
+  logs: ILog[];
   page: number;
   limit: number;
   total: number | null;
@@ -126,7 +64,7 @@ export interface GetLogsEndpointResponse {
 }
 
 export interface GetLogFieldsEndpointResponse {
-  fields: ILogField[];
+  fields: IObjField[];
 }
 
 export interface GetLogFieldValuesEndpointResponse {

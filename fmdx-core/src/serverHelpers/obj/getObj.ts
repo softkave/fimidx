@@ -89,10 +89,11 @@ function getObjPartFilter(params: {
         set(pongoQuery, `${field}.$gt`, value);
         break;
       }
-      case "gte":
+      case "gte": {
         const value = getGtOrGteValue({ value: part.value, date });
         set(pongoQuery, `${field}.$gte`, value);
         break;
+      }
       case "lt": {
         const value = getLtOrLteValue({ value: part.value, date });
         set(pongoQuery, `${field}.$lt`, value);
@@ -107,22 +108,24 @@ function getObjPartFilter(params: {
         set(
           pongoQuery,
           `${field}.$regex`,
-          new RegExp(part.value, part.caseSensitive ? "i" : "")
+          new RegExp(part.value, part.caseSensitive ? "" : "i")
         );
         break;
       }
-      case "in": {
+      case "in":
         set(pongoQuery, `${field}.$in`, part.value);
         break;
-      }
-      case "not_in": {
+      case "not_in":
         set(pongoQuery, `${field}.$nin`, part.value);
         break;
-      }
       case "between": {
         const [min, max] = getBetweenValue({ value: part.value, date });
         set(pongoQuery, `${field}.$gte`, min);
         set(pongoQuery, `${field}.$lte`, max);
+        break;
+      }
+      case "exists": {
+        set(pongoQuery, `${field}.$exists`, part.value);
         break;
       }
     }
@@ -269,8 +272,9 @@ export function getObjQueryFilter(params: {
   objQuery: IObjQuery;
   date: Date;
   tag: string;
+  includeDeleted?: boolean;
 }) {
-  const { objQuery, date, tag } = params;
+  const { objQuery, date, tag, includeDeleted } = params;
   const metaQueryFilter = getObjMetaQueryFilter({
     metaQuery: objQuery.metaQuery,
     date,
@@ -284,6 +288,7 @@ export function getObjQueryFilter(params: {
     ...partQueryFilter,
     appId: objQuery.appId,
     tag,
+    ...(includeDeleted ? {} : { deletedAt: null }),
   };
 
   return filter;

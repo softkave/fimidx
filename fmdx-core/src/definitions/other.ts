@@ -106,3 +106,10 @@ export const kDurationUnitsToLimits = {
 } as const;
 
 export const kWildcard = "*" as const;
+
+export const kByTypes = {
+  user: "user",
+  clientToken: "clientToken",
+} as const;
+
+export type ByType = ValueOf<typeof kByTypes>;

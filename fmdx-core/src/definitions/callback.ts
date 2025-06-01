@@ -15,7 +15,28 @@ export interface ICallback {
   requestHeaders: Record<string, string> | null;
   /** The callback body */
   requestBody: string | null;
-  /** The callback error */
+  /** The last time the callback was executed */
+  lastExecutedAt: number | Date | null;
+  /** The last time the callback was successful */
+  lastSuccessAt: number | Date | null;
+  /** The last time the callback failed */
+  lastErrorAt: number | Date | null;
+  /** When the callback is scheduled to be executed, once */
+  timeout: Date | number | null;
+  /** When execution of the callback is scheduled to start, recurring */
+  intervalFrom: Date | number | null;
+  /** The interval between executions of the callback, recurring */
+  intervalMs: number | null;
+  /** The callback idempotency key */
+  idempotencyKey: string | null;
+}
+
+export interface ICallbackExecution {
+  id: string;
+  orgId: string;
+  appId: string;
+  callbackId: string;
+  /** The callback error from network, fmdx, etc. */
   error: string | null;
   /** The callback response headers */
   responseHeaders: Record<string, string> | null;
@@ -24,15 +45,7 @@ export interface ICallback {
   /** The callback response status code */
   responseStatusCode: number | null;
   /** The callback executed at */
-  executedAt: number | Date | null;
-  /** The callback timeout */
-  timeout: Date | number | null;
-  /** The callback interval from */
-  intervalFrom: Date | number | null;
-  /** The callback interval ms */
-  intervalMs: number | null;
-  /** The callback idempotency key */
-  idempotencyKey: string | null;
+  executedAt: number | Date;
 }
 
 export const callbackMethodSchema = z.enum([

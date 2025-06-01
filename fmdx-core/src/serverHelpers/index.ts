@@ -9,6 +9,7 @@ export * from "./logs/index.js";
 export * from "./member/index.js";
 export * from "./message/index.js";
 export * from "./monitor/index.js";
+export * from "./obj/index.js";
 export * from "./org/index.js";
 export * from "./permission.js";
 export * from "./room/index.js";

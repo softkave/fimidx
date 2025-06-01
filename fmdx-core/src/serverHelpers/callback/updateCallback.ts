@@ -21,7 +21,7 @@ export async function updateCallbackExecution(params: {
   } = params;
 
   const updateData: Partial<typeof callbackTable.$inferInsert> = {
-    executedAt: new Date(executedAt),
+    // executedAt: new Date(executedAt),
   };
 
   if (error) updateData.error = error;

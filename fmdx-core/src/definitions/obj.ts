@@ -1,37 +1,48 @@
 import type { AnyObject } from "softkave-js-utils";
+import type { Primitive } from "type-fest";
 import { z } from "zod";
 import { durationSchema } from "./other.js";
 
-// export interface IObjPart {
-//   id: string;
-//   objId: string;
-//   field: string;
-//   /** string value */
-//   value: string;
-//   /** number value */
-//   valueNumber?: number | null;
-//   /** boolean value */
-//   valueBoolean?: boolean | null;
-//   type: string;
-//   appId: string;
-//   orgId: string;
-//   createdAt: Date;
-//   updatedAt: Date;
-//   tag: string;
-// }
+export const kObjTags = {
+  obj: "obj",
+  log: "log",
+} as const;
+
+export interface IObjPart {
+  id: string;
+  objId: string;
+  field: string;
+  /** string value */
+  value: string;
+  /** number value */
+  valueNumber?: number | null;
+  /** boolean value */
+  valueBoolean?: boolean | null;
+  type: string;
+  appId: string;
+  orgId: string;
+  createdAt: Date;
+  updatedAt: Date;
+  tag: string;
+}
 
 export type IObjField = {
   id: string;
   /** dot separated list of keys */
   field: string;
-  fieldKeys: string[];
+  // fieldKeys: Array<string | number>;
+  fieldKeys: Array<string>;
   fieldKeyTypes: string[];
+  valueTypes: string[];
   createdAt: Date;
   updatedAt: Date;
   appId: string;
-  valueTypes: string[];
   orgId: string;
   tag: string;
+};
+
+export type IObjMisc = {
+  miscNumber01?: number;
 };
 
 export type IObj = {
@@ -46,7 +57,10 @@ export type IObj = {
   updatedByType: string;
   tag: string;
   objRecord: AnyObject;
-};
+  deletedAt: Date | null;
+  deletedBy: string | null;
+  deletedByType: string | null;
+} & IObjMisc;
 
 export const inputObjRecordSchema = z.record(z.string(), z.any());
 export const inputObjRecordArraySchema = z.array(inputObjRecordSchema);
@@ -80,6 +94,7 @@ export const objPartQueryItemOpSchema = z.enum([
   "in",
   "not_in",
   "between",
+  "exists",
 ]);
 
 export const objPartQueryItemNumberValueSchema = z.union([
@@ -151,6 +166,11 @@ export const objPartQueryItemSchema = z.discriminatedUnion("op", [
       objPartQueryItemNumberValueSchema,
     ]),
   }),
+  z.object({
+    op: z.literal("exists"),
+    field: z.string(),
+    value: z.boolean(),
+  }),
 ]);
 
 export const objPartQueryListSchema = z.array(objPartQueryItemSchema);
@@ -202,7 +222,7 @@ export const objSortSchema = z.object({
 
 export const objSortListSchema = z.array(objSortSchema);
 export const updateManyObjsSchema = objQuerySchema.extend({
-  item: inputObjRecordSchema,
+  update: inputObjRecordSchema,
   limit: z.number().optional(),
   updateWay: onConflictSchema.optional(),
 });
@@ -215,6 +235,19 @@ export const getManyObjsSchema = objQuerySchema.extend({
   page: z.number().optional(),
   limit: z.number().optional(),
   sort: objSortListSchema.optional(),
+});
+
+export const getObjFieldsSchema = z.object({
+  appId: z.string(),
+  page: z.number().optional(),
+  limit: z.number().optional(),
+});
+
+export const getObjFieldValuesSchema = z.object({
+  appId: z.string(),
+  field: z.string(),
+  page: z.number().optional(),
+  limit: z.number().optional(),
 });
 
 export type IInputObjRecord = z.infer<typeof inputObjRecordSchema>;
@@ -237,6 +270,10 @@ export type ISetManyObjsEndpointArgs = z.infer<typeof setManyObjsSchema>;
 export type IUpdateManyObjsEndpointArgs = z.infer<typeof updateManyObjsSchema>;
 export type IDeleteManyObjsEndpointArgs = z.infer<typeof deleteManyObjsSchema>;
 export type IGetManyObjsEndpointArgs = z.infer<typeof getManyObjsSchema>;
+export type IGetObjFieldsEndpointArgs = z.infer<typeof getObjFieldsSchema>;
+export type IGetObjFieldValuesEndpointArgs = z.infer<
+  typeof getObjFieldValuesSchema
+>;
 
 export interface ISetManyObjsEndpointResponse {
   newObjs: IObj[];
@@ -247,6 +284,20 @@ export interface ISetManyObjsEndpointResponse {
 
 export interface IGetManyObjsEndpointResponse {
   objs: IObj[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface IGetObjFieldsEndpointResponse {
+  fields: IObjField[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface IGetObjFieldValuesEndpointResponse {
+  values: Primitive[];
   total: number;
   page: number;
   limit: number;

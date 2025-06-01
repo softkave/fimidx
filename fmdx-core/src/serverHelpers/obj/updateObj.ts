@@ -1,4 +1,4 @@
-import { merge } from "lodash-es";
+import { isNumber, merge } from "lodash-es";
 import { mergeObjects, type AnyObject } from "softkave-js-utils";
 import { objModel } from "../../db/mongo.js";
 import type {
@@ -53,20 +53,46 @@ export async function updateManyObjs(params: {
   update: AnyObject;
   by: string;
   byType: string;
-  updateWay: OnConflict;
-  count: number;
+  updateWay?: OnConflict;
+  count?: number;
 }) {
-  const { objQuery, tag, update, count, by, byType, updateWay } = params;
+  const {
+    objQuery,
+    tag,
+    update,
+    count,
+    by,
+    byType,
+    updateWay = "mergeButReplaceArrays",
+  } = params;
   const date = new Date();
   const filter = getObjQueryFilter({ objQuery, date, tag });
 
-  let isDone = false;
   let page = 0;
+  let processedCount = 0;
+  let batchSize = 100;
+  let isDone = false;
+
   while (!isDone) {
+    if (isNumber(count)) {
+      const remainingCount = count - processedCount;
+      if (remainingCount < batchSize) {
+        batchSize = remainingCount;
+      }
+    }
+
     const objs = await objModel
       .find(filter)
-      .skip(page * count)
-      .limit(count);
+      .skip(page * batchSize)
+      .limit(batchSize)
+      .sort({ createdAt: -1 })
+      .exec();
+
+    if (objs.length === 0) {
+      isDone = true;
+      break;
+    }
+
     const objsToUpdate = objs.map((obj) => {
       return {
         id: obj.id,
@@ -90,7 +116,10 @@ export async function updateManyObjs(params: {
       }))
     );
 
+    processedCount += objs.length;
     page++;
-    isDone = objs.length < count;
+    isDone = isNumber(count)
+      ? processedCount >= count
+      : objs.length < batchSize;
   }
 }

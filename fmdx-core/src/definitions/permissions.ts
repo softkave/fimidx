@@ -40,6 +40,11 @@ export const kPermissions = {
     update: "ws:update",
     delete: "ws:delete",
   },
+  obj: {
+    read: "obj:read",
+    update: "obj:update",
+    delete: "obj:delete",
+  },
 };
 
 export const kPermissionsList = [
@@ -61,4 +66,12 @@ export const kPermissionsList = [
   kPermissions.monitor.read,
   kPermissions.monitor.update,
   kPermissions.monitor.delete,
+  kPermissions.callback.read,
+  kPermissions.message.read,
+  kPermissions.ws.read,
+  kPermissions.ws.update,
+  kPermissions.ws.delete,
+  kPermissions.obj.read,
+  kPermissions.obj.update,
+  kPermissions.obj.delete,
 ];

@@ -4,7 +4,6 @@ import type { Duration } from "date-fns";
 import { drizzle } from "drizzle-orm/libsql";
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { v7 as uuidv7 } from "uuid";
-import type { LogPartFilterList } from "../definitions/log.js";
 import type { MemberStatus } from "../definitions/members.js";
 import {
   type IMonitorReportsTo,
@@ -202,9 +201,9 @@ export const monitor = sqliteTable("monitor", {
   appId: text("appId")
     .references(() => apps.id, { onDelete: "cascade" })
     .notNull(),
-  filters: text("filters", { mode: "json" })
-    .$type<LogPartFilterList>()
-    .notNull(),
+  // filters: text("filters", { mode: "json" })
+  //   .$type<LogPartFilterList>()
+  //   .notNull(),
   lastRun: integer("lastRun", { mode: "timestamp_ms" }),
   nextRun: integer("nextRun", { mode: "timestamp_ms" }),
   status: text("status").$type<MonitorStatus>().notNull(),
@@ -243,12 +242,14 @@ export const callbacks = sqliteTable("callback", {
   >(),
   responseBody: text("responseBody"),
   responseStatusCode: integer("responseStatusCode"),
-  executedAt: integer("executedAt", { mode: "timestamp_ms" }),
   error: text("error"),
   timeout: integer("timeout", { mode: "timestamp_ms" }),
   intervalFrom: integer("intervalFrom", { mode: "timestamp_ms" }),
   intervalMs: integer("intervalMs"),
   idempotencyKey: text("idempotencyKey"),
+  lastExecutedAt: integer("lastExecutedAt", { mode: "timestamp_ms" }),
+  lastSuccessAt: integer("lastSuccessAt", { mode: "timestamp_ms" }),
+  lastErrorAt: integer("lastErrorAt", { mode: "timestamp_ms" }),
 });
 
 export const authIds = sqliteTable("authId", {
@@ -418,37 +419,19 @@ export const objFields = sqliteTable("objField", {
     .references(() => orgs.id, { onDelete: "cascade" })
     .notNull(),
   field: text("field").notNull(),
-  fieldType: text("fieldType").notNull(),
-  valueType: text("valueType").notNull(),
-  tag: text("tag").notNull(),
-});
-
-export const objs = sqliteTable("obj", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => uuidv7()),
-  createdAt: integer("createdAt", { mode: "timestamp_ms" }).notNull(),
-  updatedAt: integer("updatedAt", { mode: "timestamp_ms" }).notNull(),
-  appId: text("appId")
-    .references(() => apps.id, { onDelete: "cascade" })
+  fieldKeys: text("fieldKeys", { mode: "json" }).$type<string[]>().notNull(),
+  fieldKeyTypes: text("fieldKeyTypes", { mode: "json" })
+    .$type<string[]>()
     .notNull(),
-  orgId: text("orgId")
-    .references(() => orgs.id, { onDelete: "cascade" })
-    .notNull(),
-  createdBy: text("createdBy").notNull(),
-  updatedBy: text("updatedBy").notNull(),
+  valueTypes: text("valueTypes", { mode: "json" }).$type<string[]>().notNull(),
   tag: text("tag").notNull(),
-  createdByType: text("createdByType").notNull(),
-  updatedByType: text("updatedByType").notNull(),
 });
 
 export const objParts = sqliteTable("objPart", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => uuidv7()),
-  objId: text("objId")
-    .references(() => objs.id, { onDelete: "cascade" })
-    .notNull(),
+  objId: text("objId").notNull(),
   field: text("field")
     .references(() => objFields.field, { onDelete: "cascade" })
     .notNull(),

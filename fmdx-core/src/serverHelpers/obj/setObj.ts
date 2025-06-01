@@ -1,7 +1,6 @@
+import { get } from "lodash-es";
 import { v7 as uuidv7 } from "uuid";
 import { objModel } from "../../db/mongo.js";
-
-import { get } from "lodash-es";
 import type {
   IInputObjRecord,
   IObj,
@@ -82,16 +81,14 @@ async function getExistingObjsForItems(params: {
 
   let batchSize = 20;
   let batchIndex = 0;
-  const existingObjs: IObj[] = [];
+  const existingObjs: (IObj | undefined)[] = [];
   while (batchIndex < items.length) {
     const batch = items.slice(batchIndex, batchIndex + batchSize);
-    const batchExistingObjs = await getExistingObjsForItems({
-      items: batch,
-      conflictOnKeys,
-      appId,
-      tag,
-      date,
-    });
+    const batchExistingObjs = await Promise.all(
+      batch.map((item) =>
+        getExistingObjForItem({ item, conflictOnKeys, appId, tag, date })
+      )
+    );
     existingObjs.push(...batchExistingObjs);
     batchIndex += batchSize;
   }
@@ -160,6 +157,9 @@ async function addManyObjs(params: {
       updatedBy: createdBy,
       updatedByType: createdByType,
       objRecord: item,
+      deletedAt: null,
+      deletedBy: null,
+      deletedByType: null,
     })
   );
 

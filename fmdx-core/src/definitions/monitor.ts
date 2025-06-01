@@ -1,7 +1,7 @@
 import type { Duration } from "date-fns";
 import type { ValueOf } from "type-fest";
 import { z } from "zod";
-import { logPartFilterListSchema, type LogPartFilterList } from "./log.js";
+// import { logPartFilterListSchema, type LogPartFilterList } from "./log.js";
 import { durationSchema } from "./other.js";
 
 export const kMonitorStatus = {
@@ -28,7 +28,7 @@ export interface IMonitor {
   updatedBy: string;
   orgId: string;
   appId: string;
-  filters: LogPartFilterList;
+  // filters: LogPartFilterList;
   lastRun: Date | null;
   nextRun: Date | null;
   status: MonitorStatus;
@@ -41,7 +41,7 @@ export const createMonitorSchema = z.object({
   appId: z.string(),
   name: z.string().min(1),
   description: z.string().optional(),
-  filters: logPartFilterListSchema,
+  // filters: logPartFilterListSchema,
   status: z.nativeEnum(kMonitorStatus),
   reportsTo: z.array(z.string().min(1)),
   duration: durationSchema,
@@ -51,7 +51,7 @@ export const updateMonitorSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1).optional(),
   description: z.string().min(1).optional(),
-  filters: logPartFilterListSchema.optional(),
+  // filters: logPartFilterListSchema.optional(),
   status: z.nativeEnum(kMonitorStatus).optional(),
   reportsTo: z.array(z.string().min(1)).optional(),
   duration: durationSchema.optional(),
