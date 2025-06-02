@@ -1,14 +1,17 @@
-import { and, eq } from "drizzle-orm";
-import { db, logFields as logFieldsTable } from "../../db/fmdx-schema.js";
+import type { GetLogFieldsEndpointArgs } from "../../definitions/log.js";
+import { kObjTags } from "../../definitions/obj.js";
+import { getObjFields } from "../obj/getObjFields.js";
 
-export async function getLogFields(params: { appId: string; orgId: string }) {
-  const { appId, orgId } = params;
-  const fields = await db
-    .select()
-    .from(logFieldsTable)
-    .where(
-      and(eq(logFieldsTable.appId, appId), eq(logFieldsTable.orgId, orgId))
-    );
+export async function getLogFields(params: GetLogFieldsEndpointArgs) {
+  const { fields, page, limit, hasMore } = await getObjFields({
+    ...params,
+    tag: kObjTags.log,
+  });
 
-  return fields;
+  return {
+    fields,
+    page,
+    limit,
+    hasMore,
+  };
 }

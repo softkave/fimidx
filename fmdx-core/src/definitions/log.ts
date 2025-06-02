@@ -1,4 +1,3 @@
-import type { Primitive } from "type-fest";
 import { z } from "zod";
 import {
   inputObjRecordArraySchema,
@@ -8,9 +7,7 @@ import {
   type IObjField,
 } from "./obj.js";
 
-export interface ILog extends IObj {
-  timestamp: Date;
-}
+export type ILog = IObj;
 
 export const ingestLogsSchema = z.object({
   appId: z.string(),
@@ -32,43 +29,37 @@ export const getLogFieldsSchema = z.object({
   limit: z.number().optional(),
 });
 
-export const getLogByIdSchema = z.object({
-  id: z.string(),
-});
-
 export const getLogFieldValuesSchema = z.object({
   appId: z.string(),
-  fieldName: z.string(),
+  field: z.string(),
   page: z.number().optional(),
   limit: z.number().optional(),
 });
 
-export type AddLogsEndpointArgs = z.infer<typeof ingestLogsSchema>;
+export type IngestLogsEndpointArgs = z.infer<typeof ingestLogsSchema>;
 export type GetLogsEndpointArgs = z.infer<typeof getLogsSchema>;
 export type GetLogFieldsEndpointArgs = z.infer<typeof getLogFieldsSchema>;
-export type GetLogByIdEndpointArgs = z.infer<typeof getLogByIdSchema>;
 export type GetLogFieldValuesEndpointArgs = z.infer<
   typeof getLogFieldValuesSchema
 >;
-
-export interface GetLogByIdEndpointResponse {
-  log: ILog;
-}
 
 export interface GetLogsEndpointResponse {
   logs: ILog[];
   page: number;
   limit: number;
-  total: number | null;
   hasMore: boolean;
 }
 
 export interface GetLogFieldsEndpointResponse {
   fields: IObjField[];
+  page: number;
+  limit: number;
+  hasMore: boolean;
 }
 
 export interface GetLogFieldValuesEndpointResponse {
-  values: Primitive[];
+  values: { value: string; type: string }[];
   page: number;
-  total: number;
+  limit: number;
+  hasMore: boolean;
 }

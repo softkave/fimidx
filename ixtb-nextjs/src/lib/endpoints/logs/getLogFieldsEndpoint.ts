@@ -25,11 +25,15 @@ export const getLogFieldsEndpoint: NextUserAuthenticatedEndpointFn<
 
   const logFields = await getLogFields({
     appId: input.appId,
-    orgId: app.orgId,
+    page: input.page,
+    limit: input.limit,
   });
 
   const response: GetLogFieldsEndpointResponse = {
-    fields: logFields,
+    fields: logFields.fields,
+    page: logFields.page,
+    limit: logFields.limit,
+    hasMore: logFields.hasMore,
   };
 
   return response;

@@ -47,18 +47,10 @@ export const getManyObjsEndpoint: NextMaybeAuthenticatedEndpointFn<
     sort: input.sort,
   });
 
-  assert(
-    response.total !== undefined,
-    new OwnServerError(
-      "Internal server error",
-      kOwnServerErrorCodes.InternalServerError
-    )
-  );
-
   return {
     objs: response.objs,
-    total: response.total,
     page: response.page,
     limit: response.limit,
+    hasMore: response.hasMore,
   };
 };

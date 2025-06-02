@@ -3,6 +3,7 @@ import { kOwnServerErrorCodes, OwnServerError } from "fmdx-core/common/error";
 import {
   getObjFieldsSchema,
   IGetObjFieldsEndpointResponse,
+  kObjTags,
 } from "fmdx-core/definitions/obj";
 import { kPermissions } from "fmdx-core/definitions/permissions";
 import {
@@ -41,12 +42,13 @@ export const getObjFieldsEndpoint: NextMaybeAuthenticatedEndpointFn<
     appId: input.appId,
     page: input.page,
     limit: input.limit,
+    tag: kObjTags.obj,
   });
 
   return {
     fields: response.fields,
-    total: response.total,
     page: response.page,
     limit: response.limit,
+    hasMore: response.hasMore,
   };
 };

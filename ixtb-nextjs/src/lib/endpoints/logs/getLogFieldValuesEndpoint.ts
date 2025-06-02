@@ -23,16 +23,18 @@ export const getLogFieldValuesEndpoint: NextUserAuthenticatedEndpointFn<
     permission: kPermissions.log.read,
   });
 
-  const { values, page, total } = await getLogFieldValues({
-    args: input,
+  const { values, page, limit, hasMore } = await getLogFieldValues({
     appId: app.id,
-    orgId: app.orgId,
+    page: input.page,
+    limit: input.limit,
+    field: input.field,
   });
 
   const response: GetLogFieldValuesEndpointResponse = {
     values,
     page,
-    total,
+    limit,
+    hasMore,
   };
 
   return response;

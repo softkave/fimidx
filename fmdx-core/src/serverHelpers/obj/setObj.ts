@@ -142,8 +142,18 @@ async function addManyObjs(params: {
   orgId: string;
   createdBy: string;
   createdByType: string;
+  shouldIndex: boolean;
 }) {
-  const { newObjs, appId, tag, date, orgId, createdBy, createdByType } = params;
+  const {
+    newObjs,
+    appId,
+    tag,
+    date,
+    orgId,
+    createdBy,
+    createdByType,
+    shouldIndex,
+  } = params;
   const newObjsWithId = newObjs.map(
     (item): IObj => ({
       id: uuidv7(),
@@ -160,6 +170,7 @@ async function addManyObjs(params: {
       deletedAt: null,
       deletedBy: null,
       deletedByType: null,
+      shouldIndex,
     })
   );
 
@@ -236,6 +247,7 @@ export async function setManyObjs(params: {
       orgId,
       createdBy: by,
       createdByType: byType,
+      shouldIndex: input.shouldIndex ?? true,
     }),
     updateManyObjs({
       objsToUpdate,

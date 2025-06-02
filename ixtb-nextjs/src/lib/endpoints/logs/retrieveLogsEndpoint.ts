@@ -22,17 +22,18 @@ export const retrieveLogsEndpoint: NextUserAuthenticatedEndpointFn<
     orgId: app.orgId,
     permission: kPermissions.log.read,
   });
-  const { logs, page, limit, total, hasMore } = await getLogs({
-    args: input,
+  const { logs, page, limit, hasMore } = await getLogs({
     appId: app.id,
-    orgId: app.orgId,
+    sort: input.sort,
+    filter: input.filter,
+    page: input.page,
+    limit: input.limit,
   });
 
   const response: GetLogsEndpointResponse = {
     logs,
     page,
     limit,
-    total,
     hasMore,
   };
 

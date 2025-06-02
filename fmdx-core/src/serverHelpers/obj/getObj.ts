@@ -345,20 +345,26 @@ export async function getManyObjs(params: {
   const pageNumber = page ?? 0;
   const limitNumber = limit ?? 100;
   const filter = getObjQueryFilter({ objQuery, date, tag });
-  const [objs, total] = await Promise.all([
+  const [objs, hasMore] = await Promise.all([
     getObjListWithFilter({
       filter,
       sort,
       pageNumber,
       limitNumber,
     }),
-    includeCount ? countObjsWithFilter({ filter }) : Promise.resolve(undefined),
+    getObjListWithFilter({
+      filter,
+      sort,
+      pageNumber: pageNumber + 1,
+      limitNumber: 1,
+    }),
+    // includeCount ? countObjsWithFilter({ filter }) : Promise.resolve(undefined),
   ]);
 
   return {
     objs,
-    total,
     page: pageNumber,
     limit: limitNumber,
+    hasMore: hasMore.length > 0,
   };
 }

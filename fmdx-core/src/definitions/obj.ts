@@ -1,5 +1,4 @@
 import type { AnyObject } from "softkave-js-utils";
-import type { Primitive } from "type-fest";
 import { z } from "zod";
 import { durationSchema } from "./other.js";
 
@@ -41,10 +40,6 @@ export type IObjField = {
   tag: string;
 };
 
-export type IObjMisc = {
-  miscNumber01?: number;
-};
-
 export type IObj = {
   id: string;
   createdAt: Date;
@@ -60,7 +55,8 @@ export type IObj = {
   deletedAt: Date | null;
   deletedBy: string | null;
   deletedByType: string | null;
-} & IObjMisc;
+  shouldIndex: boolean;
+};
 
 export const inputObjRecordSchema = z.record(z.string(), z.any());
 export const inputObjRecordArraySchema = z.array(inputObjRecordSchema);
@@ -81,6 +77,7 @@ export const setManyObjsSchema = z.object({
   items: inputObjRecordArraySchema.min(1).max(100),
   onConflict: onConflictSchema.optional(),
   conflictOnKeys: z.array(z.string()).optional(),
+  shouldIndex: z.boolean().optional(),
 });
 
 export const objPartQueryItemOpSchema = z.enum([
@@ -284,21 +281,24 @@ export interface ISetManyObjsEndpointResponse {
 
 export interface IGetManyObjsEndpointResponse {
   objs: IObj[];
-  total: number;
+  // total: number;
   page: number;
   limit: number;
+  hasMore: boolean;
 }
 
 export interface IGetObjFieldsEndpointResponse {
   fields: IObjField[];
-  total: number;
+  // total: number;
   page: number;
   limit: number;
+  hasMore: boolean;
 }
 
 export interface IGetObjFieldValuesEndpointResponse {
-  values: Primitive[];
-  total: number;
+  values: { value: string; type: string }[];
+  // total: number;
   page: number;
   limit: number;
+  hasMore: boolean;
 }

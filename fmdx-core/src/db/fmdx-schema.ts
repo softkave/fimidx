@@ -85,61 +85,6 @@ export const apps = sqliteTable("app", {
     .notNull(),
 });
 
-export const logFields = sqliteTable("logField", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => uuidv7()),
-  createdAt: integer("createdAt", { mode: "timestamp_ms" }).notNull(),
-  updatedAt: integer("updatedAt", { mode: "timestamp_ms" }).notNull(),
-  appId: text("appId")
-    .references(() => apps.id, { onDelete: "cascade" })
-    .notNull(),
-  name: text("name").notNull(),
-  nameType: text("nameType").notNull(),
-  valueType: text("valueType").notNull(),
-  orgId: text("orgId")
-    .references(() => orgs.id, { onDelete: "cascade" })
-    .notNull(),
-});
-
-export const logs = sqliteTable("log", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => uuidv7()),
-  createdAt: integer("createdAt", { mode: "timestamp_ms" }).notNull(),
-  updatedAt: integer("updatedAt", { mode: "timestamp_ms" }).notNull(),
-  appId: text("appId")
-    .references(() => apps.id, { onDelete: "cascade" })
-    .notNull(),
-  timestamp: integer("timestamp", { mode: "timestamp_ms" }).notNull(),
-  createdBy: text("createdBy").notNull(),
-  createdByType: text("createdByType").notNull(),
-  orgId: text("orgId")
-    .references(() => orgs.id, { onDelete: "cascade" })
-    .notNull(),
-});
-
-export const logParts = sqliteTable("logPart", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => uuidv7()),
-  logId: text("logId")
-    .references(() => logs.id, { onDelete: "cascade" })
-    .notNull(),
-  name: text("name").notNull(),
-  value: text("value").notNull(),
-  valueNumber: integer("valueNumber"),
-  valueBoolean: integer("valueBoolean", { mode: "boolean" }),
-  type: text("type").notNull(),
-  appId: text("appId")
-    .references(() => apps.id, { onDelete: "cascade" })
-    .notNull(),
-  orgId: text("orgId")
-    .references(() => orgs.id, { onDelete: "cascade" })
-    .notNull(),
-  createdAt: integer("createdAt", { mode: "timestamp_ms" }).notNull(),
-});
-
 export const clientTokens = sqliteTable("clientToken", {
   id: text("id")
     .primaryKey()

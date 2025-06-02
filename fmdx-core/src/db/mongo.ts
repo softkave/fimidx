@@ -16,7 +16,7 @@ export const objSchema = new Schema<IObj>({
   deletedAt: { type: Date, index: true },
   deletedBy: { type: String, index: true },
   deletedByType: { type: String, index: true },
-  miscNumber01: { type: Number, index: true },
+  shouldIndex: { type: Boolean, default: true },
 });
 
 export const objModel = mongoose.model("Obj", objSchema);

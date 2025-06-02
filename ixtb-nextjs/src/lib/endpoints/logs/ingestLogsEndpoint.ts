@@ -1,5 +1,8 @@
-import { addLogsSchema } from "fmdx-core/definitions/log";
-import { addLogs, getApp } from "fmdx-core/serverHelpers/index";
+import assert from "assert";
+import { kOwnServerErrorCodes, OwnServerError } from "fmdx-core/common/error";
+import { ingestLogsSchema } from "fmdx-core/definitions/log";
+import { kByTypes } from "fmdx-core/definitions/other";
+import { getApp, ingestLogs } from "fmdx-core/serverHelpers/index";
 import { NextClientTokenAuthenticatedEndpointFn } from "../types";
 
 export const ingestLogsEndpoint: NextClientTokenAuthenticatedEndpointFn<
@@ -7,17 +10,21 @@ export const ingestLogsEndpoint: NextClientTokenAuthenticatedEndpointFn<
 > = async (params) => {
   const {
     req,
-    session: { clientToken, checkOrgId },
+    session: { clientToken },
   } = params;
-  const input = addLogsSchema.parse(await req.json());
+  const input = ingestLogsSchema.parse(await req.json());
 
   const app = await getApp({ id: input.appId });
-  checkOrgId(app.orgId);
+  assert(
+    app.id === clientToken.appId,
+    new OwnServerError("Permission denied", kOwnServerErrorCodes.Unauthorized)
+  );
 
-  await addLogs({
+  await ingestLogs({
     appId: app.id,
-    inputLogs: input.logs,
+    logs: input.logs,
     orgId: app.orgId,
-    clientTokenId: clientToken.id,
+    by: clientToken.id,
+    byType: kByTypes.clientToken,
   });
 };
