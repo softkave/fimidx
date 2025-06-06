@@ -1,4 +1,5 @@
 import assert from "assert";
+import { first } from "lodash-es";
 import { kOwnServerErrorCodes, OwnServerError } from "../../common/error.js";
 import {
   kMemberStatus,
@@ -6,7 +7,9 @@ import {
   type IMemberObjRecord,
 } from "../../definitions/member.js";
 import { kObjTags } from "../../definitions/obj.js";
+import type { IPermission } from "../../definitions/permission.js";
 import { setManyObjs } from "../obj/setObjs.js";
+import { addMemberPermissions } from "./addMemberPermissions.js";
 import { objToMember } from "./objToMember.js";
 
 export async function addMember(params: {
@@ -31,7 +34,6 @@ export async function addMember(params: {
     name,
     description,
     meta,
-    permissions,
     status: seed?.status ?? kMemberStatus.pending,
     statusUpdatedAt: seed?.statusUpdatedAt ?? new Date(),
     sentEmailCount: seed?.sentEmailCount ?? 0,
@@ -61,14 +63,28 @@ export async function addMember(params: {
       kOwnServerErrorCodes.InternalServerError
     )
   );
+
+  let newPermissions: IPermission[] | null = null;
+  if (permissions) {
+    ({ permissions: newPermissions } = await addMemberPermissions({
+      by,
+      byType,
+      groupId,
+      appId,
+      permissions,
+      memberId,
+    }));
+  }
+
+  const obj = first(newObjs);
   assert(
-    newObjs.length === 1,
+    obj,
     new OwnServerError(
       "Failed to add member",
       kOwnServerErrorCodes.InternalServerError
     )
   );
 
-  const member = objToMember(newObjs[0]);
+  const member = objToMember(obj, newPermissions);
   return { member };
 }

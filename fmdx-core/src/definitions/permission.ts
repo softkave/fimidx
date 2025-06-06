@@ -88,11 +88,14 @@ export type IPermissionEntity = Record<string, string> | string;
 export type IPermissionAction = Record<string, string> | string;
 export type IPermissionTarget = Record<string, string> | string;
 
-export interface IPermission {
+export type IPermissionAtom = {
+  entity: IPermissionEntity;
+  action: IPermissionAction;
+  target: IPermissionTarget;
+};
+
+export interface IPermission extends IPermissionAtom {
   id: string;
-  entity?: IPermissionEntity | null;
-  action?: IPermissionAction | null;
-  target?: IPermissionTarget | null;
   description?: string | null;
   createdAt: Date;
   updatedAt: Date;
@@ -117,12 +120,15 @@ export const entitySchema = z.record(z.string(), z.string()).or(z.string());
 export const actionSchema = entitySchema;
 export const targetSchema = entitySchema;
 
-export const addPermissionItemSchema = z.object({
+export const permissionAtomSchema = z.object({
   entity: entitySchema,
   action: actionSchema,
   target: targetSchema,
+});
+
+export const addPermissionItemSchema = permissionAtomSchema.extend({
   description: z.string().optional(),
-  meta: z.record(z.string(), z.string()).optional(),
+  meta: z.record(z.string(), z.string()).optional().nullable(),
 });
 
 export const addPermissionsSchema = z.object({

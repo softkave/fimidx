@@ -7,6 +7,7 @@ import {
   objSortListSchema,
   stringMetaQuerySchema,
 } from "./obj.js";
+import { permissionAtomSchema, type IPermissionAtom } from "./permission.js";
 
 export const kMemberStatus = {
   pending: "pending",
@@ -29,7 +30,7 @@ export interface IMember {
   memberId: string;
   /** Permissions are null if reading other members and user does not have
    * member:readPermissions permission. */
-  permissions: string[] | null;
+  permissions: IPermissionAtom[] | null;
   groupId: string;
   status: MemberStatus;
   statusUpdatedAt: number | Date;
@@ -48,7 +49,6 @@ export interface IMember {
 export interface IMemberObjRecord {
   email?: string | null;
   memberId: string;
-  permissions: string[] | null;
   status: MemberStatus;
   statusUpdatedAt: number | Date;
   sentEmailCount: number;
@@ -71,7 +71,7 @@ export const addMemberSchema = z.object({
   appId: z.string(),
   email: z.string().email().optional(),
   memberId: z.string(),
-  permissions: z.array(z.string()),
+  permissions: z.array(permissionAtomSchema),
   meta: z.record(z.string(), z.string()).optional(),
   name: z.string().optional(),
   description: z.string().optional(),
@@ -103,12 +103,22 @@ export const updateMembersSchema = z.object({
   update: z.object({
     email: z.string().email().optional(),
     memberId: z.string().optional(),
-    permissions: z.array(z.string()).optional(),
     meta: z.record(z.string(), z.string()).optional(),
     name: z.string().optional(),
     description: z.string().optional(),
   }),
   updateMany: z.boolean().optional(),
+});
+
+export const updateMemberPermissionsSchema = z.object({
+  query: z.object({
+    memberId: z.string().min(1),
+    groupId: z.string(),
+    appId: z.string(),
+  }),
+  update: z.object({
+    permissions: z.array(permissionAtomSchema),
+  }),
 });
 
 export const deleteMembersSchema = z.object({
@@ -152,6 +162,9 @@ export type RespondToMemberRequestEndpointArgs = z.infer<
 >;
 export type GetMemberRequestsEndpointArgs = z.infer<
   typeof getMemberRequestsSchema
+>;
+export type UpdateMemberPermissionsEndpointArgs = z.infer<
+  typeof updateMemberPermissionsSchema
 >;
 
 export interface IGetMembersEndpointResponse {

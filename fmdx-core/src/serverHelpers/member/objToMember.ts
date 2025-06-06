@@ -1,7 +1,11 @@
 import type { IObj } from "fmdx-core/definitions/obj";
+import type { IPermissionAtom } from "../../definitions/index.js";
 import type { IMember } from "../../definitions/member.js";
 
-export function objToMember(obj: IObj): IMember {
+export function objToMember(
+  obj: IObj,
+  permissions: IPermissionAtom[] | null
+): IMember {
   return {
     id: obj.id,
     createdAt: obj.createdAt,
@@ -9,7 +13,7 @@ export function objToMember(obj: IObj): IMember {
     email: obj.objRecord.email,
     memberId: obj.objRecord.memberId,
     groupId: obj.groupId,
-    permissions: obj.objRecord.permissions,
+    permissions: permissions ?? obj.objRecord.permissions,
     status: obj.objRecord.status,
     statusUpdatedAt: obj.objRecord.statusUpdatedAt,
     sentEmailCount: obj.objRecord.sentEmailCount,

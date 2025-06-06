@@ -1,5 +1,5 @@
 import assert from "assert";
-import { first } from "lodash-es";
+import { first, isArray } from "lodash-es";
 import { OwnServerError } from "../common/error.js";
 import type { IMember } from "../definitions/member.js";
 import { kFmdxPermissions } from "../definitions/permission.js";
@@ -18,7 +18,7 @@ export async function hasPermission(params: {
     appId,
     groupId,
     member: inputMember,
-    permission,
+    permission: inputPermission,
     op = "all",
   } = params;
 
@@ -35,6 +35,7 @@ export async function hasPermission(params: {
             },
             limit: 1,
           },
+          includePermissions: true,
         })
       ).members
     );
@@ -45,20 +46,24 @@ export async function hasPermission(params: {
     return false;
   }
 
-  const hasWildcard = permissions.includes(kFmdxPermissions.wildcard);
+  const hasWildcard = permissions.some(
+    (p) => p.action === kFmdxPermissions.wildcard
+  );
+
   if (hasWildcard) {
     return true;
   }
 
-  if (Array.isArray(permission)) {
-    if (op === "any") {
-      return permission.some((p) => permissions.includes(p));
-    }
-
-    return permission.every((p) => permissions.includes(p));
+  let permission: string[] = [];
+  if (!isArray(inputPermission)) {
+    permission = [inputPermission];
   }
 
-  return permissions.includes(permission);
+  if (op === "any") {
+    return permission.some((p) => permissions.some((p2) => p2.action === p));
+  }
+
+  return permission.every((p) => permissions.some((p2) => p2.action === p));
 }
 
 export async function checkPermission(params: {

@@ -6,6 +6,7 @@ import type {
   IPermissionObjRecord,
 } from "../../definitions/permission.js";
 import { setManyObjs } from "../obj/setObjs.js";
+import { objToPermission } from "./objToPermission.js";
 
 export async function addPermissions(params: {
   args: AddPermissionsEndpointArgs;
@@ -26,7 +27,7 @@ export async function addPermissions(params: {
     };
   });
 
-  const { failedItems } = await setManyObjs({
+  const { failedItems, newObjs } = await setManyObjs({
     by,
     byType,
     groupId,
@@ -44,4 +45,8 @@ export async function addPermissions(params: {
       kOwnServerErrorCodes.InternalServerError
     )
   );
+
+  return {
+    permissions: newObjs.map((obj) => objToPermission(obj)),
+  };
 }
