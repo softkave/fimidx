@@ -12,8 +12,8 @@ import { ISidebarItem } from "./types";
 
 const items: ISidebarItem[] = [
   {
-    title: "Organizations",
-    url: kClientPaths.app.org.index,
+    title: "Groups",
+    url: kClientPaths.app.group.index,
     icon: BoxesIcon,
   },
   {

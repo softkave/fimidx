@@ -19,14 +19,14 @@ export const addMonitorEndpoint: NextUserAuthenticatedEndpointFn<
   const app = await getApp({ id: input.appId });
   await checkPermission({
     userId,
-    orgId: app.orgId,
+    groupId: app.groupId,
     permission: kPermissions.monitor.update,
   });
 
   const monitor = await addMonitor({
     args: input,
     userId,
-    orgId: app.orgId,
+    groupId: app.groupId,
     appId: input.appId,
   });
 

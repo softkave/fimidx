@@ -3,20 +3,20 @@
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
 import { useHasPermission } from "@/src/lib/clientHooks/permissionHooks";
 import { cn } from "@/src/lib/utils";
+import { kPermissions } from "fmdx-core/definitions/permissions";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "../ui/button";
 import { MemberFormSheet } from "./member-form-sheet";
-import { kPermissions } from "fmdx-core/definitions/permissions";
 
-export function MembersHeader(props: { className?: string; orgId: string }) {
+export function MembersHeader(props: { className?: string; groupId: string }) {
   const [openForm, setOpenForm] = useState(false);
   const router = useRouter();
 
   const {
     checks: [canCreate],
   } = useHasPermission({
-    orgId: props.orgId,
+    groupId: props.groupId,
     permission: kPermissions.member.invite,
   });
 
@@ -27,10 +27,10 @@ export function MembersHeader(props: { className?: string; orgId: string }) {
         onOpenChange={setOpenForm}
         onSubmitComplete={(member) => {
           router.push(
-            kClientPaths.app.org.members.single(member.orgId, member.id)
+            kClientPaths.app.group.members.single(member.groupId, member.id)
           );
         }}
-        orgId={props.orgId}
+        groupId={props.groupId}
       />
       <div className={cn("flex justify-between items-center", props.className)}>
         <h1 className="text-2xl font-bold">Members</h1>

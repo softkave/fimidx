@@ -11,16 +11,16 @@ import { AppWindow, Users } from "lucide-react";
 import { useMemo } from "react";
 import { ISidebarItem } from "./types";
 
-function getItems(orgId: string) {
+function getItems(groupId: string) {
   const items: ISidebarItem[] = [
     {
       title: "Apps",
-      url: kClientPaths.app.org.app.index(orgId),
+      url: kClientPaths.app.group.app.index(groupId),
       icon: AppWindow,
     },
     {
       title: "Members",
-      url: kClientPaths.app.org.members.index(orgId),
+      url: kClientPaths.app.group.members.index(groupId),
       icon: Users,
     },
   ];
@@ -28,8 +28,8 @@ function getItems(orgId: string) {
   return items;
 }
 
-export function OrgSidebarGroup(props: { orgId: string; name: string }) {
-  const items = useMemo(() => getItems(props.orgId), [props.orgId]);
+export function GroupSidebarGroup(props: { groupId: string; name: string }) {
+  const items = useMemo(() => getItems(props.groupId), [props.groupId]);
 
   return (
     <SidebarGroup>

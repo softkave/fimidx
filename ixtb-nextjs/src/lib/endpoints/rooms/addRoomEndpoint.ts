@@ -23,7 +23,7 @@ export const addRoomEndpoint: NextClientTokenAuthenticatedEndpointFn<
   const room = await addRoom({
     args: input,
     clientTokenId: clientToken.id,
-    orgId: clientToken.orgId,
+    groupId: clientToken.groupId,
   });
 
   const response: IAddRoomEndpointResponse = {

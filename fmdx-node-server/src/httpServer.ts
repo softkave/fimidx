@@ -1,7 +1,7 @@
 import express from 'express';
-import {addCallbackEndpoint} from './httpEndpoints/cb/addCallbackEndpoint.js';
-import {removeCallbackEndpoint} from './httpEndpoints/cb/removeCallbackEndpoint.js';
-import {sendMessageEndpoint} from './httpEndpoints/ws/sendMessageEndpoint.js';
+import {addCallbackEndpoint} from './httpEndpoints/cbs/addCallbackEndpoint.js';
+import {deleteCallbacksEndpoint} from './httpEndpoints/cbs/deleteCallbacksEndpoint.js';
+import {indexObjsEndpoint} from './httpEndpoints/objs/indexObjsEndpoint.js';
 
 export const kInternalAccessKeyHeader = 'x-internal-access-key';
 
@@ -24,13 +24,12 @@ export function startHttpServer(params: {
   app.post('/cb/addCallback', (req, res) => {
     addCallbackEndpoint(req, res);
   });
-
-  app.post('/cb/removeCallback', (req, res) => {
-    removeCallbackEndpoint(req, res);
+  app.post('/cb/deleteCallbacks', (req, res) => {
+    deleteCallbacksEndpoint(req, res);
   });
 
-  app.post('/ws/sendMessage', (req, res) => {
-    sendMessageEndpoint(req, res);
+  app.post('/objs/indexObjs', (req, res) => {
+    indexObjsEndpoint(req, res);
   });
 
   app.listen(port, () => {

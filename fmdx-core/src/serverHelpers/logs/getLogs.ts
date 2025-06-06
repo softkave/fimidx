@@ -1,12 +1,10 @@
 import type { GetLogsEndpointArgs } from "../../definitions/log.js";
 import { kObjTags } from "../../definitions/obj.js";
-import { getManyObjs } from "../obj/getObj.js";
+import { getManyObjs } from "../obj/getObjs.js";
 
 export async function getLogs(params: GetLogsEndpointArgs) {
   const {
-    appId,
-    logIds,
-    filter,
+    query: { appId, logsQuery, metaQuery },
     page: inputPage,
     limit: inputLimit,
     sort,
@@ -20,11 +18,10 @@ export async function getLogs(params: GetLogsEndpointArgs) {
   } = await getManyObjs({
     objQuery: {
       appId,
-      partQuery: filter,
-      metaQuery: logIds ? { id: { in: logIds } } : undefined,
+      partQuery: logsQuery,
+      metaQuery,
     },
     tag: kObjTags.log,
-    includeCount: true,
     limit: inputLimit,
     page: inputPage,
     sort,

@@ -3,15 +3,15 @@
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
 import { useHasPermission } from "@/src/lib/clientHooks/permissionHooks";
 import { cn } from "@/src/lib/utils";
+import { kPermissions } from "fmdx-core/definitions/permissions";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "../ui/button";
 import { AddMonitorFormSheet } from "./add-monitor-form-sheet";
-import { kPermissions } from "fmdx-core/definitions/permissions";
 
 export function MonitorsHeader(props: {
   className?: string;
-  orgId: string;
+  groupId: string;
   appId: string;
 }) {
   const [openForm, setOpenForm] = useState(false);
@@ -20,7 +20,7 @@ export function MonitorsHeader(props: {
   const {
     checks: [canCreate],
   } = useHasPermission({
-    orgId: props.orgId,
+    groupId: props.groupId,
     permission: kPermissions.monitor.update,
   });
 
@@ -31,14 +31,14 @@ export function MonitorsHeader(props: {
         onOpenChange={setOpenForm}
         onSubmitComplete={(monitor) => {
           router.push(
-            kClientPaths.app.org.app.monitors.single(
-              monitor.orgId,
+            kClientPaths.app.group.app.monitors.single(
+              monitor.groupId,
               props.appId,
               monitor.id
             )
           );
         }}
-        orgId={props.orgId}
+        groupId={props.groupId}
         appId={props.appId}
       />
       <div className={cn("flex justify-between items-center", props.className)}>

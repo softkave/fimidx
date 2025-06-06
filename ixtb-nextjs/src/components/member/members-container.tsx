@@ -26,7 +26,7 @@ export interface IMemberListContainerProps {
   showNoMembersMessage?: boolean;
   filter?: IMemberListContainerFilter;
   membersContainerClassName?: string;
-  orgId: string;
+  groupId: string;
 }
 
 export function MemberListContainer({
@@ -37,13 +37,13 @@ export function MemberListContainer({
   showNoMembersMessage = true,
   filter,
   membersContainerClassName,
-  orgId,
+  groupId,
 }: IMemberListContainerProps) {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
   const memberHooks = useGetMembers({
-    orgId: orgId,
+    groupId: groupId,
     page,
     limit: pageSize,
     ...filter,

@@ -13,7 +13,10 @@ export function AppItem(props: IAppItemProps) {
   return (
     <div className="flex justify-between items-center gap-2 hover:bg-muted/50 transition-colors rounded-md px-4 py-2">
       <Link
-        href={kClientPaths.app.org.app.single(props.item.orgId, props.item.id)}
+        href={kClientPaths.app.group.app.single(
+          props.item.groupId,
+          props.item.id
+        )}
         className="flex-1"
       >
         <div>

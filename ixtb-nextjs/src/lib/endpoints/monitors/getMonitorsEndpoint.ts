@@ -19,13 +19,13 @@ export const getMonitorsEndpoint: NextUserAuthenticatedEndpointFn<
   const app = await getApp({ id: input.appId });
   await checkPermission({
     userId,
-    orgId: app.orgId,
+    groupId: app.groupId,
     permission: kPermissions.monitor.read,
   });
 
   const { monitors, total } = await getMonitorList({
     args: input,
-    orgId: app.orgId,
+    groupId: app.groupId,
     appId: input.appId,
   });
 

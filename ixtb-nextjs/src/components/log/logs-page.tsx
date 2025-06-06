@@ -7,7 +7,7 @@ import { LogListContainer } from "./logs-container.tsx";
 import { LogsHeader } from "./logs-header.tsx";
 
 export function LogsPage(props: {
-  orgId: string;
+  groupId: string;
   appId: string;
   className?: string;
 }) {
@@ -18,13 +18,13 @@ export function LogsPage(props: {
       <div className={cn("flex flex-col", props.className)}>
         <LogsHeader
           className="p-4 pt-0 max-w-lg mx-auto"
-          orgId={props.orgId}
+          groupId={props.groupId}
           appId={props.appId}
           onShowFiltersAndSort={setShowFiltersAndSort}
           showFiltersAndSort={showFiltersAndSort}
         />
         <LogListContainer
-          orgId={props.orgId}
+          groupId={props.groupId}
           appId={props.appId}
           showNoLogsMessage={false}
           showFiltersAndSort={showFiltersAndSort}

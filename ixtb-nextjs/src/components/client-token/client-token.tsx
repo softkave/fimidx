@@ -46,11 +46,11 @@ export function ClientToken(props: IClientTokenProps) {
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
             <h3 className="text-sm font-medium text-muted-foreground">
-              Org ID
+              Group ID
             </h3>
-            <Copyable produceText={() => props.clientToken.orgId}>
+            <Copyable produceText={() => props.clientToken.groupId}>
               <pre className="text-sm text-muted-foreground bg-muted p-2 rounded-md whitespace-pre-wrap break-all">
-                <code>{props.clientToken.orgId}</code>
+                <code>{props.clientToken.groupId}</code>
               </pre>
             </Copyable>
           </div>

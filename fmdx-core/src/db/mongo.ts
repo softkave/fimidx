@@ -6,7 +6,7 @@ export const objSchema = new Schema<IObj>({
   updatedAt: { type: Date, default: Date.now, index: true },
   createdBy: { type: String, index: true },
   updatedBy: { type: String, index: true },
-  orgId: { type: String, index: true },
+  groupId: { type: String, index: true },
   appId: { type: String, index: true },
   createdByType: { type: String, index: true },
   id: { type: String, unique: true },
@@ -24,7 +24,7 @@ export const objModel = mongoose.model("Obj", objSchema);
 // export const objFieldSchema = new Schema<IObjField>({
 //   createdAt: { type: Date, default: Date.now, index: true },
 //   updatedAt: { type: Date, default: Date.now, index: true },
-//   orgId: { type: String, index: true },
+//   groupId: { type: String, index: true },
 //   appId: { type: String, index: true },
 //   id: { type: String, unique: true },
 //   tag: { type: String, index: true },

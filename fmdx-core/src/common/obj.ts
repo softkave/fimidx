@@ -1,8 +1,10 @@
+import { isString } from "lodash-es";
 import type {
   IObjPartLogicalQuery,
   IObjPartQueryItemNumberValue,
 } from "../definitions/obj.js";
 
+import assert from "assert";
 import type {
   IObjPartQueryItem,
   IObjPartQueryList,
@@ -55,4 +57,17 @@ export function getNumberOrDurationMsFromValue(
     valueNumber: undefined,
     durationMs: getMsFromDuration(value),
   };
+}
+
+export function jsRecordToObjPartQueryList(
+  record: Record<string, string>
+): IObjPartQueryList {
+  return Object.entries(record).map(([key, value]) => {
+    assert(isString(value), `Value must be a string: ${value}`);
+    return {
+      op: "eq",
+      field: key,
+      value,
+    };
+  });
 }

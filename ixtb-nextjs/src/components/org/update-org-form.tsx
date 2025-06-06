@@ -1,11 +1,11 @@
 "use client";
 
 import {
-  UpdateOrgOnSuccessParams,
-  useUpdateOrg,
-} from "@/src/lib/clientApi/org.ts";
+  UpdateGroupOnSuccessParams,
+  useUpdateGroup,
+} from "@/src/lib/clientApi/group.ts";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { IOrg } from "fmdx-core/definitions/org";
+import { IGroup } from "fmdx-core/definitions/group";
 import { useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -22,47 +22,47 @@ import {
 import { Input } from "../ui/input.tsx";
 import { Textarea } from "../ui/textarea.tsx";
 
-export interface IUpdateOrgFormProps {
-  org: IOrg;
-  onSubmitComplete: (org: IOrg) => void;
+export interface IUpdateGroupFormProps {
+  group: IGroup;
+  onSubmitComplete: (group: IGroup) => void;
 }
 
-export const addOrgFormSchema = z.object({
+export const addGroupFormSchema = z.object({
   name: z.string().min(1),
   description: z.string().optional(),
 });
 
-export function UpdateOrgForm(props: IUpdateOrgFormProps) {
-  const { org, onSubmitComplete } = props;
+export function UpdateGroupForm(props: IUpdateGroupFormProps) {
+  const { group, onSubmitComplete } = props;
 
-  const form = useForm<z.infer<typeof addOrgFormSchema>>({
-    resolver: zodResolver(addOrgFormSchema),
+  const form = useForm<z.infer<typeof addGroupFormSchema>>({
+    resolver: zodResolver(addGroupFormSchema),
     defaultValues: {
-      name: org.name,
-      description: org.description ?? "",
+      name: group.name,
+      description: group.description ?? "",
     },
   });
 
   const handleSuccess = useCallback(
-    (...args: UpdateOrgOnSuccessParams) => {
-      onSubmitComplete(args[1].org);
+    (...args: UpdateGroupOnSuccessParams) => {
+      onSubmitComplete(args[1].group);
     },
     [onSubmitComplete]
   );
 
-  const updateOrgHook = useUpdateOrg({
+  const updateGroupHook = useUpdateGroup({
     onSuccess: handleSuccess,
-    orgId: org.id,
+    groupId: group.id,
   });
 
   const onSubmit = useCallback(
-    async (values: z.infer<typeof addOrgFormSchema>) => {
-      await updateOrgHook.trigger({
+    async (values: z.infer<typeof addGroupFormSchema>) => {
+      await updateGroupHook.trigger({
         name: values.name,
         description: values.description,
       });
     },
-    [updateOrgHook]
+    [updateGroupHook]
   );
 
   return (
@@ -81,11 +81,9 @@ export function UpdateOrgForm(props: IUpdateOrgFormProps) {
             <FormItem>
               <FormLabel>Name</FormLabel>
               <FormControl>
-                <Input placeholder="my logs organization" {...field} />
+                <Input placeholder="my logs group" {...field} />
               </FormControl>
-              <FormDescription>
-                This is the name of the organization.
-              </FormDescription>
+              <FormDescription>This is the name of the group.</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -97,17 +95,17 @@ export function UpdateOrgForm(props: IUpdateOrgFormProps) {
             <FormItem>
               <FormLabel>Description</FormLabel>
               <FormControl>
-                <Textarea placeholder="my logs organization" {...field} />
+                <Textarea placeholder="my logs group" {...field} />
               </FormControl>
               <FormDescription>
-                This is the description of the organization.
+                This is the description of the group.
               </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
         <Button type="submit" className="w-full">
-          Update Organization
+          Update Group
         </Button>
       </form>
     </Form>

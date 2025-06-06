@@ -1,0 +1,27 @@
+import type { IObj } from "fmdx-core/definitions/obj";
+import type { IMember } from "../../definitions/member.js";
+
+export function objToMember(obj: IObj): IMember {
+  return {
+    id: obj.id,
+    createdAt: obj.createdAt,
+    updatedAt: obj.updatedAt,
+    email: obj.objRecord.email,
+    memberId: obj.objRecord.memberId,
+    groupId: obj.groupId,
+    permissions: obj.objRecord.permissions,
+    status: obj.objRecord.status,
+    statusUpdatedAt: obj.objRecord.statusUpdatedAt,
+    sentEmailCount: obj.objRecord.sentEmailCount,
+    emailLastSentAt: obj.objRecord.emailLastSentAt,
+    emailLastSentStatus: obj.objRecord.emailLastSentStatus,
+    createdBy: obj.createdBy,
+    updatedBy: obj.updatedBy,
+    appId: obj.appId,
+    createdByType: obj.createdByType,
+    updatedByType: obj.updatedByType,
+    description: obj.objRecord.description,
+    name: obj.objRecord.name,
+    meta: obj.objRecord.meta,
+  };
+}

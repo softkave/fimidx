@@ -11,26 +11,26 @@ import { GitCompareArrowsIcon, KeyIcon, LogsIcon } from "lucide-react";
 import { useMemo } from "react";
 import { ISidebarItem } from "./types";
 
-function getItems(orgId: string, appId: string) {
+function getItems(groupId: string, appId: string) {
   const items: ISidebarItem[] = [
     {
       title: "Client Tokens",
-      url: kClientPaths.app.org.app.clientToken.index(orgId, appId),
+      url: kClientPaths.app.group.app.clientToken.index(groupId, appId),
       icon: KeyIcon,
     },
     {
       title: "Logs",
-      url: kClientPaths.app.org.app.log.index(orgId, appId),
+      url: kClientPaths.app.group.app.log.index(groupId, appId),
       icon: LogsIcon,
     },
     {
       title: "Callbacks",
-      url: kClientPaths.app.org.app.callbacks.index(orgId, appId),
+      url: kClientPaths.app.group.app.callbacks.index(groupId, appId),
       icon: GitCompareArrowsIcon,
     },
     // {
     //   title: "Monitors",
-    //   url: kClientPaths.app.org.app.monitors.index(orgId, appId),
+    //   url: kClientPaths.app.group.app.monitors.index(groupId, appId),
     //   icon: MonitorCogIcon,
     // },
   ];
@@ -39,13 +39,13 @@ function getItems(orgId: string, appId: string) {
 }
 
 export function AppSidebarGroup(props: {
-  orgId: string;
+  groupId: string;
   appId: string;
   name: string;
 }) {
   const items = useMemo(
-    () => getItems(props.orgId, props.appId),
-    [props.orgId, props.appId]
+    () => getItems(props.groupId, props.appId),
+    [props.groupId, props.appId]
   );
 
   return (

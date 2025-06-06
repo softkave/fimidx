@@ -1,22 +1,22 @@
-import { getOrgSchema, kPermissions } from "fmdx-core/definitions/index";
-import { deleteOrg } from "fmdx-core/serverHelpers/index";
+import { getGroupSchema, kPermissions } from "fmdx-core/definitions/index";
+import { deleteGroup } from "fmdx-core/serverHelpers/index";
 import { checkPermission } from "fmdx-core/serverHelpers/permission";
 import { NextUserAuthenticatedEndpointFn } from "../types";
 
-export const deleteOrgEndpoint: NextUserAuthenticatedEndpointFn<void> = async (
-  params
-) => {
+export const deleteGroupEndpoint: NextUserAuthenticatedEndpointFn<
+  void
+> = async (params) => {
   const {
     req,
     session: { userId },
   } = params;
-  const input = getOrgSchema.parse(await req.json());
+  const input = getGroupSchema.parse(await req.json());
 
   await checkPermission({
     userId,
-    orgId: input.id,
-    permission: kPermissions.org.delete,
+    groupId: input.id,
+    permission: kPermissions.group.delete,
   });
 
-  await deleteOrg({ id: input.id });
+  await deleteGroup({ id: input.id });
 };

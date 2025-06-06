@@ -1,12 +1,23 @@
 import { z } from "zod";
+import {
+  numberMetaQuerySchema,
+  objPartQueryListSchema,
+  objSortListSchema,
+  stringMetaQuerySchema,
+} from "./obj.js";
 
 export interface ICallback {
   id: string;
   createdAt: number | Date;
   updatedAt: number | Date;
-  orgId: string;
+  groupId: string;
   appId: string;
-  clientTokenId: string;
+  name: string;
+  description?: string | null;
+  createdBy: string;
+  createdByType: string;
+  updatedBy: string;
+  updatedByType: string;
   /** The callback URL */
   url: string;
   /** The callback HTTP method */
@@ -31,9 +42,28 @@ export interface ICallback {
   idempotencyKey: string | null;
 }
 
+export interface ICallbackObjRecord {
+  name: string;
+  description?: string | null;
+  url: string;
+  method: string;
+  requestHeaders: Record<string, string> | null;
+  requestBody: string | null;
+  lastExecutedAt: number | Date | null;
+  lastSuccessAt: number | Date | null;
+  lastErrorAt: number | Date | null;
+  /** When the callback is scheduled to be executed, once */
+  timeout: Date | number | null;
+  /** When execution of the callback is scheduled to start, recurring */
+  intervalFrom: Date | number | null;
+  /** The interval between executions of the callback, recurring */
+  intervalMs: number | null;
+  idempotencyKey: string | null;
+}
+
 export interface ICallbackExecution {
   id: string;
-  orgId: string;
+  groupId: string;
   appId: string;
   callbackId: string;
   /** The callback error from network, fmdx, etc. */
@@ -45,6 +75,15 @@ export interface ICallbackExecution {
   /** The callback response status code */
   responseStatusCode: number | null;
   /** The callback executed at */
+  executedAt: number | Date;
+}
+
+export interface ICallbackExecutionObjRecord {
+  callbackId: string;
+  error: string | null;
+  responseHeaders: Record<string, string> | null;
+  responseBody: string | null;
+  responseStatusCode: number | null;
   executedAt: number | Date;
 }
 
@@ -66,42 +105,78 @@ export const addCallbackSchema = z.object({
   intervalFrom: z.string().datetime().optional(),
   intervalMs: z.number().optional(),
   idempotencyKey: z.string().optional(),
+  description: z.string().optional(),
+  name: z.string().optional(),
 });
 
-export const deleteCallbackSchema = z.object({
-  id: z.string().optional(),
-  appId: z.string().optional(),
-  idempotencyKey: z.string().optional(),
-  acknowledgeDeleteAllForApp: z.boolean().optional(),
-});
-
-export const getCallbackSchema = z.object({
-  id: z.string().optional(),
-  appId: z.string().optional(),
-  idempotencyKey: z.string().optional(),
+export const callbacksQuerySchema = z.object({
+  appId: z.string(),
+  id: stringMetaQuerySchema.optional(),
+  createdAt: numberMetaQuerySchema.optional(),
+  updatedAt: numberMetaQuerySchema.optional(),
+  createdBy: stringMetaQuerySchema.optional(),
+  updatedBy: stringMetaQuerySchema.optional(),
+  idempotencyKey: stringMetaQuerySchema.optional(),
+  url: stringMetaQuerySchema.optional(),
+  method: stringMetaQuerySchema.optional(),
+  requestHeaders: objPartQueryListSchema.optional(),
+  requestBody: objPartQueryListSchema.optional(),
+  timeout: numberMetaQuerySchema.optional(),
+  intervalFrom: numberMetaQuerySchema.optional(),
+  intervalMs: numberMetaQuerySchema.optional(),
+  lastExecutedAt: numberMetaQuerySchema.optional(),
+  lastSuccessAt: numberMetaQuerySchema.optional(),
+  lastErrorAt: numberMetaQuerySchema.optional(),
+  name: stringMetaQuerySchema.optional(),
 });
 
 export const getCallbacksSchema = z.object({
-  appId: z.string(),
+  query: callbacksQuerySchema,
   page: z.number().optional(),
   limit: z.number().optional(),
-  idempotencyKey: z.string().array().optional(),
+  sort: objSortListSchema.optional(),
+});
+
+export const deleteCallbacksSchema = z.object({
+  query: callbacksQuerySchema,
+  deleteMany: z.boolean().optional(),
+});
+
+export const getCallbackExecutionsSchema = z.object({
+  callbackId: z.string(),
+  page: z.number().optional(),
+  limit: z.number().optional(),
+  sort: objSortListSchema.optional(),
 });
 
 export type AddCallbackEndpointArgs = z.infer<typeof addCallbackSchema>;
-export type DeleteCallbackEndpointArgs = z.infer<typeof deleteCallbackSchema>;
-export type GetCallbackEndpointArgs = z.infer<typeof getCallbackSchema>;
+export type DeleteCallbacksEndpointArgs = z.infer<typeof deleteCallbacksSchema>;
 export type GetCallbacksEndpointArgs = z.infer<typeof getCallbacksSchema>;
+export type GetCallbackExecutionsEndpointArgs = z.infer<
+  typeof getCallbackExecutionsSchema
+>;
 
 export interface IAddCallbackEndpointResponse {
   callback: ICallback;
 }
 
-export interface IGetCallbackEndpointResponse {
-  callback: ICallback;
-}
-
 export interface IGetCallbacksEndpointResponse {
   callbacks: ICallback[];
-  total: number;
+  page: number;
+  limit: number;
+  hasMore: boolean;
 }
+
+export interface IGetCallbackExecutionsEndpointResponse {
+  executions: ICallbackExecution[];
+  page: number;
+  limit: number;
+  hasMore: boolean;
+}
+
+export const kCallbackFmdxHeaders = {
+  callbackId: "x-fmdx-callback-id",
+  lastExecutedAt: "x-fmdx-last-executed-at",
+  lastSuccessAt: "x-fmdx-last-success-at",
+  lastErrorAt: "x-fmdx-last-error-at",
+} as const;

@@ -1,25 +1,25 @@
-import { and, eq } from "drizzle-orm";
+import { first } from "lodash-es";
 import { OwnServerError } from "../../common/error.js";
-import { apps as appTable, db } from "../../db/fmdx-schema.js";
+import { getApps } from "./getApps.js";
 
 export async function checkAppExists(params: {
   name: string;
   isId?: string;
-  orgId: string;
+  groupId: string;
 }) {
-  const [app] = await db
-    .select({
-      id: appTable.id,
-      name: appTable.name,
-    })
-    .from(appTable)
-    .where(
-      and(
-        eq(appTable.nameLower, params.name.toLowerCase()),
-        eq(appTable.orgId, params.orgId)
-      )
-    );
+  const { apps } = await getApps({
+    args: {
+      query: {
+        groupId: params.groupId,
+        name: {
+          eq: params.name,
+        },
+      },
+      limit: 1,
+    },
+  });
 
+  const app = first(apps);
   const isId = app && params.isId === app.id;
 
   return {
@@ -31,7 +31,7 @@ export async function checkAppExists(params: {
 export async function checkAppAvailable(params: {
   name: string;
   isId?: string;
-  orgId: string;
+  groupId: string;
 }) {
   const { exists, isId } = await checkAppExists(params);
 

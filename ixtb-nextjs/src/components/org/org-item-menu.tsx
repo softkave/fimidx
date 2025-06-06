@@ -1,10 +1,10 @@
 "use client";
 
-import { useDeleteOrg } from "@/src/lib/clientApi/org";
+import { useDeleteGroup } from "@/src/lib/clientApi/group";
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
 import { useHasPermission } from "@/src/lib/clientHooks/permissionHooks";
 import { cn } from "@/src/lib/utils";
-import { IOrg } from "fmdx-core/definitions/org";
+import { IGroup } from "fmdx-core/definitions/group";
 import { kPermissions } from "fmdx-core/definitions/permissions";
 import { isString } from "lodash-es";
 import { Ellipsis, Loader2 } from "lucide-react";
@@ -19,37 +19,37 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { OrgFormSheet } from "./org-form-sheet";
+import { GroupFormSheet } from "./group-form-sheet";
 
-export interface IOrgItemMenuProps {
-  org: IOrg;
+export interface IGroupItemMenuProps {
+  group: IGroup;
   onDeleting?: () => void;
   onDeleted?: () => void;
   routeAfterDelete?: string | boolean;
 }
 
-export function OrgItemMenu(props: IOrgItemMenuProps) {
-  const { org, onDeleting, onDeleted, routeAfterDelete = true } = props;
+export function GroupItemMenu(props: IGroupItemMenuProps) {
+  const { group, onDeleting, onDeleted, routeAfterDelete = true } = props;
 
   const {
     checks: [canUpdate, canDelete],
   } = useHasPermission({
-    orgId: org.id,
-    permission: [kPermissions.org.update, kPermissions.org.delete],
+    groupId: group.id,
+    permission: [kPermissions.group.update, kPermissions.group.delete],
   });
 
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
-  const deleteOrgHook = useDeleteOrg({
-    orgId: org.id,
+  const deleteGroupHook = useDeleteGroup({
+    groupId: group.id,
     onSuccess: () => {
-      toast.success("Org deleted");
+      toast.success("Group deleted");
       onDeleted?.();
       if (routeAfterDelete) {
         router.push(
           isString(routeAfterDelete)
             ? routeAfterDelete
-            : kClientPaths.app.org.index
+            : kClientPaths.app.group.index
         );
       }
     },
@@ -57,23 +57,27 @@ export function OrgItemMenu(props: IOrgItemMenuProps) {
 
   const handleDelete = () => {
     onDeleting?.();
-    deleteOrgHook.trigger({
-      id: org.id,
+    deleteGroupHook.trigger({
+      id: group.id,
     });
   };
 
-  const deleteOrgDialog = useDeleteResourceDialog({
-    title: "Delete Org",
-    description: "Are you sure you want to delete this org?",
+  const deleteGroupDialog = useDeleteResourceDialog({
+    title: "Delete Group",
+    description: "Are you sure you want to delete this group?",
     onConfirm: handleDelete,
   });
 
-  const isMutating = deleteOrgHook.isMutating;
+  const isMutating = deleteGroupHook.isMutating;
 
   return (
     <>
-      {deleteOrgDialog.DeleteResourceDialog()}
-      <OrgFormSheet org={org} onOpenChange={setIsEditing} isOpen={isEditing} />
+      {deleteGroupDialog.DeleteResourceDialog()}
+      <GroupFormSheet
+        group={group}
+        onOpenChange={setIsEditing}
+        isOpen={isEditing}
+      />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
@@ -97,7 +101,7 @@ export function OrgItemMenu(props: IOrgItemMenuProps) {
             Edit
           </DropdownMenuItem>
           <DropdownMenuItem
-            onSelect={deleteOrgDialog.trigger}
+            onSelect={deleteGroupDialog.trigger}
             disabled={!canDelete}
           >
             Delete

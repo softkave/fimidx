@@ -4,6 +4,7 @@ import {
   GetCallbacksEndpointArgs,
 } from "fmdx-core/definitions/callback";
 import { GetClientTokensEndpointArgs } from "fmdx-core/definitions/clientToken";
+import { GetGroupsEndpointArgs } from "fmdx-core/definitions/group";
 import {
   GetLogFieldsEndpointArgs,
   GetLogFieldValuesEndpointArgs,
@@ -15,24 +16,23 @@ import {
   GetUserRequestsEndpointArgs,
 } from "fmdx-core/definitions/members";
 import { GetMonitorsEndpointArgs } from "fmdx-core/definitions/monitor";
-import { GetOrgsEndpointArgs } from "fmdx-core/definitions/org";
 import {
   kApiAppKeys,
   kApiCallbackKeys,
   kApiClientTokenKeys,
+  kApiGroupKeys,
   kApiLogKeys,
   kApiMemberKeys,
   kApiMonitorKeys,
-  kApiOrgKeys,
 } from "./apikeys";
 
-export const kOrgSWRKeys = {
-  getOrgs: (params: GetOrgsEndpointArgs) =>
-    [kApiOrgKeys.getOrgs(), params] as const,
-  getOrg: (orgId: string) => kApiOrgKeys.getOrg(orgId),
-  addOrg: () => kApiOrgKeys.addOrg(),
-  deleteOrg: () => kApiOrgKeys.deleteOrg(),
-  updateOrg: (orgId: string) => kApiOrgKeys.updateOrg(orgId),
+export const kGroupSWRKeys = {
+  getGroups: (params: GetGroupsEndpointArgs) =>
+    [kApiGroupKeys.getGroups(), params] as const,
+  getGroup: (groupId: string) => kApiGroupKeys.getGroup(groupId),
+  addGroup: () => kApiGroupKeys.addGroup(),
+  deleteGroup: () => kApiGroupKeys.deleteGroup(),
+  updateGroup: (groupId: string) => kApiGroupKeys.updateGroup(groupId),
 };
 
 export const kAppSWRKeys = {

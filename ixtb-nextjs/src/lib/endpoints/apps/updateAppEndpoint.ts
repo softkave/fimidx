@@ -20,7 +20,7 @@ export const updateAppEndpoint: NextUserAuthenticatedEndpointFn<
   const app = await getApp({ id: appUpdateInput.id });
   await checkPermission({
     userId,
-    orgId: app.orgId,
+    groupId: app.groupId,
     permission: kPermissions.app.update,
   });
 

@@ -6,7 +6,7 @@ export interface AugmentedWebSocket extends WebSocket {
   __fmdxWebSocketId: string;
   __fmdxAuthId: string;
   __fmdxAppId: string;
-  __fmdxOrgId: string;
+  __fmdxgroupId: string;
   __fmdxIsAugmentedWebSocket: true;
 }
 

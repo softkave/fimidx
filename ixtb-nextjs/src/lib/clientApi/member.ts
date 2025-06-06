@@ -44,12 +44,12 @@ export type AddMemberOnSuccessParams = [
 ];
 
 export function useAddMember(
-  opts: IUseMutationHandlerOpts<typeof addMember> & { orgId: string }
+  opts: IUseMutationHandlerOpts<typeof addMember> & { groupId: string }
 ) {
   const mutationHandler = useMutationHandler(addMember, {
     ...opts,
     invalidate: [
-      kMemberSWRKeys.getMembers({ orgId: opts.orgId }),
+      kMemberSWRKeys.getMembers({ groupId: opts.groupId }),
       ...convertToArray(opts.invalidate || []),
     ],
   });
@@ -75,13 +75,13 @@ export async function getMembers(
 }
 
 export function useGetMembers(opts: {
-  orgId: string;
+  groupId: string;
   page?: number;
   limit?: number;
 }) {
   const { data, error, isLoading, isValidating, mutate } = useSWR(
     kMemberSWRKeys.getMembers({
-      orgId: opts.orgId,
+      groupId: opts.groupId,
       page: opts.page,
       limit: opts.limit,
     }),
@@ -107,10 +107,10 @@ export function useGetMemberByUserId(
   opts: Partial<GetMemberByUserIdEndpointArgs>
 ) {
   const { data, error, isLoading, isValidating, mutate } = useSWR(
-    opts.userId && opts.orgId
+    opts.userId && opts.groupId
       ? kMemberSWRKeys.getMemberByUserId({
           userId: opts.userId,
-          orgId: opts.orgId,
+          groupId: opts.groupId,
         })
       : null,
     getMemberByUserId,
@@ -162,14 +162,14 @@ export type UpdateMemberOnSuccessParams = [
 
 export function useUpdateMemberById(
   opts: IUseMutationHandlerOpts<typeof updateMemberById> & {
-    orgId: string;
+    groupId: string;
     memberId: string;
   }
 ) {
   const mutationHandler = useMutationHandler(updateMemberById, {
     ...opts,
     invalidate: [
-      kMemberSWRKeys.getMembers({ orgId: opts.orgId }),
+      kMemberSWRKeys.getMembers({ groupId: opts.groupId }),
       getRegExpForSWRKey(kApiMemberKeys.getMemberByUserId(".*")),
       kMemberSWRKeys.getMemberById(opts.memberId),
       ...convertToArray(opts.invalidate || []),
@@ -205,14 +205,14 @@ export type DeleteMemberByIdOnSuccessParams = [
 
 export function useDeleteMemberById(
   opts: IUseMutationHandlerOpts<typeof deleteMemberById> & {
-    orgId: string;
+    groupId: string;
     memberId: string;
   }
 ) {
   const mutationHandler = useMutationHandler(deleteMemberById, {
     ...opts,
     invalidate: [
-      kMemberSWRKeys.getMembers({ orgId: opts.orgId }),
+      kMemberSWRKeys.getMembers({ groupId: opts.groupId }),
       kMemberSWRKeys.getMemberById(opts.memberId),
       ...convertToArray(opts.invalidate || []),
     ],
@@ -271,7 +271,7 @@ export type RespondToMemberRequestOnSuccessParams = [
 
 export function useRespondToMemberRequest(
   opts: IUseMutationHandlerOpts<typeof respondToMemberRequest> & {
-    orgId: string;
+    groupId: string;
     memberId: string;
   }
 ) {

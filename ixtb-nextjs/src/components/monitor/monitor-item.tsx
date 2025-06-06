@@ -1,9 +1,9 @@
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
 import { cn } from "@/src/lib/utils";
+import { IMonitor } from "fmdx-core/definitions/monitor";
 import Link from "next/link";
 import { Skeleton } from "../ui/skeleton.tsx";
 import { MonitorItemMenu } from "./monitor-item-menu.tsx";
-import { IMonitor } from "fmdx-core/definitions/monitor";
 
 export interface IMonitorItemProps {
   item: IMonitor;
@@ -13,8 +13,8 @@ export function MonitorItem(props: IMonitorItemProps) {
   return (
     <div className="flex justify-between items-center gap-2 hover:bg-muted/50 transition-colors rounded-md px-4 py-2">
       <Link
-        href={kClientPaths.app.org.app.monitors.single(
-          props.item.orgId,
+        href={kClientPaths.app.group.app.monitors.single(
+          props.item.groupId,
           props.item.appId,
           props.item.id
         )}

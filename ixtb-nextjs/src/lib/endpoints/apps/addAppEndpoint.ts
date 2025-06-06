@@ -16,11 +16,11 @@ export const addAppEndpoint: NextUserAuthenticatedEndpointFn<
 
   await checkPermission({
     userId,
-    orgId: input.orgId,
+    groupId: input.groupId,
     permission: kPermissions.app.update,
   });
 
-  const app = await addApp({ args: input, userId, orgId: input.orgId });
+  const app = await addApp({ args: input, userId, groupId: input.groupId });
   const response: AddAppEndpointResponse = {
     app,
   };

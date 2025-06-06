@@ -1,13 +1,13 @@
 import { AppPage } from "../internal/app-page";
-import { OrgListContainer } from "./orgs-container";
-import { OrgsHeader } from "./orgs-header";
+import { GroupListContainer } from "./groups-container";
+import { GroupsHeader } from "./groups-header";
 
-export function OrgsPage() {
+export function GroupsPage() {
   return (
     <AppPage>
       <div className="flex flex-col max-w-lg pt-0 mx-auto">
-        <OrgsHeader className="p-4" />
-        <OrgListContainer showNoOrgsMessage={false} />
+        <GroupsHeader className="p-4" />
+        <GroupListContainer showNoGroupsMessage={false} />
       </div>
     </AppPage>
   );

@@ -3,7 +3,7 @@ import {
   IGetCallbacksEndpointResponse,
   kPermissions,
 } from "fmdx-core/definitions/index";
-import { getApp, getCallbackList } from "fmdx-core/serverHelpers/index";
+import { getApp, getCallbacks } from "fmdx-core/serverHelpers/index";
 import { checkPermission } from "fmdx-core/serverHelpers/permission";
 import { NextUserAuthenticatedEndpointFn } from "../types";
 
@@ -19,17 +19,19 @@ export const getCallbacksEndpoint: NextUserAuthenticatedEndpointFn<
   const app = await getApp({ id: input.appId });
   await checkPermission({
     userId,
-    orgId: app.orgId,
+    groupId: app.groupId,
     permission: kPermissions.callback.read,
   });
 
-  const { callbacks, total } = await getCallbackList({
+  const { callbacks, hasMore, page, limit } = await getCallbacks({
     args: input,
   });
 
   const response: IGetCallbacksEndpointResponse = {
     callbacks,
-    total: total ?? 0,
+    hasMore,
+    page,
+    limit,
   };
 
   return response;

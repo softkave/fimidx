@@ -5,6 +5,14 @@ import { durationSchema } from "./other.js";
 export const kObjTags = {
   obj: "obj",
   log: "log",
+  callback: "callback",
+  callbackExecution: "callbackExecution",
+  group: "group",
+  clientToken: "clientToken",
+  member: "member",
+  app: "app",
+  monitor: "monitor",
+  permission: "permission",
 } as const;
 
 export interface IObjPart {
@@ -19,7 +27,7 @@ export interface IObjPart {
   valueBoolean?: boolean | null;
   type: string;
   appId: string;
-  orgId: string;
+  groupId: string;
   createdAt: Date;
   updatedAt: Date;
   tag: string;
@@ -36,7 +44,7 @@ export type IObjField = {
   createdAt: Date;
   updatedAt: Date;
   appId: string;
-  orgId: string;
+  groupId: string;
   tag: string;
 };
 
@@ -46,7 +54,7 @@ export type IObj = {
   createdBy: string;
   createdByType: string;
   appId: string;
-  orgId: string;
+  groupId: string;
   updatedAt: Date;
   updatedBy: string;
   updatedByType: string;
@@ -62,7 +70,7 @@ export const inputObjRecordSchema = z.record(z.string(), z.any());
 export const inputObjRecordArraySchema = z.array(inputObjRecordSchema);
 export const onConflictSchema = z
   .enum([
-    "set",
+    "replace",
     "merge",
     "mergeButConcatArrays",
     "mergeButKeepArrays",
@@ -70,7 +78,7 @@ export const onConflictSchema = z
     "ignore",
     "fail",
   ])
-  .default("set");
+  .default("replace");
 
 export const setManyObjsSchema = z.object({
   appId: z.string(),
@@ -204,6 +212,8 @@ export const objMetaQuerySchema = z.object({
   id: stringMetaQuerySchema.optional(),
   createdAt: numberMetaQuerySchema.optional(),
   updatedAt: numberMetaQuerySchema.optional(),
+  createdBy: stringMetaQuerySchema.optional(),
+  updatedBy: stringMetaQuerySchema.optional(),
 });
 
 export const objQuerySchema = z.object({
@@ -218,17 +228,20 @@ export const objSortSchema = z.object({
 });
 
 export const objSortListSchema = z.array(objSortSchema);
-export const updateManyObjsSchema = objQuerySchema.extend({
+export const updateManyObjsSchema = z.object({
+  query: objQuerySchema,
   update: inputObjRecordSchema,
-  limit: z.number().optional(),
+  updateMany: z.boolean().optional(),
   updateWay: onConflictSchema.optional(),
 });
 
-export const deleteManyObjsSchema = objQuerySchema.extend({
-  limit: z.number().optional(),
+export const deleteManyObjsSchema = z.object({
+  query: objQuerySchema,
+  deleteMany: z.boolean().optional(),
 });
 
-export const getManyObjsSchema = objQuerySchema.extend({
+export const getManyObjsSchema = z.object({
+  query: objQuerySchema,
   page: z.number().optional(),
   limit: z.number().optional(),
   sort: objSortListSchema.optional(),

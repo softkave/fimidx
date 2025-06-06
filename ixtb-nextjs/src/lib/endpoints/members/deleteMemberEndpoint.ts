@@ -16,7 +16,7 @@ export const deleteMemberEndpoint: NextUserAuthenticatedEndpointFn<
   const member = await getMember({ id: input.id });
   await checkPermission({
     userId,
-    orgId: member.orgId,
+    groupId: member.groupId,
     permission: kPermissions.member.remove,
   });
 

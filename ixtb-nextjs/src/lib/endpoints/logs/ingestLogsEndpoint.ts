@@ -23,7 +23,7 @@ export const ingestLogsEndpoint: NextClientTokenAuthenticatedEndpointFn<
   await ingestLogs({
     appId: app.id,
     logs: input.logs,
-    orgId: app.orgId,
+    groupId: app.groupId,
     by: clientToken.id,
     byType: kByTypes.clientToken,
   });

@@ -3,14 +3,14 @@ import { use } from "react";
 
 export default function Layout(props: {
   children: React.ReactNode;
-  params: Promise<{ orgId?: string; appId?: string }>;
+  params: Promise<{ groupId?: string; appId?: string }>;
 }) {
   const { children, params } = props;
-  const { orgId, appId } = use(params);
+  const { groupId, appId } = use(params);
 
   return (
     <>
-      <MainAppSidebar orgId={orgId} appId={appId} />
+      <MainAppSidebar groupId={groupId} appId={appId} />
       <main className="flex-1">{children}</main>
     </>
   );

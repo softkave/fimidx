@@ -19,7 +19,7 @@ export const deleteClientTokenEndpoint: NextUserAuthenticatedEndpointFn<
   const clientToken = await getClientToken({ id: input.id });
   await checkPermission({
     userId,
-    orgId: clientToken.orgId,
+    groupId: clientToken.groupId,
     permission: kPermissions.clientToken.delete,
   });
 

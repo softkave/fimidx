@@ -29,7 +29,7 @@ export const updateClientTokenEndpoint: NextUserAuthenticatedEndpointFn<
   const clientToken = await getClientToken({ id: clientTokenUpdateInput.id });
   await checkPermission({
     userId,
-    orgId: clientToken.orgId,
+    groupId: clientToken.groupId,
     permission: kPermissions.clientToken.update,
   });
 

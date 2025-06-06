@@ -34,7 +34,7 @@ export const getConnectedWebSocketsEndpoint: NextMaybeAuthenticatedEndpointFn<
   if (userId) {
     await checkPermission({
       userId,
-      orgId: app.orgId,
+      groupId: app.groupId,
       permission: kPermissions.ws.read,
     });
   } else if (clientToken) {

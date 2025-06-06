@@ -19,7 +19,7 @@ export const retrieveLogsEndpoint: NextUserAuthenticatedEndpointFn<
   const app = await getApp({ id: input.appId });
   await checkPermission({
     userId,
-    orgId: app.orgId,
+    groupId: app.groupId,
     permission: kPermissions.log.read,
   });
   const { logs, page, limit, hasMore } = await getLogs({

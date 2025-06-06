@@ -1,37 +1,58 @@
-import { clientTokens as clientTokensTable, db } from "../../db/fmdx-schema.js";
-import type { AddClientTokenEndpointArgs } from "../../definitions/clientToken.js";
-import { checkClientTokenAvailable } from "./checkClientTokenExists.js";
+import assert from "assert";
+import { kOwnServerErrorCodes, OwnServerError } from "../../common/error.js";
+import type {
+  AddClientTokenEndpointArgs,
+  IClientTokenObjRecord,
+} from "../../definitions/clientToken.js";
+import { kObjTags } from "../../definitions/obj.js";
+import { setManyObjs } from "../obj/setObjs.js";
+import { objToClientToken } from "./objToClientToken.js";
 
 export async function addClientToken(params: {
   args: AddClientTokenEndpointArgs;
-  userId: string;
-  appId: string;
-  orgId: string;
+  by: string;
+  byType: string;
+  groupId: string;
 }) {
-  const { args, userId, appId, orgId } = params;
-  const { name: inputName, description } = args;
+  const { args, by, byType, groupId } = params;
+  const { name: inputName, description, appId, meta, permissions } = args;
   const date = new Date();
   const name =
     inputName ??
     `token-${date.getTime()}-${date.getDate()}-${date.getMonth()}-${date.getFullYear()}`;
-  const newClientToken: typeof clientTokensTable.$inferInsert = {
-    appId,
+  const objRecord: IClientTokenObjRecord = {
     name,
-    nameLower: name.toLowerCase(),
-    description: description ?? "",
-    createdAt: date,
-    updatedAt: date,
-    createdBy: userId,
-    updatedBy: userId,
-    orgId,
+    description,
+    meta,
+    permissions: permissions ?? null,
   };
 
-  await checkClientTokenAvailable({ name, orgId, appId });
+  const { failedItems, newObjs } = await setManyObjs({
+    by,
+    byType,
+    groupId,
+    tag: kObjTags.clientToken,
+    input: {
+      appId,
+      items: [objRecord],
+    },
+  });
 
-  const clientToken = await db
-    .insert(clientTokensTable)
-    .values(newClientToken)
-    .returning();
+  assert(
+    failedItems.length === 0,
+    new OwnServerError(
+      "Failed to add client token",
+      kOwnServerErrorCodes.InternalServerError
+    )
+  );
+  assert(
+    newObjs.length === 1,
+    new OwnServerError(
+      "Failed to add client token",
+      kOwnServerErrorCodes.InternalServerError
+    )
+  );
 
-  return clientToken[0];
+  const clientToken = objToClientToken(newObjs[0]);
+  return { clientToken };
 }

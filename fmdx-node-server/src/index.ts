@@ -1,7 +1,8 @@
 import assert from 'assert';
+import {loadCallbacks} from './helpers/cb/loadCallbacks.js';
 import {startHttpServer} from './httpServer.js';
 import {startWebSocketServer} from './webSocketServer.js';
-import {loadCallbacks} from './helpers/cb/loadCallbacks.js';
+import {setupIndexObjsCallback} from './helpers/obj/setupIndexObjsCallback.js';
 
 async function main() {
   const httpPort = process.env.HTTP_PORT;
@@ -13,6 +14,7 @@ async function main() {
   assert(webSocketPort, 'WEBSOCKET_PORT is required');
 
   await loadCallbacks();
+  await setupIndexObjsCallback();
 
   startHttpServer({
     port: parseInt(httpPort),

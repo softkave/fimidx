@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 type AppLogsPageProps = {
   params: Promise<{
-    orgId: string;
+    groupId: string;
     appId: string;
   }>;
 };
@@ -21,17 +21,17 @@ type AppLogsPageProps = {
 export default async function Page(
   props: AppLogsPageProps
 ): Promise<JSX.Element> {
-  const { orgId, appId } = await props.params;
+  const { groupId, appId } = await props.params;
   const session = await auth();
   if (!session) {
     return redirect(
       kClientPaths.withURL(
         kClientPaths.signinWithRedirect(
-          kClientPaths.app.org.app.log.index(orgId, appId)
+          kClientPaths.app.group.app.log.index(groupId, appId)
         )
       )
     );
   }
 
-  return <LogsPage orgId={orgId} appId={appId} />;
+  return <LogsPage groupId={groupId} appId={appId} />;
 }

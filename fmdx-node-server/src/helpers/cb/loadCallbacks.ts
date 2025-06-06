@@ -1,45 +1,52 @@
-import {getCallbacksForInternalUse} from 'fmdx-core/serverHelpers/callback/getCallbacks';
+import {objModel} from 'fmdx-core/db/mongo';
+import {ICallback} from 'fmdx-core/definitions/callback';
+import {kObjTags} from 'fmdx-core/definitions/obj';
 import {addCallbackToStore} from './addCallbackToStore.js';
+import {objToCallback} from 'fmdx-core/serverHelpers/index';
 
 export async function loadCallbacks() {
-  let page = 1;
-  let hasMore = true;
+  let batch: ICallback[] = [];
+  let page = 0;
+  const batchSize = 100;
 
-  while (hasMore) {
-    const callbacks = await getCallbacksForInternalUse({
-      pageNumber: page,
-      limitNumber: 100,
-    });
+  do {
+    const objs = await objModel
+      .find({
+        tag: kObjTags.callback,
+        deletedAt: {
+          $exists: false,
+        },
+      })
+      .skip(page * batchSize)
+      .limit(batchSize)
+      .lean();
 
-    if (callbacks.length === 0) {
-      hasMore = false;
-    } else {
-      for (const callback of callbacks) {
-        const timeoutDate = callback.timeout
-          ? new Date(callback.timeout)
-          : undefined;
-        const intervalFrom = callback.intervalFrom
-          ? new Date(callback.intervalFrom)
-          : undefined;
-        let isValid = false;
+    batch = objs.map(objToCallback);
+    batch.forEach(callback => {
+      const timeoutDate = callback.timeout
+        ? new Date(callback.timeout)
+        : undefined;
+      const intervalFrom = callback.intervalFrom
+        ? new Date(callback.intervalFrom)
+        : undefined;
+      let isValid = false;
 
-        if (timeoutDate && timeoutDate < new Date()) {
-          isValid = true;
-        } else if (intervalFrom && intervalFrom < new Date()) {
-          isValid = true;
-        }
-
-        if (isValid) {
-          addCallbackToStore({
-            id: callback.id,
-            timeoutDate,
-            intervalFrom,
-            intervalMs: callback.intervalMs,
-          });
-        }
+      if (timeoutDate && timeoutDate < new Date()) {
+        isValid = true;
+      } else if (intervalFrom && intervalFrom < new Date()) {
+        isValid = true;
       }
 
-      page++;
-    }
-  }
+      if (isValid) {
+        addCallbackToStore({
+          id: callback.id,
+          timeoutDate,
+          intervalFrom,
+          intervalMs: callback.intervalMs,
+        });
+      }
+    });
+
+    page++;
+  } while (batch.length > 0);
 }

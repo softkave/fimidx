@@ -30,7 +30,7 @@ export const addRoomSubscriptionEndpoint: NextClientTokenAuthenticatedEndpointFn
 
   const roomSubscription = await addRoomSubscription({
     args: input,
-    orgId: clientToken.orgId,
+    groupId: clientToken.groupId,
     clientTokenId: clientToken.id,
     existingRoom: room,
   });

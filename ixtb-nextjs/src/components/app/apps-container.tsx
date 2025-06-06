@@ -21,7 +21,7 @@ export interface IAppListContainerProps {
   filter?: IAppListContainerFilter;
   className?: string;
   appsContainerClassName?: string;
-  orgId: string;
+  groupId: string;
 }
 
 export function AppListContainer({
@@ -30,13 +30,13 @@ export function AppListContainer({
   filter,
   className,
   appsContainerClassName,
-  orgId,
+  groupId,
 }: IAppListContainerProps) {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
   const appHooks = useGetApps({
-    orgId: orgId,
+    groupId: groupId,
     page,
     limit: pageSize,
     ...filter,

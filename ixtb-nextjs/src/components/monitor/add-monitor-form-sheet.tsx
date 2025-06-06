@@ -1,7 +1,8 @@
 "use client";
 
+import { IMonitor } from "fmdx-core/definitions/monitor";
 import { useCallback } from "react";
-import { ScrollArea } from "../ui/scroll-area.tsx";
+import { MaybeScroll } from "../ui/scroll-area.tsx";
 import {
   Sheet,
   SheetContent,
@@ -10,10 +11,9 @@ import {
   SheetTitle,
 } from "../ui/sheet.tsx";
 import { AddMonitorForm } from "./add-monitor-form.tsx";
-import { IMonitor } from "fmdx-core/definitions/monitor";
 
 export interface IAddMonitorFormSheetProps {
-  orgId: string;
+  groupId: string;
   appId: string;
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
@@ -21,7 +21,7 @@ export interface IAddMonitorFormSheetProps {
 }
 
 export function AddMonitorFormSheet(props: IAddMonitorFormSheetProps) {
-  const { isOpen, onOpenChange, onSubmitComplete, orgId, appId } = props;
+  const { isOpen, onOpenChange, onSubmitComplete, groupId, appId } = props;
 
   const handleSubmitComplete = useCallback(
     (monitor: IMonitor) => {
@@ -34,7 +34,7 @@ export function AddMonitorFormSheet(props: IAddMonitorFormSheetProps) {
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
       <SheetContent className="w-full max:w-[440px] p-0">
-        <ScrollArea className="h-[calc(100vh)]">
+        <MaybeScroll className="h-[calc(100vh)]">
           <SheetHeader>
             <SheetTitle>New Monitor</SheetTitle>
             <SheetDescription>
@@ -44,11 +44,11 @@ export function AddMonitorFormSheet(props: IAddMonitorFormSheetProps) {
           <div className="mt-2 p-4">
             <AddMonitorForm
               onSubmitComplete={handleSubmitComplete}
-              orgId={orgId}
+              groupId={groupId}
               appId={appId}
             />
           </div>
-        </ScrollArea>
+        </MaybeScroll>
       </SheetContent>
     </Sheet>
   );

@@ -1,28 +1,55 @@
-import { apps as appsTable, db } from "../../db/fmdx-schema.js";
-import type { AddAppEndpointArgs } from "../../definitions/app.js";
-import { checkAppAvailable } from "./checkAppExists.js";
+import assert from "assert";
+import { kOwnServerErrorCodes, OwnServerError } from "../../common/error.js";
+import type {
+  AddAppEndpointArgs,
+  IAppObjRecord,
+} from "../../definitions/app.js";
+import { kObjTags } from "../../definitions/obj.js";
+import { kId0 } from "../../definitions/system.js";
+import { setManyObjs } from "../obj/setObjs.js";
+import { objToApp } from "./objToApp.js";
 
 export async function addApp(params: {
   args: AddAppEndpointArgs;
-  userId: string;
-  orgId: string;
+  by: string;
+  byType: string;
 }) {
-  const { args, userId, orgId } = params;
-  const { name, description } = args;
-  const date = new Date();
-  const newApp: typeof appsTable.$inferInsert = {
-    name: name,
-    nameLower: name.toLowerCase(),
-    description: description ?? "",
-    createdAt: date,
-    updatedAt: date,
-    createdBy: userId,
-    updatedBy: userId,
-    orgId: orgId,
+  const { args, by, byType } = params;
+  const { name, description, groupId } = args;
+  const objRecord: IAppObjRecord = {
+    name,
+    description,
+    groupId,
   };
 
-  await checkAppAvailable({ name, orgId });
+  const { failedItems, newObjs } = await setManyObjs({
+    by,
+    byType,
+    groupId,
+    tag: kObjTags.app,
+    input: {
+      appId: kId0,
+      items: [objRecord],
+      conflictOnKeys: ["name"],
+      onConflict: "fail",
+    },
+  });
 
-  const app = await db.insert(appsTable).values(newApp).returning();
-  return app[0];
+  assert(
+    failedItems.length === 0,
+    new OwnServerError(
+      "Failed to add app",
+      kOwnServerErrorCodes.InternalServerError
+    )
+  );
+  assert(
+    newObjs.length === 1,
+    new OwnServerError(
+      "Failed to add app",
+      kOwnServerErrorCodes.InternalServerError
+    )
+  );
+
+  const app = objToApp(newObjs[0]);
+  return { app };
 }

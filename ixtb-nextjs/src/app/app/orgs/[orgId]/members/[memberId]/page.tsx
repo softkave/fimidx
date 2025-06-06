@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 type MemberIdPageProps = {
   params: Promise<{
-    orgId: string;
+    groupId: string;
     memberId: string;
   }>;
 };
@@ -21,17 +21,17 @@ type MemberIdPageProps = {
 export default async function Page(
   props: MemberIdPageProps
 ): Promise<JSX.Element> {
-  const { orgId, memberId } = await props.params;
+  const { groupId, memberId } = await props.params;
   const session = await auth();
   if (!session) {
     return redirect(
       kClientPaths.withURL(
         kClientPaths.signinWithRedirect(
-          kClientPaths.app.org.members.single(orgId, memberId)
+          kClientPaths.app.group.members.single(groupId, memberId)
         )
       )
     );
   }
 
-  return <MemberPage orgId={orgId} memberId={memberId} />;
+  return <MemberPage groupId={groupId} memberId={memberId} />;
 }

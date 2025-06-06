@@ -11,24 +11,26 @@ export const metadata: Metadata = {
   description: kAppConstants.description,
 };
 
-type OrgIdAppsPageProps = {
+type groupIdAppsPageProps = {
   params: Promise<{
-    orgId: string;
+    groupId: string;
   }>;
 };
 
 export default async function Page(
-  props: OrgIdAppsPageProps
+  props: groupIdAppsPageProps
 ): Promise<JSX.Element> {
-  const { orgId } = await props.params;
+  const { groupId } = await props.params;
   const session = await auth();
   if (!session) {
     return redirect(
       kClientPaths.withURL(
-        kClientPaths.signinWithRedirect(kClientPaths.app.org.app.index(orgId))
+        kClientPaths.signinWithRedirect(
+          kClientPaths.app.group.app.index(groupId)
+        )
       )
     );
   }
 
-  return <AppsPage orgId={orgId} />;
+  return <AppsPage groupId={groupId} />;
 }

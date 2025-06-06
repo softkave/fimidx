@@ -19,14 +19,14 @@ export const addClientTokenEndpoint: NextUserAuthenticatedEndpointFn<
   const app = await getApp({ id: input.appId });
   await checkPermission({
     userId,
-    orgId: app.orgId,
+    groupId: app.groupId,
     permission: kPermissions.clientToken.update,
   });
 
   const clientToken = await addClientToken({
     args: input,
     userId,
-    orgId: app.orgId,
+    groupId: app.groupId,
     appId: app.id,
   });
 

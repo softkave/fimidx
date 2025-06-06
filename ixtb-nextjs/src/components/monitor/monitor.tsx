@@ -1,4 +1,6 @@
 import { useHasPermission } from "@/src/lib/clientHooks/permissionHooks";
+import { IMonitor } from "fmdx-core/definitions/monitor";
+import { kPermissions } from "fmdx-core/definitions/permissions";
 import { Pencil, XIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -8,8 +10,6 @@ import { MonitorItemMenu } from "./monitor-item-menu";
 import { UpdateMonitorFormP1 } from "./update-monitor-form-p1";
 import { UpdateMonitorFormP2 } from "./update-monitor-form-p2";
 import { UpdateMonitorFormP3 } from "./update-monitor-form-p3";
-import { IMonitor } from "fmdx-core/definitions/monitor";
-import { kPermissions } from "fmdx-core/definitions/permissions";
 
 export interface IMonitorProps {
   monitor: IMonitor;
@@ -19,7 +19,7 @@ export function Monitor(props: IMonitorProps) {
   const {
     checks: [canEdit],
   } = useHasPermission({
-    orgId: props.monitor.orgId,
+    groupId: props.monitor.groupId,
     permission: kPermissions.monitor.update,
   });
 

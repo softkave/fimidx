@@ -12,37 +12,39 @@ import {
 import { kAppConstants } from "fmdx-core/definitions/appConstants";
 
 export interface AddParticipantEmailProps {
-  orgName: string;
+  groupName: string;
   inviterName: string;
 }
 
 export function getAddParticipantEmailTitle(params: {
-  orgName: string;
+  groupName: string;
   inviterName: string;
 }) {
-  return `${kAppConstants.name} — Invitation to join ${params.orgName}`;
+  return `${kAppConstants.name} — Invitation to join ${params.groupName}`;
 }
 
 export const AddParticipantEmail = ({
-  orgName,
+  groupName,
   inviterName,
 }: AddParticipantEmailProps) => {
   return (
     <Html>
       <Head />
-      <Preview>{getAddParticipantEmailTitle({ orgName, inviterName })}</Preview>
+      <Preview>
+        {getAddParticipantEmailTitle({ groupName, inviterName })}
+      </Preview>
       <Body style={main}>
         <Container>
           <Tailwind>
             <div className="w-full">
               <div className="max-w-lg mx-auto">
                 <h1 className="text-2xl font-bold mb-8">
-                  {getAddParticipantEmailTitle({ orgName, inviterName })}
+                  {getAddParticipantEmailTitle({ groupName, inviterName })}
                 </h1>
                 <div>
                   <p className="mb-0">
                     You have been invited by <strong>{inviterName}</strong> to
-                    join organization <strong>{orgName}</strong> on{" "}
+                    join group <strong>{groupName}</strong> on{" "}
                     <a
                       href={kClientPaths.withURL(kClientPaths.index)}
                       className="text-blue-500"
@@ -87,7 +89,7 @@ export const AddParticipantEmail = ({
 };
 
 AddParticipantEmail.PreviewProps = {
-  orgName: "fmlogs",
+  groupName: "fmlogs",
   inviterName: "John Doe",
 } as AddParticipantEmailProps;
 

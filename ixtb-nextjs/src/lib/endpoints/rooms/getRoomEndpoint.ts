@@ -23,7 +23,7 @@ export const getRoomEndpoint: NextMaybeAuthenticatedEndpointFn<
   if (userId) {
     await checkPermission({
       userId,
-      orgId: room.orgId,
+      groupId: room.groupId,
       permission: kPermissions.ws.read,
     });
   } else if (clientToken) {

@@ -2,7 +2,7 @@
 
 import { IApp } from "fmdx-core/definitions/app";
 import { useCallback } from "react";
-import { ScrollArea } from "../ui/scroll-area.tsx";
+import { MaybeScroll } from "../ui/scroll-area.tsx";
 import {
   Sheet,
   SheetContent,
@@ -14,7 +14,7 @@ import { AddAppForm } from "./add-app-form.tsx";
 import { UpdateAppForm } from "./update-app-form.tsx";
 
 export interface IAppFormSheetProps {
-  orgId: string;
+  groupId: string;
   app?: IApp;
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
@@ -22,7 +22,7 @@ export interface IAppFormSheetProps {
 }
 
 export function AppFormSheet(props: IAppFormSheetProps) {
-  const { isOpen, onOpenChange, onSubmitComplete, app, orgId } = props;
+  const { isOpen, onOpenChange, onSubmitComplete, app, groupId } = props;
 
   const handleSubmitComplete = useCallback(
     (app: IApp) => {
@@ -35,7 +35,7 @@ export function AppFormSheet(props: IAppFormSheetProps) {
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
       <SheetContent className="w-full max:w-[440px] p-0">
-        <ScrollArea className="h-[calc(100vh)]">
+        <MaybeScroll className="h-[calc(100vh)]">
           <SheetHeader>
             <SheetTitle>{app ? "Update App" : "New App"}</SheetTitle>
             <SheetDescription>
@@ -53,11 +53,11 @@ export function AppFormSheet(props: IAppFormSheetProps) {
             ) : (
               <AddAppForm
                 onSubmitComplete={handleSubmitComplete}
-                orgId={orgId}
+                groupId={groupId}
               />
             )}
           </div>
-        </ScrollArea>
+        </MaybeScroll>
       </SheetContent>
     </Sheet>
   );

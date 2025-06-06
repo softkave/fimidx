@@ -1,37 +1,56 @@
 import assert from "assert";
-import { eq } from "drizzle-orm";
+import { first } from "lodash-es";
 import { OwnServerError } from "../../common/error.js";
-import { db, members as membersTable } from "../../db/fmdx-schema.js";
 import {
   kMemberStatus,
+  type IMemberObjRecord,
   type RespondToMemberRequestEndpointArgs,
-} from "../../definitions/members.js";
-import { getMember } from "./getMember.js";
+} from "../../definitions/member.js";
+import { kObjTags } from "../../definitions/obj.js";
+import { kId0 } from "../../definitions/system.js";
+import { updateManyObjs } from "../obj/updateObjs.js";
+import { getMembers } from "./getMembers.js";
 
 export async function respondToMemberRequest(params: {
   args: RespondToMemberRequestEndpointArgs;
-  userId: string;
 }) {
-  const { args, userId } = params;
-  const { status, requestId } = args;
+  const { args } = params;
+  const { status, requestId, appId, groupId } = args;
 
-  const member = await getMember({ id: requestId });
+  const { members } = await getMembers({
+    args: {
+      query: {
+        appId,
+        groupId,
+        memberId: { eq: requestId },
+      },
+      limit: 1,
+    },
+  });
 
+  const member = first(members);
+  assert(member, new OwnServerError("Member request not found", 404));
   assert(
     member.status === kMemberStatus.pending,
     new OwnServerError("Invalid status", 400)
   );
-  assert(member.userId === userId, new OwnServerError("Access Denied", 403));
 
-  const [updatedMember] = await db
-    .update(membersTable)
-    .set({
-      status,
-      statusUpdatedAt: new Date(),
-      userId: userId ?? member.userId,
-    })
-    .where(eq(membersTable.id, requestId))
-    .returning();
+  const update: Partial<IMemberObjRecord> = {
+    status,
+    statusUpdatedAt: new Date(),
+  };
 
-  return updatedMember;
+  await updateManyObjs({
+    objQuery: {
+      appId,
+      metaQuery: {
+        id: { eq: requestId },
+      },
+    },
+    tag: kObjTags.member,
+    update,
+    updateWay: "merge",
+    by: kId0,
+    byType: kId0,
+  });
 }

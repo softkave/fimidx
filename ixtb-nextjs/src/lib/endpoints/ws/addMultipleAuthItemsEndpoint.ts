@@ -33,7 +33,7 @@ export const addMultipleAuthItemsEndpoint: NextClientTokenAuthenticatedEndpointF
 
   const authItems = await addMultipleAuthItems({
     args: input,
-    orgId: app.orgId,
+    groupId: app.groupId,
     clientTokenId: clientToken.id,
   });
 

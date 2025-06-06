@@ -128,7 +128,7 @@ export function UpdateMonitorFormP3(props: IUpdateMonitorFormP3Props) {
             <FormItem>
               <FormLabel>Reports To</FormLabel>
               <SelectMemberContainer
-                orgId={monitor.orgId}
+                groupId={monitor.groupId}
                 onChange={field.onChange}
                 selected={field.value}
                 isForm

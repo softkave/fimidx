@@ -1,11 +1,15 @@
 import type { IngestLogsEndpointArgs } from "../../definitions/log.js";
 import { kObjTags } from "../../definitions/obj.js";
-import { setManyObjs } from "../obj/setObj.js";
+import { setManyObjs } from "../obj/setObjs.js";
 
 export async function ingestLogs(
-  params: IngestLogsEndpointArgs & { orgId: string; by: string; byType: string }
+  params: IngestLogsEndpointArgs & {
+    groupId: string;
+    by: string;
+    byType: string;
+  }
 ) {
-  const { appId, logs, by, byType, orgId } = params;
+  const { appId, logs, by, byType, groupId } = params;
 
   const date = new Date();
   const dateMs = date.getTime();
@@ -16,7 +20,7 @@ export async function ingestLogs(
   await setManyObjs({
     by,
     byType,
-    orgId,
+    groupId,
     tag: kObjTags.log,
     input: {
       appId,

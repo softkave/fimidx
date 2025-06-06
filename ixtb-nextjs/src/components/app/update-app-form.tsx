@@ -53,7 +53,7 @@ export function UpdateAppForm(props: IUpdateAppFormProps) {
   const updateAppHook = useUpdateApp({
     onSuccess: handleSuccess,
     appId: app.id,
-    orgId: app.orgId,
+    groupId: app.groupId,
   });
 
   const onSubmit = useCallback(

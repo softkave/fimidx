@@ -5,6 +5,7 @@ import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
 import { useHasPermission } from "@/src/lib/clientHooks/permissionHooks";
 import { cn } from "@/src/lib/utils";
 import { IApp } from "fmdx-core/definitions/app";
+import { kPermissions } from "fmdx-core/definitions/permissions";
 import { isString } from "lodash-es";
 import { Ellipsis, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -19,7 +20,6 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { AppFormSheet } from "./app-form-sheet";
-import { kPermissions } from "fmdx-core/definitions/permissions";
 
 export interface IAppItemMenuProps {
   app: IApp;
@@ -34,14 +34,14 @@ export function AppItemMenu(props: IAppItemMenuProps) {
   const {
     checks: [canDelete, canUpdate],
   } = useHasPermission({
-    orgId: app.orgId,
+    groupId: app.groupId,
     permission: [kPermissions.app.delete, kPermissions.app.update],
   });
 
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const deleteAppHook = useDeleteApp({
-    orgId: app.orgId,
+    groupId: app.groupId,
     appId: app.id,
     onSuccess: () => {
       toast.success("App deleted");
@@ -50,7 +50,7 @@ export function AppItemMenu(props: IAppItemMenuProps) {
         router.push(
           isString(routeAfterDelete)
             ? routeAfterDelete
-            : kClientPaths.app.org.app.index(app.orgId)
+            : kClientPaths.app.group.app.index(app.groupId)
         );
       }
     },
@@ -74,7 +74,7 @@ export function AppItemMenu(props: IAppItemMenuProps) {
       {deleteAppDialog.DeleteResourceDialog()}
       <AppFormSheet
         app={app}
-        orgId={app.orgId}
+        groupId={app.groupId}
         onOpenChange={setIsEditing}
         isOpen={isEditing}
       />

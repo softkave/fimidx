@@ -9,19 +9,19 @@ export const metadata: Metadata = {
   description: kAppConstants.description,
 };
 
-type OrgIdAppIdPageProps = {
+type groupIdAppIdPageProps = {
   params: Promise<{
-    orgId: string;
+    groupId: string;
     appId: string;
   }>;
 };
 
 export default async function Page(
-  props: OrgIdAppIdPageProps
+  props: groupIdAppIdPageProps
 ): Promise<JSX.Element> {
-  const { orgId, appId } = await props.params;
+  const { groupId, appId } = await props.params;
 
   return redirect(
-    kClientPaths.withURL(kClientPaths.app.org.app.log.index(orgId, appId))
+    kClientPaths.withURL(kClientPaths.app.group.app.log.index(groupId, appId))
   );
 }

@@ -26,7 +26,7 @@ export const getAuthIdEndpoint: NextMaybeAuthenticatedEndpointFn<
   if (userId) {
     await checkPermission({
       userId,
-      orgId: authId.orgId,
+      groupId: authId.groupId,
       permission: kPermissions.ws.read,
     });
   } else if (clientToken) {

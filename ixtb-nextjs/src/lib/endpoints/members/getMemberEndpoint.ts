@@ -22,7 +22,7 @@ export const getMemberEndpoint: NextUserAuthenticatedEndpointFn<
   const member = await getMember({ id: input.id });
   await checkPermission({
     userId,
-    orgId: member.orgId,
+    groupId: member.groupId,
     permission: kPermissions.member.read,
   });
 
@@ -30,7 +30,7 @@ export const getMemberEndpoint: NextUserAuthenticatedEndpointFn<
     [member],
     await hasPermission({
       userId,
-      orgId: member.orgId,
+      groupId: member.groupId,
       permission: kPermissions.member.readPermissions,
     })
   );

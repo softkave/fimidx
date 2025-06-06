@@ -13,7 +13,7 @@ export function MemberRequestListEmpty() {
   return (
     <PageMessage
       title="No member requests found"
-      message="You will receive a notification when you are added as a member to an organization."
+      message="You will receive a notification when you are added as a member to an group."
       variant="secondary"
       className="px-4"
     />

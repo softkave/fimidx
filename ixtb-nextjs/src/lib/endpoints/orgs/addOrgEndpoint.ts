@@ -1,21 +1,21 @@
 import {
-  AddOrgEndpointResponse,
-  addOrgSchema,
+  AddGroupEndpointResponse,
+  addGroupSchema,
   kMemberStatus,
   kPermissions,
 } from "fmdx-core/definitions/index";
-import { addMember, addOrg } from "fmdx-core/serverHelpers/index";
+import { addGroup, addMember } from "fmdx-core/serverHelpers/index";
 import { NextUserAuthenticatedEndpointFn } from "../types";
 
-export const addOrgEndpoint: NextUserAuthenticatedEndpointFn<
-  AddOrgEndpointResponse
+export const addGroupEndpoint: NextUserAuthenticatedEndpointFn<
+  AddGroupEndpointResponse
 > = async (params) => {
   const {
     req,
     session: { userId, email, user },
   } = params;
-  const input = addOrgSchema.parse(await req.json());
-  const org = await addOrg({
+  const input = addGroupSchema.parse(await req.json());
+  const group = await addGroup({
     args: input,
     userId,
   });
@@ -24,15 +24,15 @@ export const addOrgEndpoint: NextUserAuthenticatedEndpointFn<
     args: {
       email: user?.email ?? email,
       permissions: [kPermissions.wildcard],
-      orgId: org.id,
+      groupId: group.id,
     },
     inviterId: userId,
-    orgId: org.id,
+    groupId: group.id,
     status: kMemberStatus.accepted,
   });
 
-  const response: AddOrgEndpointResponse = {
-    org,
+  const response: AddGroupEndpointResponse = {
+    group,
   };
 
   return response;

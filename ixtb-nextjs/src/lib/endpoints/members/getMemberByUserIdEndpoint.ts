@@ -28,7 +28,7 @@ export const getMemberByUserIdEndpoint: NextUserAuthenticatedEndpointFn<
     input.userId === userId ||
     (await hasPermission({
       userId,
-      orgId: input.orgId,
+      groupId: input.groupId,
       permission: kPermissions.member.read,
     }));
 
@@ -38,7 +38,7 @@ export const getMemberByUserIdEndpoint: NextUserAuthenticatedEndpointFn<
 
   const member = await getMember({
     userId: input.userId,
-    orgId: input.orgId,
+    groupId: input.groupId,
   });
   const [augmentedMember] = await augmentMembers(
     [member],

@@ -1,7 +1,8 @@
 "use client";
 
+import { IGroup } from "fmdx-core/definitions/group";
 import { useCallback } from "react";
-import { ScrollArea } from "../ui/scroll-area.tsx";
+import { MaybeScroll } from "../ui/scroll-area.tsx";
 import {
   Sheet,
   SheetContent,
@@ -9,24 +10,23 @@ import {
   SheetHeader,
   SheetTitle,
 } from "../ui/sheet.tsx";
-import { AddOrgForm } from "./add-org-form.tsx";
-import { UpdateOrgForm } from "./update-org-form.tsx";
-import { IOrg } from "fmdx-core/definitions/org";
+import { AddGroupForm } from "./add-group-form.tsx";
+import { UpdateGroupForm } from "./update-group-form.tsx";
 
-export interface IOrgFormSheetProps {
-  org?: IOrg;
+export interface IGroupFormSheetProps {
+  group?: IGroup;
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
-  onSubmitComplete?: (org: IOrg) => void;
+  onSubmitComplete?: (group: IGroup) => void;
 }
 
-export function OrgFormSheet(props: IOrgFormSheetProps) {
-  const { isOpen, onOpenChange, onSubmitComplete, org } = props;
+export function GroupFormSheet(props: IGroupFormSheetProps) {
+  const { isOpen, onOpenChange, onSubmitComplete, group } = props;
 
   const handleSubmitComplete = useCallback(
-    (org: IOrg) => {
+    (group: IGroup) => {
       onOpenChange(false);
-      onSubmitComplete?.(org);
+      onSubmitComplete?.(group);
     },
     [onOpenChange, onSubmitComplete]
   );
@@ -34,28 +34,26 @@ export function OrgFormSheet(props: IOrgFormSheetProps) {
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
       <SheetContent className="w-full max:w-[440px] p-0">
-        <ScrollArea className="h-[calc(100vh)]">
+        <MaybeScroll className="h-[calc(100vh)]">
           <SheetHeader>
-            <SheetTitle>
-              {org ? "Update Organization" : "New Organization"}
-            </SheetTitle>
+            <SheetTitle>{group ? "Update Group" : "New Group"}</SheetTitle>
             <SheetDescription>
-              {org
-                ? "Update the organization to change the name or description."
-                : "Create a new organization to start collecting logs."}
+              {group
+                ? "Update the group to change the name or description."
+                : "Create a new group to start collecting logs."}
             </SheetDescription>
           </SheetHeader>
           <div className="mt-2 p-4">
-            {org ? (
-              <UpdateOrgForm
-                org={org}
+            {group ? (
+              <UpdateGroupForm
+                group={group}
                 onSubmitComplete={handleSubmitComplete}
               />
             ) : (
-              <AddOrgForm onSubmitComplete={handleSubmitComplete} />
+              <AddGroupForm onSubmitComplete={handleSubmitComplete} />
             )}
           </div>
-        </ScrollArea>
+        </MaybeScroll>
       </SheetContent>
     </Sheet>
   );

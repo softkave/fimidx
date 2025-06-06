@@ -29,7 +29,7 @@ export const updateMonitorEndpoint: NextUserAuthenticatedEndpointFn<
   const monitor = await getMonitor({ id: monitorUpdateInput.id });
   await checkPermission({
     userId,
-    orgId: monitor.orgId,
+    groupId: monitor.groupId,
     permission: kPermissions.monitor.update,
   });
 

@@ -4,7 +4,7 @@ import { MonitorListContainer } from "./monitors-container.tsx";
 import { MonitorsHeader } from "./monitors-header.tsx";
 
 export function MonitorsPage(props: {
-  orgId: string;
+  groupId: string;
   appId: string;
   className?: string;
 }) {
@@ -15,11 +15,11 @@ export function MonitorsPage(props: {
       >
         <MonitorsHeader
           className="p-4"
-          orgId={props.orgId}
+          groupId={props.groupId}
           appId={props.appId}
         />
         <MonitorListContainer
-          orgId={props.orgId}
+          groupId={props.groupId}
           appId={props.appId}
           showNoMonitorsMessage={false}
         />

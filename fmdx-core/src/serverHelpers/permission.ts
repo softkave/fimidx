@@ -1,26 +1,51 @@
 import assert from "assert";
+import { first } from "lodash-es";
 import { OwnServerError } from "../common/error.js";
-import type { IMember } from "../definitions/members.js";
-import { kPermissions } from "../definitions/permissions.js";
-import { getMember } from "./member/getMember.js";
+import type { IMember } from "../definitions/member.js";
+import { kFmdxPermissions } from "../definitions/permission.js";
+import { getMembers } from "./member/getMembers.js";
 
 export async function hasPermission(params: {
-  userId: string;
-  orgId: string;
+  memberId: string;
+  appId: string;
+  groupId: string;
   member?: IMember;
   permission: string | string[];
   op?: "any" | "all";
 }) {
-  const { userId, orgId, member: inputMember, permission, op = "all" } = params;
+  const {
+    memberId,
+    appId,
+    groupId,
+    member: inputMember,
+    permission,
+    op = "all",
+  } = params;
 
-  const member = inputMember ?? (await getMember({ userId, orgId }));
+  const member =
+    inputMember ??
+    first(
+      (
+        await getMembers({
+          args: {
+            query: {
+              appId,
+              groupId,
+              memberId: { eq: memberId },
+            },
+            limit: 1,
+          },
+        })
+      ).members
+    );
+  assert(member, new OwnServerError("Member not found", 404));
   const { permissions } = member;
 
   if (!permissions) {
     return false;
   }
 
-  const hasWildcard = permissions.includes(kPermissions.wildcard);
+  const hasWildcard = permissions.includes(kFmdxPermissions.wildcard);
   if (hasWildcard) {
     return true;
   }
@@ -37,12 +62,13 @@ export async function hasPermission(params: {
 }
 
 export async function checkPermission(params: {
-  userId: string;
-  orgId: string;
+  memberId: string;
+  appId: string;
+  groupId: string;
   member?: IMember;
   permission: string | string[];
   op?: "any" | "all";
 }) {
-  const userHasPermission = await hasPermission(params);
-  assert(userHasPermission, new OwnServerError("Access Denied", 403));
+  const memberHasPermission = await hasPermission(params);
+  assert(memberHasPermission, new OwnServerError("Access Denied", 403));
 }

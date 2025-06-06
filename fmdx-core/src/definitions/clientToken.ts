@@ -1,46 +1,75 @@
 import { z } from "zod";
+import {
+  numberMetaQuerySchema,
+  objPartQueryListSchema,
+  objSortListSchema,
+  stringMetaQuerySchema,
+} from "./obj.js";
 
 export interface IClientToken {
   id: string;
   name: string;
-  nameLower: string;
   description?: string | null;
   createdAt: Date;
   updatedAt: Date;
   createdBy: string;
+  createdByType: string;
   updatedBy: string;
+  updatedByType: string;
   appId: string;
-  orgId: string;
+  groupId: string;
+  meta?: Record<string, string> | null;
+  permissions: string[] | null;
+}
+
+export interface IClientTokenObjRecord {
+  name: string;
+  description?: string | null;
+  meta?: Record<string, string> | null;
+  permissions: string[] | null;
 }
 
 export const addClientTokenSchema = z.object({
-  name: z.string().optional(),
-  description: z.string().optional(),
   appId: z.string(),
-});
-
-export const updateClientTokenSchema = z.object({
-  id: z.string(),
   name: z.string().optional(),
   description: z.string().optional(),
+  meta: z.record(z.string(), z.string()).optional(),
+  permissions: z.array(z.string()).optional(),
 });
 
-export const deleteClientTokenSchema = z.object({
-  id: z.string().optional(),
-  orgId: z.string().optional(),
-  appId: z.string().optional(),
-  acknowledgeDeleteAllInApp: z.boolean().optional(),
-  acknowledgeDeleteAllInOrg: z.boolean().optional(),
+export const clientTokenQuerySchema = z.object({
+  appId: z.string(),
+  id: stringMetaQuerySchema.optional(),
+  name: stringMetaQuerySchema.optional(),
+  meta: objPartQueryListSchema.optional(),
+  permissions: stringMetaQuerySchema.optional(),
+  createdAt: numberMetaQuerySchema.optional(),
+  updatedAt: numberMetaQuerySchema.optional(),
+  createdBy: stringMetaQuerySchema.optional(),
+  updatedBy: stringMetaQuerySchema.optional(),
 });
 
-export const getClientTokenSchema = z.object({
-  id: z.string(),
+export const updateClientTokensSchema = z.object({
+  update: z.object({
+    name: z.string().optional(),
+    description: z.string().optional(),
+    meta: z.record(z.string(), z.string()).optional(),
+    permissions: z.array(z.string()).optional(),
+  }),
+  query: clientTokenQuerySchema,
+  updateMany: z.boolean().optional(),
+});
+
+export const deleteClientTokensSchema = z.object({
+  query: clientTokenQuerySchema,
+  deleteMany: z.boolean().optional(),
 });
 
 export const getClientTokensSchema = z.object({
-  appId: z.string(),
+  query: clientTokenQuerySchema,
   page: z.number().optional(),
   limit: z.number().optional(),
+  sort: objSortListSchema.optional(),
 });
 
 export const encodeClientTokenJWTSchema = z.object({
@@ -54,13 +83,12 @@ export const refreshClientTokenJWTSchema = z.object({
 });
 
 export type AddClientTokenEndpointArgs = z.infer<typeof addClientTokenSchema>;
-export type UpdateClientTokenEndpointArgs = z.infer<
-  typeof updateClientTokenSchema
+export type UpdateClientTokensEndpointArgs = z.infer<
+  typeof updateClientTokensSchema
 >;
-export type DeleteClientTokenEndpointArgs = z.infer<
-  typeof deleteClientTokenSchema
+export type DeleteClientTokensEndpointArgs = z.infer<
+  typeof deleteClientTokensSchema
 >;
-export type GetClientTokenEndpointArgs = z.infer<typeof getClientTokenSchema>;
 export type GetClientTokensEndpointArgs = z.infer<typeof getClientTokensSchema>;
 export type EncodeClientTokenJWTEndpointArgs = z.infer<
   typeof encodeClientTokenJWTSchema
@@ -73,17 +101,11 @@ export interface AddClientTokenEndpointResponse {
   clientToken: IClientToken;
 }
 
-export interface GetClientTokenEndpointResponse {
-  clientToken: IClientToken;
-}
-
 export interface GetClientTokensEndpointResponse {
   clientTokens: IClientToken[];
-  total: number;
-}
-
-export interface UpdateClientTokenEndpointResponse {
-  clientToken: IClientToken;
+  page: number;
+  limit: number;
+  hasMore: boolean;
 }
 
 export interface EncodeClientTokenJWTEndpointResponse {

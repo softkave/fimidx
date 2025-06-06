@@ -18,12 +18,12 @@ export const deleteAppEndpoint: NextUserAuthenticatedEndpointFn<void> = async (
   } = params;
   const input = deleteAppSchema.parse(await req.json());
 
-  let orgId: string | undefined;
+  let groupId: string | undefined;
   if (input.id) {
     const app = await getApp({ id: input.id });
-    orgId = app.orgId;
-  } else if (input.orgId) {
-    orgId = input.orgId;
+    groupId = app.groupId;
+  } else if (input.groupId) {
+    groupId = input.groupId;
   } else {
     throw new OwnServerError(
       "Invalid request",
@@ -32,12 +32,12 @@ export const deleteAppEndpoint: NextUserAuthenticatedEndpointFn<void> = async (
   }
 
   assert(
-    orgId,
+    groupId,
     new OwnServerError("Invalid request", kOwnServerErrorCodes.InvalidRequest)
   );
   await checkPermission({
     userId,
-    orgId,
+    groupId,
     permission: kPermissions.app.delete,
   });
 

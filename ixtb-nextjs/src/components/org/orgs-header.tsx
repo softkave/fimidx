@@ -5,25 +5,25 @@ import { cn } from "@/src/lib/utils";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "../ui/button";
-import { OrgFormSheet } from "./org-form-sheet";
+import { GroupFormSheet } from "./group-form-sheet";
 
-export function OrgsHeader(props: { className?: string }) {
+export function GroupsHeader(props: { className?: string }) {
   const [openForm, setOpenForm] = useState(false);
   const router = useRouter();
 
   return (
     <>
-      <OrgFormSheet
+      <GroupFormSheet
         isOpen={openForm}
         onOpenChange={setOpenForm}
-        onSubmitComplete={(org) => {
-          router.push(kClientPaths.app.org.single(org.id));
+        onSubmitComplete={(group) => {
+          router.push(kClientPaths.app.group.single(group.id));
         }}
       />
       <div className={cn("flex justify-between items-center", props.className)}>
-        <h1 className="text-2xl font-bold">Organizations</h1>
+        <h1 className="text-2xl font-bold">Groups</h1>
         <Button onClick={() => setOpenForm(true)} variant="outline">
-          Create Organization
+          Create Group
         </Button>
       </div>
     </>

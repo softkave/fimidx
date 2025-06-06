@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 type ClientTokenIdPageProps = {
   params: Promise<{
-    orgId: string;
+    groupId: string;
     appId: string;
     clientTokenId: string;
   }>;
@@ -22,14 +22,14 @@ type ClientTokenIdPageProps = {
 export default async function Page(
   props: ClientTokenIdPageProps
 ): Promise<JSX.Element> {
-  const { orgId, appId, clientTokenId } = await props.params;
+  const { groupId, appId, clientTokenId } = await props.params;
   const session = await auth();
   if (!session) {
     return redirect(
       kClientPaths.withURL(
         kClientPaths.signinWithRedirect(
-          kClientPaths.app.org.app.clientToken.single(
-            orgId,
+          kClientPaths.app.group.app.clientToken.single(
+            groupId,
             appId,
             clientTokenId
           )

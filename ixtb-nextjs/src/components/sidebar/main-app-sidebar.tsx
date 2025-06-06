@@ -4,14 +4,14 @@ import {
   SidebarHeader,
 } from "@/src/components/ui/sidebar";
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
+import { kAppConstants } from "fmdx-core/definitions/appConstants";
 import Link from "next/link";
 import { AppSidebarGroupContainer } from "./app-sidebar-group-container";
+import { GroupSidebarGroupContainer } from "./group-sidebar-group-container";
 import { HomeSidebarGroup } from "./home-sidebar-group";
-import { OrgSidebarGroupContainer } from "./org-sidebar-group-container";
-import { kAppConstants } from "fmdx-core/definitions/appConstants";
 
-export function MainAppSidebar(props: { orgId?: string; appId?: string }) {
-  const { orgId, appId } = props;
+export function MainAppSidebar(props: { groupId?: string; appId?: string }) {
+  const { groupId, appId } = props;
 
   const sidebar = (
     <Sidebar>
@@ -22,9 +22,9 @@ export function MainAppSidebar(props: { orgId?: string; appId?: string }) {
       </SidebarHeader>
       <SidebarContent>
         <HomeSidebarGroup />
-        {orgId && <OrgSidebarGroupContainer orgId={orgId} />}
-        {orgId && appId && (
-          <AppSidebarGroupContainer orgId={orgId} appId={appId} />
+        {groupId && <GroupSidebarGroupContainer groupId={groupId} />}
+        {groupId && appId && (
+          <AppSidebarGroupContainer groupId={groupId} appId={appId} />
         )}
       </SidebarContent>
     </Sidebar>

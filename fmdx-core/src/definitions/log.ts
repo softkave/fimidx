@@ -3,6 +3,7 @@ import {
   inputObjRecordArraySchema,
   objPartLogicalQuerySchema,
   objSortListSchema,
+  stringMetaQuerySchema,
   type IObj,
   type IObjField,
 } from "./obj.js";
@@ -14,10 +15,20 @@ export const ingestLogsSchema = z.object({
   logs: inputObjRecordArraySchema,
 });
 
-export const getLogsSchema = z.object({
+export const logsMetaQuerySchema = z.object({
+  id: stringMetaQuerySchema.optional(),
+  createdBy: stringMetaQuerySchema.optional(),
+  updatedBy: stringMetaQuerySchema.optional(),
+});
+
+export const logQuerySchema = z.object({
   appId: z.string(),
-  logIds: z.array(z.string()).optional(),
-  filter: objPartLogicalQuerySchema.optional(),
+  logsQuery: objPartLogicalQuerySchema.optional(),
+  metaQuery: logsMetaQuerySchema.optional(),
+});
+
+export const getLogsSchema = z.object({
+  query: logQuerySchema,
   page: z.number().optional(),
   limit: z.number().optional(),
   sort: objSortListSchema.optional(),

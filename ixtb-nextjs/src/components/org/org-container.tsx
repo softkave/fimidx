@@ -1,45 +1,45 @@
 "use client";
 
-import { useGetOrg } from "@/src/lib/clientApi/org";
+import { useGetGroup } from "@/src/lib/clientApi/group";
+import { IGroup } from "fmdx-core/definitions/group";
 import { useCallback, useMemo } from "react";
 import { WrapLoader } from "../internal/wrap-loader";
-import { kOrgTabs, Org, OrgTab } from "./org";
-import { IOrg } from "fmdx-core/definitions/org";
+import { Group, GroupTab, kGroupTabs } from "./group";
 
-export interface IOrgContainerRenderProps {
-  org: IOrg;
+export interface IGroupContainerRenderProps {
+  group: IGroup;
 }
 
-export interface IOrgContainerProps {
-  orgId: string;
-  defaultTab?: OrgTab;
-  render?: (response: IOrgContainerRenderProps) => React.ReactNode;
+export interface IGroupContainerProps {
+  groupId: string;
+  defaultTab?: GroupTab;
+  render?: (response: IGroupContainerRenderProps) => React.ReactNode;
   renderLoading?: () => React.ReactNode;
   renderError?: (error: unknown) => React.ReactNode;
 }
 
-export function OrgContainer(props: IOrgContainerProps) {
+export function GroupContainer(props: IGroupContainerProps) {
   const {
-    orgId,
-    defaultTab = kOrgTabs.apps,
+    groupId,
+    defaultTab = kGroupTabs.apps,
     renderLoading,
     renderError,
   } = props;
-  const getOrgHook = useGetOrg({ orgId });
+  const getGroupHook = useGetGroup({ groupId });
 
-  const error = getOrgHook.error;
-  const isLoading = getOrgHook.isLoading;
-  const data = useMemo((): IOrgContainerRenderProps | undefined => {
-    if (getOrgHook.data) {
+  const error = getGroupHook.error;
+  const isLoading = getGroupHook.isLoading;
+  const data = useMemo((): IGroupContainerRenderProps | undefined => {
+    if (getGroupHook.data) {
       return {
-        org: getOrgHook.data.org,
+        group: getGroupHook.data.group,
       };
     }
-  }, [getOrgHook.data]);
+  }, [getGroupHook.data]);
 
   const defaultRender = useCallback(
-    (response: IOrgContainerRenderProps) => (
-      <Org org={response.org} defaultTab={defaultTab} />
+    (response: IGroupContainerRenderProps) => (
+      <Group group={response.group} defaultTab={defaultTab} />
     ),
     [defaultTab]
   );

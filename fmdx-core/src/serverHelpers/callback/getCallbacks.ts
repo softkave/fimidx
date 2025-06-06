@@ -1,87 +1,148 @@
-import assert from "assert";
-import { count, eq, inArray, or } from "drizzle-orm";
-import { kOwnServerErrorCodes, OwnServerError } from "../../common/error.js";
-import { callbacks as callbackTable, db } from "../../db/fmdx-schema.js";
 import type { GetCallbacksEndpointArgs } from "../../definitions/callback.js";
+import {
+  kObjTags,
+  type IObjPartQueryItem,
+  type IObjQuery,
+} from "../../definitions/obj.js";
+import { getManyObjs, metaQueryToPartQueryList } from "../obj/getObjs.js";
+import { objToCallback } from "./objToCallback.js";
 
-async function getCallbacksFromDB(params: {
-  limitNumber: number;
-  pageNumber: number;
-  appId?: string;
-  idempotencyKey?: string[];
-}) {
-  const { limitNumber, pageNumber, appId, idempotencyKey } = params;
-  const callbacks = await db
-    .select()
-    .from(callbackTable)
-    .where(
-      or(
-        appId ? eq(callbackTable.appId, appId) : undefined,
-        idempotencyKey
-          ? inArray(callbackTable.idempotencyKey, idempotencyKey)
-          : undefined
-      )
-    )
-    .limit(limitNumber)
-    .offset((pageNumber - 1) * limitNumber);
-
-  return callbacks;
-}
-
-async function countCallbacksInDB(params: {
-  appId: string;
-  idempotencyKey?: string[];
-}) {
-  const { appId, idempotencyKey } = params;
-  const callbackCount = await db
-    .select({ count: count() })
-    .from(callbackTable)
-    .where(
-      or(
-        eq(callbackTable.appId, appId),
-        idempotencyKey
-          ? inArray(callbackTable.idempotencyKey, idempotencyKey)
-          : undefined
-      )
-    );
-
-  return callbackCount[0].count;
-}
-
-export async function getCallbackList(params: {
+export function getCallbacksObjQuery(params: {
   args: GetCallbacksEndpointArgs;
-  includeCount?: boolean;
 }) {
-  const { args, includeCount = true } = params;
-  const { page, limit, appId, idempotencyKey } = args;
+  const { args } = params;
+  const { query } = args;
+  const {
+    appId,
+    createdBy,
+    updatedBy,
+    idempotencyKey,
+    intervalFrom,
+    intervalMs,
+    lastErrorAt,
+    lastExecutedAt,
+    lastSuccessAt,
+    method,
+    requestBody,
+    requestHeaders,
+    timeout,
+    url,
+    createdAt,
+    id,
+    updatedAt,
+    name,
+  } = query;
 
-  const pageNumber = page ?? 1;
-  const limitNumber = limit ?? 10;
-
-  assert(
-    appId || idempotencyKey?.length,
-    new OwnServerError("Invalid request", kOwnServerErrorCodes.InvalidRequest)
+  const idempotencyKeyPartQuery = idempotencyKey
+    ? metaQueryToPartQueryList({
+        metaQuery: { idempotencyKey },
+      })
+    : undefined;
+  const intervalFromPartQuery = intervalFrom
+    ? metaQueryToPartQueryList({
+        metaQuery: { intervalFrom },
+      })
+    : undefined;
+  const intervalMsPartQuery = intervalMs
+    ? metaQueryToPartQueryList({
+        metaQuery: { intervalMs },
+      })
+    : undefined;
+  const lastErrorAtPartQuery = lastErrorAt
+    ? metaQueryToPartQueryList({
+        metaQuery: { lastErrorAt },
+      })
+    : undefined;
+  const lastExecutedAtPartQuery = lastExecutedAt
+    ? metaQueryToPartQueryList({
+        metaQuery: { lastExecutedAt },
+      })
+    : undefined;
+  const lastSuccessAtPartQuery = lastSuccessAt
+    ? metaQueryToPartQueryList({
+        metaQuery: { lastSuccessAt },
+      })
+    : undefined;
+  const methodPartQuery = method
+    ? metaQueryToPartQueryList({
+        metaQuery: { method },
+      })
+    : undefined;
+  const urlPartQuery = url
+    ? metaQueryToPartQueryList({
+        metaQuery: { url },
+      })
+    : undefined;
+  const timeoutPartQuery = timeout
+    ? metaQueryToPartQueryList({
+        metaQuery: { timeout },
+      })
+    : undefined;
+  const requestBodyPartQuery = requestBody?.map(
+    (part) =>
+      ({
+        op: part.op,
+        field: `requestBody.${part.field}`,
+        value: part.value,
+      } as IObjPartQueryItem)
   );
-  const [callbacks, total] = await Promise.all([
-    getCallbacksFromDB({ limitNumber, pageNumber, appId, idempotencyKey }),
-    includeCount ? countCallbacksInDB({ appId, idempotencyKey }) : null,
-  ]);
+  const requestHeadersPartQuery = requestHeaders?.map(
+    (part) =>
+      ({
+        op: part.op,
+        field: `requestHeaders.${part.field}`,
+        value: part.value,
+      } as IObjPartQueryItem)
+  );
+  const namePartQuery = name
+    ? metaQueryToPartQueryList({
+        metaQuery: { name },
+      })
+    : undefined;
 
-  return {
-    callbacks,
-    total,
+  const filterArr: Array<IObjPartQueryItem> = [
+    ...(idempotencyKeyPartQuery ?? []),
+    ...(intervalFromPartQuery ?? []),
+    ...(intervalMsPartQuery ?? []),
+    ...(lastErrorAtPartQuery ?? []),
+    ...(lastExecutedAtPartQuery ?? []),
+    ...(lastSuccessAtPartQuery ?? []),
+    ...(methodPartQuery ?? []),
+    ...(urlPartQuery ?? []),
+    ...(timeoutPartQuery ?? []),
+    ...(requestBodyPartQuery ?? []),
+    ...(requestHeadersPartQuery ?? []),
+    ...(namePartQuery ?? []),
+  ];
+
+  const objQuery: IObjQuery = {
+    appId,
+    partQuery: {
+      and: filterArr,
+    },
+    metaQuery: { id, createdAt, updatedAt, createdBy, updatedBy },
   };
+
+  return objQuery;
 }
 
-export async function getCallbacksForInternalUse(params: {
-  limitNumber: number;
-  pageNumber: number;
-  appId?: string;
-  idempotencyKey?: string[];
-}) {
-  const { limitNumber, pageNumber } = params;
+export async function getCallbacks(params: { args: GetCallbacksEndpointArgs }) {
+  const { args } = params;
+  const { page: inputPage, limit: inputLimit, sort } = args;
 
-  const callbacks = await getCallbacksFromDB({ limitNumber, pageNumber });
+  const pageNumber = inputPage ?? 1;
+  const limitNumber = inputLimit ?? 100;
 
-  return callbacks;
+  const objQuery = getCallbacksObjQuery({ args });
+  const { objs, hasMore, page, limit } = await getManyObjs({
+    objQuery,
+    tag: kObjTags.callback,
+    limit: limitNumber,
+    page: pageNumber,
+    sort: sort ? sort : undefined,
+  });
+
+  const callbacks = objs.map(objToCallback);
+
+  return { callbacks, hasMore, page, limit };
 }

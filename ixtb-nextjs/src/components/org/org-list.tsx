@@ -1,43 +1,43 @@
-import { IOrg } from "fmdx-core/definitions/org";
+import { IGroup } from "fmdx-core/definitions/group";
 import { PageMessage } from "../internal/page-message";
-import { OrgItem, OrgItemSkeleton } from "./org-item";
+import { GroupItem, GroupItemSkeleton } from "./group-item";
 
-export interface IOrgsProps {
-  orgs: IOrg[];
+export interface IGroupsProps {
+  groups: IGroup[];
 }
 
-export function OrgItemEmpty() {
+export function GroupItemEmpty() {
   return (
     <div className="w-full px-4">
       <PageMessage
-        title="No organizations found"
-        message="Add an organization to get started"
+        title="No groups found"
+        message="Add an group to get started"
         variant="secondary"
       />
     </div>
   );
 }
 
-export function Orgs(props: IOrgsProps) {
-  if (props.orgs.length === 0) {
-    return <OrgItemEmpty />;
+export function Groups(props: IGroupsProps) {
+  if (props.groups.length === 0) {
+    return <GroupItemEmpty />;
   }
 
   return (
     <div className="w-full">
-      {props.orgs.map((org) => (
-        <OrgItem key={org.id} item={org} />
+      {props.groups.map((group) => (
+        <GroupItem key={group.id} item={group} />
       ))}
     </div>
   );
 }
 
-export function OrgsSkeleton() {
+export function GroupsSkeleton() {
   return (
     <div className="flex flex-col gap-4">
-      <OrgItemSkeleton className="w-full" />
-      <OrgItemSkeleton className="w-full" />
-      <OrgItemSkeleton className="w-full" />
+      <GroupItemSkeleton className="w-full" />
+      <GroupItemSkeleton className="w-full" />
+      <GroupItemSkeleton className="w-full" />
     </div>
   );
 }

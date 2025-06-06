@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 type AppCallbacksPageProps = {
   params: Promise<{
-    orgId: string;
+    groupId: string;
     appId: string;
   }>;
 };
@@ -21,13 +21,13 @@ type AppCallbacksPageProps = {
 export default async function Page(
   props: AppCallbacksPageProps
 ): Promise<JSX.Element> {
-  const { orgId, appId } = await props.params;
+  const { groupId, appId } = await props.params;
   const session = await auth();
   if (!session) {
     return redirect(
       kClientPaths.withURL(
         kClientPaths.signinWithRedirect(
-          kClientPaths.app.org.app.callbacks.index(orgId, appId)
+          kClientPaths.app.group.app.callbacks.index(groupId, appId)
         )
       )
     );

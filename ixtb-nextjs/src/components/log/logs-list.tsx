@@ -15,7 +15,7 @@ export interface ILogsProps {
   filters?: LogPartFilterList;
   onFiltersChange?: (filters: LogPartFilterList) => void;
   showFiltersAndSort?: boolean;
-  orgId: string;
+  groupId: string;
   appId: string;
 }
 
@@ -51,7 +51,7 @@ export function Logs(props: ILogsProps) {
             <LogsFilterListContainer
               onChange={props.onFiltersChange}
               filters={props.filters}
-              orgId={props.orgId}
+              groupId={props.groupId}
               appId={props.appId}
             />
           </AccordionContent>

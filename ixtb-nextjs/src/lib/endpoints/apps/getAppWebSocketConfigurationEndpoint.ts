@@ -22,7 +22,7 @@ export const getAppWebSocketConfigurationEndpoint: NextUserAuthenticatedEndpoint
   const app = await getApp({ id: input.appId });
   await checkPermission({
     userId,
-    orgId: app.orgId,
+    groupId: app.groupId,
     permission: kPermissions.app.read,
   });
 

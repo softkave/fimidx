@@ -1,7 +1,12 @@
 import type { Duration } from "date-fns";
 import type { ValueOf } from "type-fest";
 import { z } from "zod";
-// import { logPartFilterListSchema, type LogPartFilterList } from "./log.js";
+import {
+  numberMetaQuerySchema,
+  objPartLogicalQuerySchema,
+  stringMetaQuerySchema,
+  type IObjPartLogicalQuery,
+} from "./obj.js";
 import { durationSchema } from "./other.js";
 
 export const kMonitorStatus = {
@@ -13,86 +18,94 @@ export type MonitorStatus = ValueOf<typeof kMonitorStatus>;
 
 export interface IMonitorReportsTo {
   userId: string;
-  addedAt: Date;
-  addedBy: string;
 }
 
 export interface IMonitor {
   id: string;
   name: string;
-  nameLower: string;
   description?: string | null;
   createdAt: Date;
   createdBy: string;
   updatedAt: Date;
   updatedBy: string;
-  orgId: string;
+  createdByType: string;
+  updatedByType: string;
   appId: string;
-  // filters: LogPartFilterList;
-  lastRun: Date | null;
-  nextRun: Date | null;
+  logsQuery: IObjPartLogicalQuery;
+  groupId: string;
   status: MonitorStatus;
-  statusUpdatedAt: Date;
   reportsTo: IMonitorReportsTo[];
-  duration: Duration;
+  interval: Duration;
 }
 
-export const createMonitorSchema = z.object({
+export interface IMonitorObjRecord {
+  name: string;
+  description?: string | null;
+  logsQuery: IObjPartLogicalQuery;
+  status: MonitorStatus;
+  reportsTo: IMonitorReportsTo[];
+  interval: Duration;
+}
+
+export const addMonitorSchema = z.object({
   appId: z.string(),
   name: z.string().min(1),
   description: z.string().optional(),
-  // filters: logPartFilterListSchema,
+  logsQuery: objPartLogicalQuerySchema,
   status: z.nativeEnum(kMonitorStatus),
   reportsTo: z.array(z.string().min(1)),
-  duration: durationSchema,
+  interval: durationSchema,
 });
 
-export const updateMonitorSchema = z.object({
-  id: z.string().min(1),
-  name: z.string().min(1).optional(),
-  description: z.string().min(1).optional(),
-  // filters: logPartFilterListSchema.optional(),
-  status: z.nativeEnum(kMonitorStatus).optional(),
-  reportsTo: z.array(z.string().min(1)).optional(),
-  duration: durationSchema.optional(),
+export const monitorQuerySchema = z.object({
+  appId: z.string(),
+  id: stringMetaQuerySchema,
+  createdBy: stringMetaQuerySchema.optional(),
+  updatedBy: stringMetaQuerySchema.optional(),
+  createdAt: numberMetaQuerySchema.optional(),
+  updatedAt: numberMetaQuerySchema.optional(),
+  name: stringMetaQuerySchema.optional(),
+  status: stringMetaQuerySchema.optional(),
+  reportsTo: stringMetaQuerySchema.optional(),
 });
 
-export const getMonitorByIdSchema = z.object({
-  id: z.string().min(1),
+export const updateMonitorsSchema = z.object({
+  query: monitorQuerySchema,
+  update: z.object({
+    name: z.string().min(1).optional(),
+    description: z.string().min(1).optional(),
+    logsQuery: objPartLogicalQuerySchema.optional(),
+    status: z.nativeEnum(kMonitorStatus).optional(),
+    reportsTo: z.array(z.string().min(1)).optional(),
+    interval: durationSchema.optional(),
+  }),
+  updateMany: z.boolean().optional(),
 });
 
 export const getMonitorsSchema = z.object({
-  appId: z.string(),
+  query: monitorQuerySchema,
   page: z.number().min(1).optional(),
   limit: z.number().min(1).optional(),
 });
 
-export const deleteMonitorSchema = z.object({
-  id: z.string().optional(),
-  appId: z.string().optional(),
-  acknowledgeDeleteAllInApp: z.boolean().optional(),
+export const deleteMonitorsSchema = z.object({
+  query: monitorQuerySchema,
+  deleteMany: z.boolean().optional(),
 });
 
-export type CreateMonitorEndpointArgs = z.infer<typeof createMonitorSchema>;
-export type UpdateMonitorEndpointArgs = z.infer<typeof updateMonitorSchema>;
-export type GetMonitorByIdEndpointArgs = z.infer<typeof getMonitorByIdSchema>;
+export type AddMonitorEndpointArgs = z.infer<typeof addMonitorSchema>;
+export type UpdateMonitorsEndpointArgs = z.infer<typeof updateMonitorsSchema>;
 export type GetMonitorsEndpointArgs = z.infer<typeof getMonitorsSchema>;
-export type DeleteMonitorEndpointArgs = z.infer<typeof deleteMonitorSchema>;
+export type DeleteMonitorsEndpointArgs = z.infer<typeof deleteMonitorsSchema>;
 
 export interface IGetMonitorsEndpointResponse {
   monitors: IMonitor[];
-  total: number;
+  page: number;
+  limit: number;
+  hasMore: boolean;
 }
 
-export interface IGetMonitorByIdEndpointResponse {
-  monitor: IMonitor;
-}
-
-export interface ICreateMonitorEndpointResponse {
-  monitor: IMonitor;
-}
-
-export interface IUpdateMonitorEndpointResponse {
+export interface IAddMonitorEndpointResponse {
   monitor: IMonitor;
 }
 

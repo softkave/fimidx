@@ -15,7 +15,7 @@ export const deleteMonitorEndpoint: NextUserAuthenticatedEndpointFn<
   const monitor = await getMonitor({ id: input.id });
   await checkPermission({
     userId,
-    orgId: monitor.orgId,
+    groupId: monitor.groupId,
     permission: kPermissions.monitor.delete,
   });
 

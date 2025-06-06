@@ -21,7 +21,7 @@ export const addAuthIdEndpoint: NextClientTokenAuthenticatedEndpointFn<
 
   const authId = await addAuthId({
     args: input,
-    orgId: app.orgId,
+    groupId: app.groupId,
     clientTokenId: clientToken.id,
   });
 

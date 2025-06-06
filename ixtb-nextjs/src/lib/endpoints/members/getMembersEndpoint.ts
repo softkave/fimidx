@@ -5,7 +5,7 @@ import {
 import { kPermissions } from "fmdx-core/definitions/permissions";
 import {
   augmentMembers,
-  getOrgMemberList,
+  getGroupMemberList,
 } from "fmdx-core/serverHelpers/index";
 import {
   checkPermission,
@@ -24,20 +24,20 @@ export const getMembersEndpoint: NextUserAuthenticatedEndpointFn<
 
   await checkPermission({
     userId,
-    orgId: input.orgId,
+    groupId: input.groupId,
     permission: kPermissions.member.read,
   });
 
-  const { members, total } = await getOrgMemberList({
+  const { members, total } = await getGroupMemberList({
     args: input,
-    orgId: input.orgId,
+    groupId: input.groupId,
   });
 
   const augmentedMembers = await augmentMembers(
     members,
     await hasPermission({
       userId,
-      orgId: input.orgId,
+      groupId: input.groupId,
       permission: kPermissions.member.readPermissions,
     })
   );

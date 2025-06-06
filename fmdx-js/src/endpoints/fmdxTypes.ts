@@ -18,7 +18,7 @@ export type Callback = {
   id: string;
   createdAt: string | number;
   updatedAt: string | number;
-  orgId: string;
+  groupId: string;
   appId: string;
   clientTokenId: string;
   url: string;

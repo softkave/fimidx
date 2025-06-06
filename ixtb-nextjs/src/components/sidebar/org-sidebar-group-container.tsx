@@ -1,13 +1,15 @@
 "use client";
 
-import { OrgContainer } from "../org/org-container";
-import { OrgSidebarGroup } from "./org-sidebar-group";
+import { GroupContainer } from "../group/group-container";
+import { GroupSidebarGroup } from "./group-sidebar-group";
 
-export function OrgSidebarGroupContainer(props: { orgId: string }) {
+export function GroupSidebarGroupContainer(props: { groupId: string }) {
   return (
-    <OrgContainer
-      orgId={props.orgId}
-      render={({ org }) => <OrgSidebarGroup orgId={org.id} name={org.name} />}
+    <GroupContainer
+      groupId={props.groupId}
+      render={({ group }) => (
+        <GroupSidebarGroup groupId={group.id} name={group.name} />
+      )}
       renderLoading={() => null}
       renderError={() => null}
     />

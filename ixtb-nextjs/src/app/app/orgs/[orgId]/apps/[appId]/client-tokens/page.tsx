@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 type AppTokensPageProps = {
   params: Promise<{
-    orgId: string;
+    groupId: string;
     appId: string;
   }>;
 };
@@ -21,17 +21,17 @@ type AppTokensPageProps = {
 export default async function Page(
   props: AppTokensPageProps
 ): Promise<JSX.Element> {
-  const { orgId, appId } = await props.params;
+  const { groupId, appId } = await props.params;
   const session = await auth();
   if (!session) {
     return redirect(
       kClientPaths.withURL(
         kClientPaths.signinWithRedirect(
-          kClientPaths.app.org.app.clientToken.index(orgId, appId)
+          kClientPaths.app.group.app.clientToken.index(groupId, appId)
         )
       )
     );
   }
 
-  return <ClientTokensPage orgId={orgId} appId={appId} />;
+  return <ClientTokensPage groupId={groupId} appId={appId} />;
 }

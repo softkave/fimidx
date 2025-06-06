@@ -25,5 +25,6 @@ export const deleteManyObjsEndpoint: NextClientTokenAuthenticatedEndpointFn<
     deletedByType: kByTypes.clientToken,
     objQuery: input,
     tag: kObjTags.obj,
+    deleteMany: input.deleteMany ?? false,
   });
 };

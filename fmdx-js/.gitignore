@@ -6,7 +6,7 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 
-# Diagnostic reports (https://nodejs.org/api/report.html)
+# Diagnostic reports (https://nodejs.group/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 # Runtime data
@@ -34,7 +34,7 @@ bower_components
 # node-waf configuration
 .lock-wscript
 
-# Compiled binary addons (https://nodejs.org/api/addons.html)
+# Compiled binary addons (https://nodejs.group/api/addons.html)
 build/Release
 
 # Dependency directories
@@ -71,7 +71,7 @@ typings/
 # dotenv environment variables file
 .env*
 
-# parcel-bundler cache (https://parceljs.org/)
+# parcel-bundler cache (https://parceljs.group/)
 .cache
 
 # Next.js build output
@@ -84,7 +84,7 @@ dist
 # Gatsby files
 .cache/
 # Comment in the public line in if your project uses Gatsby and *not* Next.js
-# https://nextjs.org/blog/next-9-1#public-directory-support
+# https://nextjs.group/blog/next-9-1#public-directory-support
 # public
 
 # vuepress build output

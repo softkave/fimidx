@@ -23,7 +23,7 @@ import { Input } from "../ui/input.tsx";
 import { Textarea } from "../ui/textarea.tsx";
 
 export interface IAddClientTokenFormProps {
-  orgId: string;
+  groupId: string;
   appId: string;
   onSubmitComplete: (clientToken: IClientToken) => void;
 }

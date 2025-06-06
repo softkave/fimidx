@@ -11,7 +11,7 @@ import { ClientTokenFormSheet } from "./client-token-form-sheet";
 
 export function ClientTokensHeader(props: {
   className?: string;
-  orgId: string;
+  groupId: string;
   appId: string;
 }) {
   const [openForm, setOpenForm] = useState(false);
@@ -20,7 +20,7 @@ export function ClientTokensHeader(props: {
   const {
     checks: [canCreate],
   } = useHasPermission({
-    orgId: props.orgId,
+    groupId: props.groupId,
     permission: kPermissions.clientToken.update,
   });
 
@@ -31,14 +31,14 @@ export function ClientTokensHeader(props: {
         onOpenChange={setOpenForm}
         onSubmitComplete={(clientToken) => {
           router.push(
-            kClientPaths.app.org.app.clientToken.single(
-              clientToken.orgId,
+            kClientPaths.app.group.app.clientToken.single(
+              clientToken.groupId,
               clientToken.appId,
               clientToken.id
             )
           );
         }}
-        orgId={props.orgId}
+        groupId={props.groupId}
         appId={props.appId}
       />
       <div className={cn("flex justify-between items-center", props.className)}>

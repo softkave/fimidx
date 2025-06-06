@@ -22,14 +22,14 @@ export const updateAppWebSocketConfigurationEndpoint: NextUserAuthenticatedEndpo
   const app = await getApp({ id: input.appId });
   await checkPermission({
     userId,
-    orgId: app.orgId,
+    groupId: app.groupId,
     permission: kPermissions.app.update,
   });
 
   const appWebSocketConfiguration = await addAppWebSocketConfiguration({
     args: input,
     userId,
-    orgId: app.orgId,
+    groupId: app.groupId,
   });
 
   const response: IAddAppWebSocketConfigurationEndpointResponse = {

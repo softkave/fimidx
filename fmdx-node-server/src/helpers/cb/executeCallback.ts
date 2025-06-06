@@ -1,14 +1,32 @@
 import axios, {AxiosError} from 'axios';
-import {callbackMethodSchema} from 'fmdx-core/definitions/index';
+import {objModel} from 'fmdx-core/db/mongo';
 import {
-  getCallback,
-  updateCallbackExecution,
+  callbackMethodSchema,
+  kCallbackFmdxHeaders,
+} from 'fmdx-core/definitions/index';
+import {kObjTags} from 'fmdx-core/definitions/obj';
+import {
+  addCallbackExecution,
+  objToCallback,
 } from 'fmdx-core/serverHelpers/index';
 import {kPromiseStore} from '../../ctx/promiseStore.js';
+import {removeCallbackFromStore} from './removeCallbackFromStore.js';
 
 export async function executeCallback(params: {callbackId: string}) {
   const {callbackId} = params;
-  const callback = await getCallback({id: callbackId});
+  const obj = await objModel
+    .findOne({
+      id: callbackId,
+      tag: kObjTags.callback,
+    })
+    .lean();
+
+  if (!obj) {
+    removeCallbackFromStore(callbackId);
+    return;
+  }
+
+  const callback = objToCallback(obj);
 
   try {
     const response = await axios({
@@ -18,14 +36,27 @@ export async function executeCallback(params: {callbackId: string}) {
         callback.method === callbackMethodSchema.Values.GET
           ? undefined
           : callback.requestBody,
-      headers: {...callback.requestHeaders, 'x-fmdx-callback-id': callbackId},
+      headers: {
+        ...(callback.requestHeaders ?? {}),
+        [kCallbackFmdxHeaders.callbackId]: callback.id,
+        [kCallbackFmdxHeaders.lastExecutedAt]: callback.lastExecutedAt
+          ? new Date(callback.lastExecutedAt).toISOString()
+          : undefined,
+        [kCallbackFmdxHeaders.lastSuccessAt]: callback.lastSuccessAt
+          ? new Date(callback.lastSuccessAt).toISOString()
+          : undefined,
+        [kCallbackFmdxHeaders.lastErrorAt]: callback.lastErrorAt
+          ? new Date(callback.lastErrorAt).toISOString()
+          : undefined,
+      },
     });
 
     // separate execution to ensure the only error thrown is the one from axios
-    kPromiseStore.callAndForget(() => {
-      return updateCallbackExecution({
+    kPromiseStore.callAndForget(async () => {
+      await addCallbackExecution({
+        appId: callback.appId,
+        groupId: callback.groupId,
         callbackId,
-        executedAt: new Date(),
         error: null,
         responseHeaders: Object.fromEntries(
           Object.entries(response.headers).map(([key, value]) => [
@@ -35,15 +66,18 @@ export async function executeCallback(params: {callbackId: string}) {
         ),
         responseBody: response.data,
         responseStatusCode: response.status,
+        executedAt: new Date(),
+        clientTokenId: callback.createdBy,
       });
     });
   } catch (error) {
-    kPromiseStore.callAndForget(() => {
+    kPromiseStore.callAndForget(async () => {
       const axiosError = error as AxiosError;
       if (axiosError.response) {
-        return updateCallbackExecution({
+        await addCallbackExecution({
+          appId: callback.appId,
+          groupId: callback.groupId,
           callbackId,
-          executedAt: new Date(),
           error: axiosError.message,
           responseHeaders: Object.fromEntries(
             Object.entries(axiosError.response.headers).map(([key, value]) => [
@@ -54,13 +88,21 @@ export async function executeCallback(params: {callbackId: string}) {
           responseBody: axiosError.response.data
             ? String(axiosError.response.data)
             : null,
+          executedAt: new Date(),
+          clientTokenId: callback.createdBy,
           responseStatusCode: axiosError.response.status,
         });
       } else {
-        return updateCallbackExecution({
+        await addCallbackExecution({
+          appId: callback.appId,
+          groupId: callback.groupId,
           callbackId,
-          executedAt: new Date(),
           error: error instanceof Error ? error.message : String(error),
+          responseHeaders: null,
+          responseBody: null,
+          responseStatusCode: null,
+          executedAt: new Date(),
+          clientTokenId: callback.createdBy,
         });
       }
     });

@@ -14,7 +14,7 @@ export type ICallbackStore = Record<string, ICallbackStoreItem>;
 
 export const kCallbackStore: ICallbackStore = {};
 export const kAddCallbackQueue: Array<{
-  orgId: string;
+  groupId: string;
   clientTokenId: string;
   item: AddCallbackEndpointArgs;
   resolve: AnyFn<[ICallback]>;

@@ -26,7 +26,7 @@ export const updateMemberEndpoint: NextUserAuthenticatedEndpointFn<
   const member = await getMember({ id: memberUpdateInput.id });
   await checkPermission({
     userId,
-    orgId: member.orgId,
+    groupId: member.groupId,
     permission: kPermissions.member.update,
   });
 
@@ -40,7 +40,7 @@ export const updateMemberEndpoint: NextUserAuthenticatedEndpointFn<
     [updatedMember],
     await hasPermission({
       userId,
-      orgId: member.orgId,
+      groupId: member.groupId,
       permission: kPermissions.member.readPermissions,
     })
   );

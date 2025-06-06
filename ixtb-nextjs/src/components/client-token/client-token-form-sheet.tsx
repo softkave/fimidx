@@ -1,7 +1,8 @@
 "use client";
 
+import { IClientToken } from "fmdx-core/definitions/clientToken";
 import { useCallback } from "react";
-import { ScrollArea } from "../ui/scroll-area.tsx";
+import { MaybeScroll } from "../ui/scroll-area.tsx";
 import {
   Sheet,
   SheetContent,
@@ -11,10 +12,9 @@ import {
 } from "../ui/sheet.tsx";
 import { AddClientTokenForm } from "./add-client-token-form.tsx";
 import { UpdateClientTokenForm } from "./update-client-token-form.tsx";
-import { IClientToken } from "fmdx-core/definitions/clientToken";
 
 export interface IClientTokenFormSheetProps {
-  orgId: string;
+  groupId: string;
   appId: string;
   clientToken?: IClientToken;
   isOpen: boolean;
@@ -23,8 +23,14 @@ export interface IClientTokenFormSheetProps {
 }
 
 export function ClientTokenFormSheet(props: IClientTokenFormSheetProps) {
-  const { isOpen, onOpenChange, onSubmitComplete, clientToken, orgId, appId } =
-    props;
+  const {
+    isOpen,
+    onOpenChange,
+    onSubmitComplete,
+    clientToken,
+    groupId,
+    appId,
+  } = props;
 
   const handleSubmitComplete = useCallback(
     (clientToken: IClientToken) => {
@@ -37,7 +43,7 @@ export function ClientTokenFormSheet(props: IClientTokenFormSheetProps) {
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
       <SheetContent className="w-full max:w-[440px] p-0">
-        <ScrollArea className="h-[calc(100vh)]">
+        <MaybeScroll className="h-[calc(100vh)]">
           <SheetHeader>
             <SheetTitle>
               {clientToken ? "Update Client Token" : "New Client Token"}
@@ -57,12 +63,12 @@ export function ClientTokenFormSheet(props: IClientTokenFormSheetProps) {
             ) : (
               <AddClientTokenForm
                 onSubmitComplete={handleSubmitComplete}
-                orgId={orgId}
+                groupId={groupId}
                 appId={appId}
               />
             )}
           </div>
-        </ScrollArea>
+        </MaybeScroll>
       </SheetContent>
     </Sheet>
   );

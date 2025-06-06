@@ -1,9 +1,9 @@
-export const kApiOrgKeys = {
-  getOrgs: () => `/api/orgs/fetch`,
-  getOrg: (orgId: string) => `/api/orgs/${orgId}`,
-  addOrg: () => `/api/orgs`,
-  deleteOrg: () => `/api/orgs`,
-  updateOrg: (orgId: string) => `/api/orgs/${orgId}`,
+export const kApiGroupKeys = {
+  getGroups: () => `/api/groups/fetch`,
+  getGroup: (groupId: string) => `/api/groups/${groupId}`,
+  addGroup: () => `/api/groups`,
+  deleteGroup: () => `/api/groups`,
+  updateGroup: (groupId: string) => `/api/groups/${groupId}`,
 };
 
 export const kApiAppKeys = {

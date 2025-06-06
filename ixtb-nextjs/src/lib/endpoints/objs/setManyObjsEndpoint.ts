@@ -5,9 +5,9 @@ import {
   kObjTags,
   setManyObjsSchema,
 } from "fmdx-core/definitions/obj";
+import { kByTypes } from "fmdx-core/definitions/other";
 import { getApp, setManyObjs } from "fmdx-core/serverHelpers/index";
 import { NextClientTokenAuthenticatedEndpointFn } from "../types";
-import { kByTypes } from "fmdx-core/definitions/other";
 
 export const setManyObjsEndpoint: NextClientTokenAuthenticatedEndpointFn<
   ISetManyObjsEndpointResponse
@@ -27,7 +27,7 @@ export const setManyObjsEndpoint: NextClientTokenAuthenticatedEndpointFn<
   const response = await setManyObjs({
     by: clientToken.id,
     byType: kByTypes.clientToken,
-    orgId: app.orgId,
+    groupId: app.groupId,
     tag: kObjTags.obj,
     input,
   });

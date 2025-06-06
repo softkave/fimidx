@@ -1,55 +1,59 @@
-// import { OwnServerError } from "../../common/error.js";
-// import { db, monitor as monitorTable } from "../../db/fmdx-schema.js";
-// import type { CreateMonitorEndpointArgs } from "../../definitions/monitor.js";
-// import { hasMembers } from "../member/hasMembers.js";
-// import { checkMonitorAvailable } from "./checkMonitorExists.js";
+import assert from "assert";
+import { kOwnServerErrorCodes, OwnServerError } from "../../common/error.js";
+import type {
+  AddMonitorEndpointArgs,
+  IMonitorObjRecord,
+} from "../../definitions/monitor.js";
+import { kObjTags } from "../../definitions/obj.js";
+import { setManyObjs } from "../obj/setObjs.js";
+import { objToMonitor } from "./objToMonitor.js";
 
-// export async function addMonitor(params: {
-//   args: CreateMonitorEndpointArgs;
-//   userId: string;
-//   appId: string;
-//   orgId: string;
-// }) {
-//   const { args, userId, appId, orgId } = params;
-//   const { name, description, filters, reportsTo, status, duration } = args;
-//   const date = new Date();
-//   const newMonitor: typeof monitorTable.$inferInsert = {
-//     appId,
-//     name,
-//     nameLower: name.toLowerCase(),
-//     description,
-//     createdAt: date,
-//     updatedAt: date,
-//     createdBy: userId,
-//     updatedBy: userId,
-//     orgId,
-//     status: status,
-//     statusUpdatedAt: date,
-//     reportsTo: reportsTo.map((report) => ({
-//       userId: report,
-//       addedAt: date,
-//       addedBy: userId,
-//     })),
-//     filters: filters,
-//     duration: duration,
-//   };
+export async function addMonitor(params: {
+  args: AddMonitorEndpointArgs;
+  by: string;
+  byType: string;
+  groupId: string;
+}) {
+  const { args, by, byType, groupId } = params;
+  const { name, status, interval, reportsTo, appId, logsQuery, description } =
+    args;
+  const objRecord: IMonitorObjRecord = {
+    name,
+    status,
+    interval,
+    reportsTo: reportsTo.map((userId) => ({ userId })),
+    logsQuery,
+    description,
+  };
 
-//   const userIds = reportsTo;
-//   const orgHasMembers = await hasMembers({ orgId, userIds });
+  const { failedItems, newObjs } = await setManyObjs({
+    by,
+    byType,
+    groupId,
+    tag: kObjTags.monitor,
+    input: {
+      appId,
+      items: [objRecord],
+      conflictOnKeys: ["name"],
+      onConflict: "fail",
+    },
+  });
 
-//   if (!orgHasMembers) {
-//     throw new OwnServerError(
-//       "Some users the monitor is reporting to were not found",
-//       400
-//     );
-//   }
+  assert(
+    failedItems.length === 0,
+    new OwnServerError(
+      "Failed to add monitor",
+      kOwnServerErrorCodes.InternalServerError
+    )
+  );
+  assert(
+    newObjs.length === 1,
+    new OwnServerError(
+      "Failed to add monitor",
+      kOwnServerErrorCodes.InternalServerError
+    )
+  );
 
-//   await checkMonitorAvailable({ name, appId });
-
-//   const [monitor] = await db
-//     .insert(monitorTable)
-//     .values(newMonitor)
-//     .returning();
-
-//   return monitor;
-// }
+  const monitor = objToMonitor(newObjs[0]);
+  return { monitor };
+}

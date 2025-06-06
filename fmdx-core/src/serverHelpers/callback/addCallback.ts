@@ -1,13 +1,22 @@
-import { callbacks as callbackTable, db } from "../../db/fmdx-schema.js";
-import type { AddCallbackEndpointArgs } from "../../definitions/callback.js";
+import assert from "assert";
+import { v7 as uuidv7 } from "uuid";
+import { kOwnServerErrorCodes, OwnServerError } from "../../common/error.js";
+import type {
+  AddCallbackEndpointArgs,
+  ICallbackObjRecord,
+} from "../../definitions/callback.js";
+import { kObjTags } from "../../definitions/obj.js";
+import { setManyObjs } from "../obj/setObjs.js";
+import { getCallbacks } from "./getCallbacks.js";
 
 export async function addCallback(params: {
   args: AddCallbackEndpointArgs;
   appId: string;
-  orgId: string;
-  clientTokenId: string;
+  groupId: string;
+  by: string;
+  byType: string;
 }) {
-  const { args, appId, orgId, clientTokenId } = params;
+  const { args, appId, groupId, by, byType } = params;
   const {
     url,
     method,
@@ -16,72 +25,69 @@ export async function addCallback(params: {
     timeout,
     intervalFrom,
     intervalMs,
-    idempotencyKey,
+    idempotencyKey: inputIdempotencyKey,
+    name: inputName,
+    description,
   } = args;
-  const date = new Date();
-  const newCallback: typeof callbackTable.$inferInsert = {
-    appId,
-    url,
-    method,
-    requestHeaders,
-    requestBody,
-    createdAt: date,
-    updatedAt: date,
-    orgId,
-    clientTokenId,
+
+  const idempotencyKey =
+    inputIdempotencyKey || `__fmdx_generated_${uuidv7()}_${Date.now()}`;
+  const name = inputName || `__fmdx_generated_${uuidv7()}_${Date.now()}`;
+  const objRecord: ICallbackObjRecord = {
+    idempotencyKey,
     timeout: timeout ? new Date(timeout) : null,
     intervalFrom: intervalFrom ? new Date(intervalFrom) : null,
-    intervalMs,
-    idempotencyKey,
+    intervalMs: intervalMs || null,
+    lastErrorAt: null,
+    lastExecutedAt: null,
+    lastSuccessAt: null,
+    method,
+    requestBody: requestBody || null,
+    requestHeaders: requestHeaders || null,
+    url,
+    name,
+    description,
   };
 
-  const [callback] = await db
-    .insert(callbackTable)
-    .values(newCallback)
-    .returning();
+  const { failedItems } = await setManyObjs({
+    by,
+    byType,
+    groupId,
+    tag: kObjTags.callback,
+    input: {
+      appId,
+      items: [objRecord],
+      conflictOnKeys: ["idempotencyKey"],
+      onConflict: "ignore",
+    },
+  });
+
+  assert(
+    failedItems.length === 0,
+    new OwnServerError(
+      "Failed to add callback",
+      kOwnServerErrorCodes.InternalServerError
+    )
+  );
+
+  const {
+    callbacks: [callback],
+  } = await getCallbacks({
+    args: {
+      query: {
+        appId,
+        idempotencyKey: { eq: idempotencyKey },
+      },
+    },
+  });
+
+  assert(
+    callback,
+    new OwnServerError(
+      "Failed to add callback",
+      kOwnServerErrorCodes.InternalServerError
+    )
+  );
 
   return callback;
-}
-
-export async function addCallbackBatch(params: {
-  args: Array<
-    AddCallbackEndpointArgs & {
-      orgId: string;
-      clientTokenId: string;
-      appId: string;
-    }
-  >;
-}) {
-  const { args } = params;
-  if (args.length === 0) {
-    return [];
-  }
-
-  const date = new Date();
-  const newCallbacks = args.map((arg): typeof callbackTable.$inferInsert => ({
-    appId: arg.appId,
-    url: arg.url,
-    method: arg.method,
-    requestHeaders: arg.requestHeaders,
-    requestBody: arg.requestBody,
-    createdAt: date,
-    updatedAt: date,
-    orgId: arg.orgId,
-    clientTokenId: arg.clientTokenId,
-    timeout: arg.timeout ? new Date(arg.timeout) : null,
-    intervalFrom: arg.intervalFrom
-      ? new Date(arg.intervalFrom)
-      : arg.intervalMs
-      ? new Date()
-      : null,
-    intervalMs: arg.intervalMs,
-    idempotencyKey: arg.idempotencyKey,
-  }));
-
-  const callbacks = await db
-    .insert(callbackTable)
-    .values(newCallbacks)
-    .returning();
-
-  return callbacks;
 }

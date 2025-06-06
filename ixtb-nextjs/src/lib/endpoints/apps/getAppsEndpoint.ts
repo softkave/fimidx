@@ -18,13 +18,13 @@ export const getAppsEndpoint: NextUserAuthenticatedEndpointFn<
 
   await checkPermission({
     userId,
-    orgId: input.orgId,
+    groupId: input.groupId,
     permission: kPermissions.app.read,
   });
 
   const { apps, total } = await getAppList({
     args: input,
-    orgId: input.orgId,
+    groupId: input.groupId,
   });
 
   const response: GetAppsEndpointResponse = {

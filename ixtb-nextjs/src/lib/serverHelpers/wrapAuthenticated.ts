@@ -24,7 +24,7 @@ export interface IUserAuthenticatedRequest {
 export interface IClientTokenAuthenticatedRequest {
   clientToken: IClientToken;
   jwtContent: IEncodeClientTokenJWTContent;
-  checkOrgId: (orgId: string) => void;
+  checkgroupId: (groupId: string) => void;
 }
 
 export type IMaybeAuthenticatedRequest = Partial<
@@ -81,16 +81,16 @@ async function tryGetClientTokenAuthenticatedRequest(
       new OwnServerError("Unauthorized", 401)
     );
     assert(
-      clientToken.orgId === decodedToken.orgId,
+      clientToken.groupId === decodedToken.groupId,
       new OwnServerError("Unauthorized", 401)
     );
 
     return {
       clientToken,
       jwtContent: decodedToken,
-      checkOrgId: (orgId: string) => {
+      checkgroupId: (groupId: string) => {
         assert.ok(
-          orgId === clientToken.orgId,
+          groupId === clientToken.groupId,
           new OwnServerError("Unauthorized", 401)
         );
       },

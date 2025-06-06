@@ -53,7 +53,7 @@ const kValueTypeToAllowedOps: Record<ValueType, LogPartFilterItemOp[]> = {
 };
 
 export interface ILogsFilterItemProps {
-  orgId: string;
+  groupId: string;
   appId: string;
   item: IWorkingLogPartFilterItem;
   fields: ILogField[];

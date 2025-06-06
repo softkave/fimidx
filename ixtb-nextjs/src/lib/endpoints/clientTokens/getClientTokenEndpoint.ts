@@ -26,7 +26,7 @@ export const getClientTokenEndpoint: NextUserAuthenticatedEndpointFn<
   });
   await checkPermission({
     userId,
-    orgId: clientToken.orgId,
+    groupId: clientToken.groupId,
     permission: kPermissions.clientToken.read,
   });
 

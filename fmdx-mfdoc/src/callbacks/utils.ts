@@ -7,7 +7,7 @@ import {
   kDateOrNumber,
   kIso8601DateString,
   kNumberTimestamp,
-  kOrgId,
+  kgroupId,
 } from '../utils.js';
 
 export const kCallbackId = mfdocConstruct.constructString({
@@ -98,9 +98,9 @@ export const kCallback = mfdocConstruct.constructObject<ICallback>({
       required: true,
       data: kDateOrNumber,
     }),
-    orgId: mfdocConstruct.constructObjectField({
+    groupId: mfdocConstruct.constructObjectField({
       required: true,
-      data: kOrgId,
+      data: kgroupId,
     }),
     appId: mfdocConstruct.constructObjectField({
       required: true,

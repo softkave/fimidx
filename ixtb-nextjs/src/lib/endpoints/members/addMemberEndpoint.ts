@@ -16,16 +16,16 @@ import { NextUserAuthenticatedEndpointFn } from "../types";
 
 async function sendEmailAndUpdateMember(params: {
   to: string;
-  orgName: string;
+  groupName: string;
   inviterName: string;
   callerId: string;
   id: string;
 }) {
-  const { to, orgName, inviterName, callerId, id } = params;
+  const { to, groupName, inviterName, callerId, id } = params;
   try {
     await sendAddParticipantEmail({
       to,
-      orgName,
+      groupName,
       inviterName,
       callerId,
     });
@@ -52,19 +52,19 @@ export const addMemberEndpoint: NextUserAuthenticatedEndpointFn<
 
   await checkPermission({
     userId,
-    orgId: input.orgId,
+    groupId: input.groupId,
     permission: kPermissions.member.invite,
   });
 
   const member = await addMember({
     args: input,
     inviterId: userId,
-    orgId: input.orgId,
+    groupId: input.groupId,
   });
 
   await sendEmailAndUpdateMember({
     to: member.email,
-    orgName: input.orgId,
+    groupName: input.groupId,
     inviterName: user?.name ?? email,
     callerId: member.id,
     id: member.id,
@@ -74,7 +74,7 @@ export const addMemberEndpoint: NextUserAuthenticatedEndpointFn<
     [member],
     await hasPermission({
       userId,
-      orgId: input.orgId,
+      groupId: input.groupId,
       permission: kPermissions.member.readPermissions,
     })
   );

@@ -28,7 +28,7 @@ export const getManyObjsEndpoint: NextMaybeAuthenticatedEndpointFn<
   } else if (session.userId) {
     await checkPermission({
       userId: session.userId,
-      orgId: app.orgId,
+      groupId: app.groupId,
       permission: kPermissions.obj.read,
     });
   } else {

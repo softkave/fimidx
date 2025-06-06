@@ -22,8 +22,8 @@ export const kDateOrNumberOrNull = mfdocConstruct.constructOrCombination({
   ],
 });
 
-export const kOrgId = mfdocConstruct.constructString({
-  description: 'The organization ID',
+export const kgroupId = mfdocConstruct.constructString({
+  description: 'The group ID',
 });
 
 export const kAppId = mfdocConstruct.constructString({

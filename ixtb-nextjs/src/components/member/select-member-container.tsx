@@ -4,7 +4,7 @@ import { SelectMember, SelectMemberProps } from "./select-member";
 
 export type ISelectMemberContainerProps = Pick<
   SelectMemberProps,
-  | "orgId"
+  | "groupId"
   | "selected"
   | "onChange"
   | "loading"
@@ -24,7 +24,7 @@ export type ISelectMemberContainerProps = Pick<
 export function SelectMemberContainer(props: ISelectMemberContainerProps) {
   return (
     <MemberListContainer
-      orgId={props.orgId}
+      groupId={props.groupId}
       render={(data) => {
         return (
           <SelectMember {...props} members={data} mainNodeClassName="w-full" />
