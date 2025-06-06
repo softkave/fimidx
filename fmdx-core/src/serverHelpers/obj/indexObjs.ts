@@ -1,5 +1,6 @@
 import { and, eq, inArray } from "drizzle-orm";
-import { forEach } from "lodash-es";
+import { forEach, uniq } from "lodash-es";
+import { LRUCache } from "lru-cache";
 import type { FilterQuery } from "mongoose";
 import { indexJson } from "softkave-js-utils";
 import { v7 as uuidv7 } from "uuid";
@@ -9,7 +10,10 @@ import {
   objParts as objPartsTable,
 } from "../../db/fmdx-schema.js";
 import { objModel } from "../../db/mongo.js";
+import type { IApp } from "../../definitions/app.js";
 import type { IObj, IObjField, IObjPart } from "../../definitions/obj.js";
+import { kId0 } from "../../definitions/system.js";
+import { getApps } from "../app/getApps.js";
 
 async function indexObjFields(params: {
   objs: IObj[];
@@ -230,8 +234,50 @@ async function indexObjParts(params: {
   }
 }
 
+function initAppGetter() {
+  const cache = new LRUCache<string, IApp>({
+    max: 1000,
+  });
+
+  const prefetchApps = async (objs: IObj[]) => {
+    const appIds = uniq(objs.map((obj) => obj.appId));
+    const apps: Record<string, IApp | null> = {};
+    appIds.forEach((appId) => {
+      apps[appId] = cache.get(appId) ?? null;
+    });
+    const appsToFetch = appIds.filter((appId) => !apps[appId]);
+    const fetchedApps = await getApps({
+      args: {
+        query: {
+          groupId: kId0,
+          id: {
+            in: appsToFetch,
+          },
+        },
+      },
+    });
+
+    fetchedApps.apps.forEach((app) => {
+      cache.set(app.id, app);
+    });
+  };
+
+  const getApp = (obj: IObj) => {
+    const app = cache.get(obj.appId);
+    return app ?? null;
+  };
+
+  return {
+    getApp,
+    prefetchApps,
+  };
+}
+
 export async function indexObjs(params: { lastSuccessAt: Date | null }) {
   const { lastSuccessAt } = params;
+
+  const { getApp, prefetchApps } = initAppGetter();
+
   const filter: FilterQuery<IObj> = {
     updatedAt: {
       $gte: lastSuccessAt ?? new Date("1970-01-01T00:00:00.000Z"),
@@ -249,10 +295,25 @@ export async function indexObjs(params: { lastSuccessAt: Date | null }) {
       .limit(batchSize)
       .lean();
 
+    await prefetchApps(batch);
+
     // TODO: eventually move to or make a background job service to avoid
     // blocking the server
     const indexList = batch.map((obj) => {
-      return indexJson(obj.objRecord, { flattenNumericKeys: false });
+      const app = getApp(obj);
+      const fieldsToIndex = obj.fieldsToIndex ?? app?.objFieldsToIndex ?? null;
+
+      const rawIndex = indexJson(obj.objRecord, { flattenNumericKeys: false });
+      let index: ReturnType<typeof indexJson> = rawIndex;
+      if (fieldsToIndex) {
+        index = {};
+        fieldsToIndex.reduce((acc, field) => {
+          acc[field] = rawIndex[field];
+          return acc;
+        }, index);
+      }
+
+      return index;
     });
 
     await indexObjFields({ objs: batch, indexList });

@@ -1,3 +1,6 @@
+import assert from "assert";
+import { first } from "lodash-es";
+import { kOwnServerErrorCodes, OwnServerError } from "../../common/error.js";
 import type { GetAppsEndpointArgs } from "../../definitions/app.js";
 import {
   kObjTags,
@@ -64,4 +67,35 @@ export async function getApps(params: { args: GetAppsEndpointArgs }) {
 
   const apps = objs.map(objToApp);
   return { apps, hasMore, page, limit };
+}
+
+export async function getAppById(params: { id: string }) {
+  const { id } = params;
+
+  if (id === kId0) {
+    return null;
+  }
+
+  const objQuery: IObjQuery = {
+    appId: kId0,
+    metaQuery: {
+      id: {
+        eq: id,
+      },
+    },
+  };
+
+  const { objs } = await getManyObjs({
+    objQuery,
+    tag: kObjTags.app,
+    limit: 1,
+  });
+
+  const obj = first(objs);
+  assert(
+    obj,
+    new OwnServerError("App not found", kOwnServerErrorCodes.NotFound)
+  );
+
+  return objToApp(obj);
 }

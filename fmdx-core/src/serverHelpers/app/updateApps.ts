@@ -10,6 +10,10 @@ export async function updateApps(params: {
 }) {
   const { args, by, byType } = params;
   const { update, updateMany } = args;
+  const { objFieldsToIndex: inputObjFieldsToIndex } = update;
+  const objFieldsToIndex = inputObjFieldsToIndex
+    ? Array.from(new Set(inputObjFieldsToIndex))
+    : null;
 
   const objQuery = getAppsObjQuery({ args });
   await updateManyObjs({
@@ -17,7 +21,10 @@ export async function updateApps(params: {
     tag: kObjTags.app,
     by,
     byType,
-    update,
+    update: {
+      ...update,
+      objFieldsToIndex,
+    },
     count: updateMany ? undefined : 1,
     updateWay: "replace",
   });

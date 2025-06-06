@@ -55,6 +55,8 @@ export async function updateManyObjs(params: {
   byType: string;
   updateWay?: OnConflict;
   count?: number;
+  shouldIndex?: boolean;
+  fieldsToIndex?: string[];
 }) {
   const {
     objQuery,
@@ -64,6 +66,8 @@ export async function updateManyObjs(params: {
     by,
     byType,
     updateWay = "mergeButReplaceArrays",
+    shouldIndex = true,
+    fieldsToIndex,
   } = params;
   const date = new Date();
   const filter = getObjQueryFilter({ objQuery, date, tag });
@@ -108,12 +112,26 @@ export async function updateManyObjs(params: {
     });
 
     await objModel.bulkWrite(
-      objsToUpdate.map(({ id, obj }) => ({
-        updateOne: {
-          filter: { id },
-          update: { $set: obj },
-        },
-      }))
+      objsToUpdate.map(({ id, obj }) => {
+        const objUpdate: Partial<IObj> = {
+          objRecord: obj.obj.objRecord,
+          updatedAt: obj.obj.updatedAt,
+          updatedBy: obj.obj.updatedBy,
+          updatedByType: obj.obj.updatedByType,
+          shouldIndex: shouldIndex ?? obj.obj.shouldIndex,
+        };
+
+        if (fieldsToIndex) {
+          objUpdate.fieldsToIndex = Array.from(new Set(fieldsToIndex));
+        }
+
+        return {
+          updateOne: {
+            filter: { id },
+            update: { $set: objUpdate },
+          },
+        };
+      })
     );
 
     processedCount += objs.length;

@@ -15,11 +15,14 @@ export async function addApp(params: {
   byType: string;
 }) {
   const { args, by, byType } = params;
-  const { name, description, groupId } = args;
+  const { name, description, groupId, objFieldsToIndex } = args;
   const objRecord: IAppObjRecord = {
     name,
     description,
     groupId,
+    objFieldsToIndex: objFieldsToIndex
+      ? Array.from(new Set(objFieldsToIndex))
+      : null,
   };
 
   const { failedItems, newObjs } = await setManyObjs({

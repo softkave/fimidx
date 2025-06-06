@@ -12,18 +12,21 @@ export interface IApp {
   updatedBy: string;
   updatedByType: string;
   groupId: string;
+  objFieldsToIndex: string[] | null;
 }
 
 export interface IAppObjRecord {
   name: string;
   description?: string | null;
   groupId: string;
+  objFieldsToIndex: string[] | null;
 }
 
 export const addAppSchema = z.object({
   groupId: z.string(),
   name: z.string(),
   description: z.string().optional(),
+  objFieldsToIndex: z.array(z.string()).optional(),
 });
 
 export const appQuerySchema = z.object({
@@ -41,6 +44,7 @@ export const updateAppsSchema = z.object({
   update: z.object({
     name: z.string().optional(),
     description: z.string().optional(),
+    objFieldsToIndex: z.array(z.string()).optional(),
   }),
   updateMany: z.boolean().optional(),
 });

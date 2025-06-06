@@ -64,6 +64,7 @@ export type IObj = {
   deletedBy: string | null;
   deletedByType: string | null;
   shouldIndex: boolean;
+  fieldsToIndex: string[] | null;
 };
 
 export const inputObjRecordSchema = z.record(z.string(), z.any());
@@ -86,6 +87,7 @@ export const setManyObjsSchema = z.object({
   onConflict: onConflictSchema.optional(),
   conflictOnKeys: z.array(z.string()).optional(),
   shouldIndex: z.boolean().optional(),
+  fieldsToIndex: z.array(z.string()).optional(),
 });
 
 export const objPartQueryItemOpSchema = z.enum([
@@ -233,6 +235,7 @@ export const updateManyObjsSchema = z.object({
   update: inputObjRecordSchema,
   updateMany: z.boolean().optional(),
   updateWay: onConflictSchema.optional(),
+  fieldsToIndex: z.array(z.string()).optional(),
 });
 
 export const deleteManyObjsSchema = z.object({
