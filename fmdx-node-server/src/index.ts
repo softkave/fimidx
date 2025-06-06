@@ -1,8 +1,9 @@
 import assert from 'assert';
 import {loadCallbacks} from './helpers/cb/loadCallbacks.js';
+import {setupIndexObjsCallback} from './helpers/obj/setupIndexObjsCallback.js';
 import {startHttpServer} from './httpServer.js';
 import {startWebSocketServer} from './webSocketServer.js';
-import {setupIndexObjsCallback} from './helpers/obj/setupIndexObjsCallback.js';
+import {setupCleanupObjsCallback} from './helpers/obj/setupCleanupObjsCallback.js';
 
 async function main() {
   const httpPort = process.env.HTTP_PORT;
@@ -15,6 +16,7 @@ async function main() {
 
   await loadCallbacks();
   await setupIndexObjsCallback();
+  await setupCleanupObjsCallback();
 
   startHttpServer({
     port: parseInt(httpPort),

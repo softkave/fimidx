@@ -1,6 +1,7 @@
 import express from 'express';
 import {addCallbackEndpoint} from './httpEndpoints/cbs/addCallbackEndpoint.js';
 import {deleteCallbacksEndpoint} from './httpEndpoints/cbs/deleteCallbacksEndpoint.js';
+import {cleanupDeletedObjsEndpoint} from './httpEndpoints/objs/cleanupDeletedObjsEndpoint.js';
 import {indexObjsEndpoint} from './httpEndpoints/objs/indexObjsEndpoint.js';
 
 export const kInternalAccessKeyHeader = 'x-internal-access-key';
@@ -30,6 +31,9 @@ export function startHttpServer(params: {
 
   app.post('/objs/indexObjs', (req, res) => {
     indexObjsEndpoint(req, res);
+  });
+  app.post('/objs/cleanupDeletedObjs', (req, res) => {
+    cleanupDeletedObjsEndpoint(req, res);
   });
 
   app.listen(port, () => {

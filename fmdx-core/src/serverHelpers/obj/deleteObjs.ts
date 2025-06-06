@@ -56,6 +56,7 @@ export async function cleanupDeletedObjs() {
       .skip(page * batchSize)
       .limit(batchSize)
       .exec();
+
     if (batch.length > 0) {
       // TODO: delete objFields
 

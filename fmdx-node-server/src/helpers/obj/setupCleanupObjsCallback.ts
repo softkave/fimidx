@@ -4,8 +4,8 @@ import {first} from 'lodash-es';
 import {addCallbackEndpointImpl} from '../../httpEndpoints/cbs/addCallbackEndpoint.js';
 import {getConfig} from '../../utils/config.js';
 
-export async function setupIndexObjsCallback() {
-  const name = '__fmdx_indexObjs_callback';
+export async function setupCleanupObjsCallback() {
+  const name = '__fmdx_cleanupObjs_callback';
   const {callbacks} = await getCallbacks({
     args: {
       query: {
@@ -25,10 +25,10 @@ export async function setupIndexObjsCallback() {
   }
 
   const {
-    indexObjsApiKey,
-    indexObjsApiKeyHeader,
-    indexObjsIntervalMs,
-    indexObjsUrl,
+    cleanupObjsApiKey,
+    cleanupObjsApiKeyHeader,
+    cleanupObjsIntervalMs,
+    cleanupObjsUrl,
   } = getConfig();
 
   await addCallbackEndpointImpl({
@@ -37,14 +37,14 @@ export async function setupIndexObjsCallback() {
     idempotencyKey: name,
     item: {
       appId: kId0,
-      url: indexObjsUrl,
+      url: cleanupObjsUrl,
       method: 'POST',
       requestHeaders: {
-        [indexObjsApiKeyHeader]: indexObjsApiKey,
+        [cleanupObjsApiKeyHeader]: cleanupObjsApiKey,
         'Content-Type': 'application/json',
       },
       intervalFrom: new Date().toISOString(),
-      intervalMs: indexObjsIntervalMs,
+      intervalMs: cleanupObjsIntervalMs,
     },
   });
 }
