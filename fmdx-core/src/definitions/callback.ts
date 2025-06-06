@@ -1,3 +1,4 @@
+import type { AnyObject } from "softkave-js-utils";
 import { z } from "zod";
 import {
   numberMetaQuerySchema,
@@ -68,13 +69,10 @@ export interface ICallbackExecution {
   callbackId: string;
   /** The callback error from network, fmdx, etc. */
   error: string | null;
-  /** The callback response headers */
   responseHeaders: Record<string, string> | null;
-  /** The callback response body */
-  responseBody: string | null;
-  /** The callback response status code */
+  responseBodyRaw: string | null;
+  responseBodyJson: AnyObject | null;
   responseStatusCode: number | null;
-  /** The callback executed at */
   executedAt: number | Date;
 }
 
@@ -82,7 +80,8 @@ export interface ICallbackExecutionObjRecord {
   callbackId: string;
   error: string | null;
   responseHeaders: Record<string, string> | null;
-  responseBody: string | null;
+  responseBodyRaw: string | null;
+  responseBodyJson: AnyObject | null;
   responseStatusCode: number | null;
   executedAt: number | Date;
 }

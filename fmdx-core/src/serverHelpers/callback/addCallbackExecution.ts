@@ -1,3 +1,4 @@
+import { tryParseJson } from "../../common/other.js";
 import type { ICallbackExecutionObjRecord } from "../../definitions/callback.js";
 import { kObjTags } from "../../definitions/obj.js";
 import { kByTypes } from "../../definitions/other.js";
@@ -26,11 +27,17 @@ export async function addCallbackExecution(params: {
     clientTokenId,
   } = params;
 
+  const responseContentType = responseHeaders?.["content-type"]?.toLowerCase();
+  const isJsonResponse =
+    responseContentType?.includes("application/json") ||
+    responseContentType?.includes("text/json");
+
   const objRecord: ICallbackExecutionObjRecord = {
     callbackId,
     error,
     responseHeaders,
-    responseBody,
+    responseBodyRaw: responseBody,
+    responseBodyJson: isJsonResponse ? tryParseJson(responseBody) : null,
     responseStatusCode,
     executedAt,
   };
