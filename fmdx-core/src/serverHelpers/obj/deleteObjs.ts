@@ -1,9 +1,5 @@
-import { inArray } from "drizzle-orm";
-import type { FilterQuery } from "mongoose";
-import { db, objParts as objPartsTable } from "../../db/fmdx-schema.js";
-import { objModel } from "../../db/mongo.js";
-import type { IObj, IObjQuery } from "../../definitions/obj.js";
-import { getObjQueryFilter } from "./getObjs.js";
+import type { IObjQuery } from "../../definitions/obj.js";
+import { createDefaultStorage } from "../../storage/config.js";
 
 export async function deleteManyObjs(params: {
   objQuery: IObjQuery;
@@ -21,50 +17,34 @@ export async function deleteManyObjs(params: {
     deletedByType,
     deleteMany = false,
   } = params;
-  const filter = getObjQueryFilter({ objQuery, date, tag });
 
-  if (deleteMany) {
-    await objModel.updateMany(filter, {
-      $set: {
-        deletedAt: date,
-        deletedBy,
-        deletedByType,
-      },
-    });
-  } else {
-    await objModel.updateOne(filter, {
-      $set: {
-        deletedAt: date,
-        deletedBy,
-        deletedByType,
-      },
-    });
-  }
+  const storage = createDefaultStorage();
+
+  // Use the new bulkDelete method from the storage abstraction
+  const result = await storage.bulkDelete!({
+    query: objQuery,
+    tag,
+    date,
+    deletedBy,
+    deletedByType,
+    deleteMany,
+    batchSize: 1000,
+    hardDelete: false, // Always soft delete for this function
+  });
+
+  return result;
 }
 
 export async function cleanupDeletedObjs() {
-  const filter: FilterQuery<IObj> = {
-    deletedAt: { $ne: null },
-  };
+  const storage = createDefaultStorage();
 
-  let batch: IObj[] = [];
-  let page = 0;
-  const batchSize = 1000;
-  do {
-    batch = await objModel
-      .find(filter)
-      .skip(page * batchSize)
-      .limit(batchSize)
-      .exec();
+  // Use the new cleanupDeletedObjs method from the storage abstraction
+  const result = await storage.cleanupDeletedObjs!({
+    batchSize: 1000,
+    onProgress: (processed) => {
+      console.log(`Cleaned up ${processed} deleted objects`);
+    },
+  });
 
-    if (batch.length > 0) {
-      // TODO: delete objFields
-
-      const objIds = batch.map((obj) => obj.id);
-      await db
-        .delete(objPartsTable)
-        .where(inArray(objPartsTable.objId, objIds));
-      await objModel.deleteMany({ id: { $in: objIds } });
-    }
-  } while (batch.length > 0);
+  return result;
 }

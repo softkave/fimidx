@@ -20,18 +20,3 @@ export const objSchema = new Schema<IObj>({
 });
 
 export const objModel = mongoose.model("Obj", objSchema);
-
-// export const objFieldSchema = new Schema<IObjField>({
-//   createdAt: { type: Date, default: Date.now, index: true },
-//   updatedAt: { type: Date, default: Date.now, index: true },
-//   groupId: { type: String, index: true },
-//   appId: { type: String, index: true },
-//   id: { type: String, unique: true },
-//   tag: { type: String, index: true },
-//   field: { type: String, index: true },
-//   fieldKeys: [String],
-//   fieldKeyTypes: [String],
-//   valueTypes: [String],
-// });
-
-// export const objFieldModel = mongoose.model("ObjField", objFieldSchema);

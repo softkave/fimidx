@@ -1,13 +1,11 @@
-import { isNumber, merge } from "lodash-es";
 import { mergeObjects, type AnyObject } from "softkave-js-utils";
-import { objModel } from "../../db/mongo.js";
 import type {
   IInputObjRecord,
   IObj,
   IObjQuery,
   OnConflict,
 } from "../../definitions/obj.js";
-import { getObjQueryFilter } from "./getObjs.js";
+import { createDefaultStorage } from "../../storage/config.js";
 
 export function getUpdateObj(params: {
   obj: IObj;
@@ -29,7 +27,7 @@ export function getUpdateObj(params: {
         updateWay === "replace"
           ? item
           : updateWay === "merge"
-          ? merge(obj.objRecord, item)
+          ? { ...obj.objRecord, ...item }
           : updateWay === "mergeButReplaceArrays"
           ? mergeObjects(obj.objRecord, item, {
               arrayUpdateStrategy: "replace",
@@ -69,75 +67,22 @@ export async function updateManyObjs(params: {
     shouldIndex = true,
     fieldsToIndex,
   } = params;
-  const date = new Date();
-  const filter = getObjQueryFilter({ objQuery, date, tag });
 
-  let page = 0;
-  let processedCount = 0;
-  let batchSize = 1000;
-  let isDone = false;
+  const storage = createDefaultStorage();
 
-  while (!isDone) {
-    if (isNumber(count)) {
-      const remainingCount = count - processedCount;
-      if (remainingCount < batchSize) {
-        batchSize = remainingCount;
-      }
-    }
+  // Use the new bulkUpdate method from the storage abstraction
+  const result = await storage.bulkUpdate!({
+    query: objQuery,
+    tag,
+    update,
+    by,
+    byType,
+    updateWay,
+    count,
+    shouldIndex,
+    fieldsToIndex,
+    batchSize: 1000,
+  });
 
-    const objs = await objModel
-      .find(filter)
-      .skip(page * batchSize)
-      .limit(batchSize)
-      .sort({ createdAt: -1 })
-      .lean();
-
-    if (objs.length === 0) {
-      isDone = true;
-      break;
-    }
-
-    const objsToUpdate = objs.map((obj) => {
-      return {
-        id: obj.id,
-        obj: getUpdateObj({
-          obj,
-          date,
-          by,
-          byType,
-          updateWay,
-          item: update,
-        }),
-      };
-    });
-
-    await objModel.bulkWrite(
-      objsToUpdate.map(({ id, obj }) => {
-        const objUpdate: Partial<IObj> = {
-          objRecord: obj.obj.objRecord,
-          updatedAt: obj.obj.updatedAt,
-          updatedBy: obj.obj.updatedBy,
-          updatedByType: obj.obj.updatedByType,
-          shouldIndex: shouldIndex ?? obj.obj.shouldIndex,
-        };
-
-        if (fieldsToIndex) {
-          objUpdate.fieldsToIndex = Array.from(new Set(fieldsToIndex));
-        }
-
-        return {
-          updateOne: {
-            filter: { id },
-            update: { $set: objUpdate },
-          },
-        };
-      })
-    );
-
-    processedCount += objs.length;
-    page++;
-    isDone = isNumber(count)
-      ? processedCount >= count
-      : objs.length < batchSize;
-  }
+  return result;
 }

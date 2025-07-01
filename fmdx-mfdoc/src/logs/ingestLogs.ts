@@ -8,7 +8,7 @@ export const ingestLogsSchema = mfdocConstruct.constructHttpEndpointDefinition({
   name: 'fmdx/logs/ingestLogs',
   description: 'Ingest logs',
   tags: [kTags.public],
-  basePathname: '/logs/ingest',
+  path: '/logs/ingest',
   requestBody: mfdocConstruct.constructObject<AddLogsEndpointArgs>({
     name: 'IngestLogsArgs',
     description: 'The schema for ingesting logs',

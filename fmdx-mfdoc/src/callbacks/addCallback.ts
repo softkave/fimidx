@@ -18,7 +18,7 @@ import {
 
 export const addCallbackHttpEndpoint =
   mfdocConstruct.constructHttpEndpointDefinition({
-    basePathname: '/callbacks',
+    path: '/callbacks',
     method: MfdocHttpEndpointMethod.Post,
     name: 'fmdx/callbacks/addCallback',
     description: 'Add a callback request',

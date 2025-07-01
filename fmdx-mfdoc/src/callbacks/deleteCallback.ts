@@ -10,7 +10,7 @@ import {
 
 export const deleteCallbackHttpEndpoint =
   mfdocConstruct.constructHttpEndpointDefinition({
-    basePathname: '/callbacks',
+    path: '/callbacks',
     method: MfdocHttpEndpointMethod.Delete,
     name: 'fmdx/callbacks/deleteCallback',
     description: 'Delete a callback request',
