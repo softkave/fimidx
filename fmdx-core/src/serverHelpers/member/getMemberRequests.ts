@@ -1,10 +1,18 @@
-import type { GetMemberRequestsEndpointArgs } from "../../definitions/member.js";
+import assert from "assert";
+import { isArray, uniq } from "lodash-es";
+import { indexArray } from "softkave-js-utils";
+import type {
+  GetMemberRequestsEndpointArgs,
+  IMemberObjRecordMeta,
+} from "../../definitions/member.js";
 import {
   kObjTags,
   type IObjPartQueryItem,
   type IObjQuery,
 } from "../../definitions/obj.js";
+import type { IPermission } from "../../definitions/permission.js";
 import { getManyObjs, metaQueryToPartQueryList } from "../obj/getObjs.js";
+import { getMembersPermissions } from "./getMembers.js";
 import { objToMember } from "./objToMember.js";
 import { objToMemberRequest } from "./objToMemberRequest.js";
 
@@ -59,7 +67,34 @@ export async function getMemberRequests(params: {
     sort: undefined,
   });
 
-  const members = objs.map(objToMember);
+  const memberIds = uniq(objs.map((obj) => obj.objRecord.memberId));
+  const { permissions: memberPermissions } = await getMembersPermissions({
+    appId: args.query.appId,
+    memberIds,
+    groupId: args.query.groupId,
+  });
+
+  const memberPermissionsMap = indexArray<IPermission, IPermission[]>(
+    memberPermissions,
+    {
+      indexer: (permission) => {
+        assert(permission.meta, "Permission meta is required");
+        const meta = permission.meta as IMemberObjRecordMeta;
+        return meta.__fmdx_managed_memberId;
+      },
+      reducer: (permission, _index, _arr, acc) => {
+        const arr: IPermission[] = isArray(acc) ? acc : [];
+        arr.push(permission);
+        return arr;
+      },
+    }
+  );
+
+  const members = objs.map((obj) => {
+    const memberId = obj.objRecord.memberId;
+    const memberPermissions = memberPermissionsMap[memberId] ?? null;
+    return objToMember(obj, memberPermissions);
+  });
   const requests = await objToMemberRequest({ requests: members });
 
   return { requests, hasMore, page, limit };

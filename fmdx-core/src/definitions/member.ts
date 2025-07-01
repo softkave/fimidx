@@ -7,7 +7,11 @@ import {
   objSortListSchema,
   stringMetaQuerySchema,
 } from "./obj.js";
-import { permissionAtomSchema, type IPermissionAtom } from "./permission.js";
+import {
+  permissionAtomSchema,
+  type IPermissionAtom,
+  type IPermissionMeta,
+} from "./permission.js";
 
 export const kMemberStatus = {
   pending: "pending",
@@ -64,6 +68,11 @@ export interface IMemberRequest {
   groupName: string;
   status: MemberStatus;
   updatedAt: number | Date;
+}
+
+export interface IMemberObjRecordMeta extends NonNullable<IPermissionMeta> {
+  __fmdx_managed_memberId: string;
+  __fmdx_managed_groupId: string;
 }
 
 export const addMemberSchema = z.object({

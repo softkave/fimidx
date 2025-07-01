@@ -1,4 +1,8 @@
-import type { GetMembersEndpointArgs } from "../../definitions/member.js";
+import assert from "assert";
+import type {
+  GetMembersEndpointArgs,
+  IMemberObjRecordMeta,
+} from "../../definitions/member.js";
 import {
   kObjTags,
   type IObjPartQueryItem,
@@ -142,7 +146,9 @@ export async function getMembers(params: {
       };
 
   const permissionsMap = permissions.reduce((acc, permission) => {
-    const memberId = permission.meta?.__fmdx_managed_memberId ?? "unknown";
+    assert(permission.meta, "Permission meta is required");
+    const meta = permission.meta as IMemberObjRecordMeta;
+    const memberId = meta.__fmdx_managed_memberId;
     if (!acc[memberId]) {
       acc[memberId] = [];
     }

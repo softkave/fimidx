@@ -1,4 +1,5 @@
 import { isString } from "lodash-es";
+import type { IMemberObjRecordMeta } from "../../definitions/member.js";
 import type {
   IPermission,
   IPermissionAction,
@@ -53,6 +54,10 @@ export function getFmdxManagedMemberPermission(params: {
   groupId: string;
 }): IPermissionAtom & Pick<IPermission, "meta"> {
   const { permission, memberId, groupId } = params;
+  const meta: IMemberObjRecordMeta = {
+    __fmdx_managed_memberId: memberId,
+    __fmdx_managed_groupId: groupId,
+  };
   return {
     ...permission,
     entity: getFmdxManagedMemberPermissionEntity({
@@ -67,10 +72,7 @@ export function getFmdxManagedMemberPermission(params: {
       target: permission.target,
       memberId,
     }),
-    meta: {
-      __fmdx_managed_memberId: memberId,
-      __fmdx_managed_groupId: groupId,
-    },
+    meta,
   };
 }
 

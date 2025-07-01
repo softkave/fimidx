@@ -94,6 +94,8 @@ export type IPermissionAtom = {
   target: IPermissionTarget;
 };
 
+export type IPermissionMeta = Record<string, string> | null;
+
 export interface IPermission extends IPermissionAtom {
   id: string;
   description?: string | null;
@@ -105,7 +107,7 @@ export interface IPermission extends IPermissionAtom {
   updatedByType: string;
   appId: string;
   groupId: string;
-  meta?: Record<string, string> | null;
+  meta?: IPermissionMeta;
 }
 
 export interface IPermissionObjRecord {
@@ -113,7 +115,7 @@ export interface IPermissionObjRecord {
   action: IPermissionAction;
   target: IPermissionTarget;
   description?: string | null;
-  meta?: Record<string, string> | null;
+  meta?: IPermissionMeta;
 }
 
 export const entitySchema = z.record(z.string(), z.string()).or(z.string());
@@ -128,7 +130,7 @@ export const permissionAtomSchema = z.object({
 
 export const addPermissionItemSchema = permissionAtomSchema.extend({
   description: z.string().optional(),
-  meta: z.record(z.string(), z.string()).optional().nullable(),
+  meta: z.record(z.string(), z.string()).optional().nullable().or(z.null()),
 });
 
 export const addPermissionsSchema = z.object({
@@ -162,7 +164,7 @@ export const updatePermissionsSchema = z.object({
     action: actionSchema.optional(),
     target: targetSchema.optional(),
     description: z.string().optional(),
-    meta: z.record(z.string(), z.string()).optional(),
+    meta: z.record(z.string(), z.string()).optional().or(z.null()),
   }),
   updateMany: z.boolean().optional(),
 });
