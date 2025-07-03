@@ -31,12 +31,18 @@ export class MongoObjStorage implements IObjStorage {
     this.queryTransformer = new MongoQueryTransformer();
   }
 
-  async create(params: CreateObjsParams): Promise<CreateObjsResult> {
-    const objs = await this.objModel.insertMany(params.objs);
+  async create(
+    params: CreateObjsParams,
+    session?: any
+  ): Promise<CreateObjsResult> {
+    const objs = await this.objModel.insertMany(
+      params.objs,
+      session ? { session } : {}
+    );
     return { objs };
   }
 
-  async read(params: ReadObjsParams): Promise<ReadObjsResult> {
+  async read(params: ReadObjsParams, session?: any): Promise<ReadObjsResult> {
     const filter = this.queryTransformer.transformFilter(
       params.query,
       params.date || new Date()
@@ -58,11 +64,11 @@ export class MongoObjStorage implements IObjStorage {
 
     // Add deleted filter if not including deleted
     if (!params.includeDeleted) {
-      filter.deletedAt = { $exists: false };
+      filter.deletedAt = null;
     }
 
     const objs = await this.objModel
-      .find(filter)
+      .find(filter, undefined, session ? { session } : undefined)
       .sort(sort)
       .skip(pagination.skip)
       .limit(pagination.limit)
@@ -76,49 +82,83 @@ export class MongoObjStorage implements IObjStorage {
     };
   }
 
-  async update(params: UpdateObjsParams): Promise<UpdateObjsResult> {
+  async update(
+    params: UpdateObjsParams,
+    session?: any
+  ): Promise<UpdateObjsResult> {
     const filter = this.queryTransformer.transformFilter(
       params.query,
       new Date()
     );
 
-    // Add tag filter
+    // Add tag filter if provided
     if (params.tag) {
       filter.tag = params.tag;
     }
 
     // Add deleted filter
-    filter.deletedAt = { $exists: false };
+    filter.deletedAt = null;
 
-    const updateData = {
-      ...params.update,
-      updatedAt: new Date(),
-      updatedBy: params.by,
-      updatedByType: params.byType,
-    };
+    // Find all objects to update
+    const objs = await this.objModel
+      .find(filter, undefined, session ? { session } : undefined)
+      .lean();
+    if (!objs.length) {
+      return { updatedCount: 0, updatedObjs: [] };
+    }
 
-    const result = await this.objModel.updateMany(filter, updateData);
-    const updatedObjs = await this.objModel.find(filter).lean();
+    const updateWay = params.updateWay || "replace";
+    const updatedObjs: IObj[] = [];
+    const date = new Date();
+
+    for (const obj of objs) {
+      // Merge objRecord using the specified strategy
+      const mergedObjRecord = this.applyMergeStrategy(
+        obj.objRecord,
+        params.update,
+        updateWay
+      );
+      const updatedObj: IObj = {
+        ...obj,
+        objRecord: mergedObjRecord,
+        updatedAt: date,
+        updatedBy: params.by,
+        updatedByType: params.byType,
+        shouldIndex: params.shouldIndex ?? obj.shouldIndex,
+        fieldsToIndex: params.fieldsToIndex
+          ? Array.from(new Set(params.fieldsToIndex))
+          : obj.fieldsToIndex,
+      };
+      await this.objModel.updateOne(
+        { id: obj.id },
+        { $set: updatedObj },
+        session ? { session } : undefined
+      );
+      updatedObjs.push(updatedObj);
+    }
 
     return {
-      updatedCount: result.modifiedCount,
+      updatedCount: updatedObjs.length,
       updatedObjs,
     };
   }
 
-  async delete(params: DeleteObjsParams): Promise<DeleteObjsResult> {
+  async delete(
+    params: DeleteObjsParams,
+    session?: any
+  ): Promise<DeleteObjsResult> {
     const filter = this.queryTransformer.transformFilter(
       params.query,
       params.date || new Date()
     );
 
-    // Add tag filter
+    // Add tag filter if provided
     if (params.tag) {
       filter.tag = params.tag;
     }
 
     // Add deleted filter
-    filter.deletedAt = { $exists: false };
+    filter.deletedAt = null;
 
     const updateData = {
       deletedAt: params.date || new Date(),
@@ -126,7 +166,11 @@ export class MongoObjStorage implements IObjStorage {
       deletedByType: params.deletedByType,
     };
 
-    const result = await this.objModel.updateMany(filter, updateData);
+    const result = await this.objModel.updateMany(
+      filter,
+      updateData,
+      session ? { session } : undefined
+    );
 
     return {
       deletedCount: result.modifiedCount,
@@ -135,7 +179,10 @@ export class MongoObjStorage implements IObjStorage {
 
   // Phase 3: Bulk/Batch Operations Implementation
 
-  async bulkUpsert(params: BulkUpsertParams): Promise<BulkUpsertResult> {
+  async bulkUpsert(
+    params: BulkUpsertParams,
+    session?: any
+  ): Promise<BulkUpsertResult> {
     const {
       items,
       conflictOnKeys = [],
@@ -168,6 +215,7 @@ export class MongoObjStorage implements IObjStorage {
         appId,
         tag,
         date,
+        session,
       });
 
       // Group items into new and existing
@@ -188,6 +236,7 @@ export class MongoObjStorage implements IObjStorage {
           createdByType,
           shouldIndex,
           fieldsToIndex,
+          session,
         });
         newObjs.push(...createdObjs);
       }
@@ -205,6 +254,7 @@ export class MongoObjStorage implements IObjStorage {
             date,
             by: createdBy,
             byType: createdByType,
+            session,
           });
           updatedObjs.push(...updated);
         }
@@ -222,7 +272,10 @@ export class MongoObjStorage implements IObjStorage {
     };
   }
 
-  async bulkUpdate(params: BulkUpdateParams): Promise<BulkUpdateResult> {
+  async bulkUpdate(
+    params: BulkUpdateParams,
+    session?: any
+  ): Promise<BulkUpdateResult> {
     const {
       query,
       tag,
@@ -246,7 +299,7 @@ export class MongoObjStorage implements IObjStorage {
     }
 
     // Add deleted filter
-    filter.deletedAt = { $exists: false };
+    filter.deletedAt = null;
 
     const updatedObjs: IObj[] = [];
     let totalProcessed = 0;
@@ -260,7 +313,7 @@ export class MongoObjStorage implements IObjStorage {
       }
 
       const objs = await this.objModel
-        .find(filter)
+        .find(filter, undefined, session ? { session } : undefined)
         .skip(page * currentBatchSize)
         .limit(currentBatchSize)
         .sort({ createdAt: -1 })
@@ -301,8 +354,10 @@ export class MongoObjStorage implements IObjStorage {
           updateOne: {
             filter: { id },
             update: { $set: obj },
+            ...(session ? { session } : {}),
           },
-        }))
+        })),
+        session ? { session } : undefined
       );
 
       updatedObjs.push(...objsToUpdate.map((item) => item.obj));
@@ -323,7 +378,10 @@ export class MongoObjStorage implements IObjStorage {
     };
   }
 
-  async bulkDelete(params: BulkDeleteParams): Promise<BulkDeleteResult> {
+  async bulkDelete(
+    params: BulkDeleteParams,
+    session?: any
+  ): Promise<BulkDeleteResult> {
     const {
       query,
       tag,
@@ -343,7 +401,7 @@ export class MongoObjStorage implements IObjStorage {
     }
 
     // Add deleted filter
-    filter.deletedAt = { $exists: false };
+    filter.deletedAt = null;
 
     let totalProcessed = 0;
     let page = 0;
@@ -351,7 +409,7 @@ export class MongoObjStorage implements IObjStorage {
 
     while (!isDone) {
       const objs = await this.objModel
-        .find(filter)
+        .find(filter, undefined, session ? { session } : undefined)
         .skip(page * batchSize)
         .limit(batchSize)
         .sort({ createdAt: -1 })
@@ -364,9 +422,12 @@ export class MongoObjStorage implements IObjStorage {
 
       if (hardDelete) {
         // Hard delete
-        await this.objModel.deleteMany({
-          id: { $in: objs.map((obj) => obj.id) },
-        });
+        await this.objModel.deleteMany(
+          {
+            id: { $in: objs.map((obj) => obj.id) },
+          },
+          session ? { session } : undefined
+        );
       } else {
         // Soft delete
         await this.objModel.updateMany(
@@ -377,7 +438,8 @@ export class MongoObjStorage implements IObjStorage {
               deletedBy,
               deletedByType,
             },
-          }
+          },
+          session ? { session } : undefined
         );
       }
 
@@ -393,7 +455,8 @@ export class MongoObjStorage implements IObjStorage {
   }
 
   async cleanupDeletedObjs(
-    params?: CleanupDeletedObjsParams
+    params?: CleanupDeletedObjsParams,
+    session?: any
   ): Promise<CleanupResult> {
     const { batchSize = 1000, onProgress } = params || {};
 
@@ -404,7 +467,7 @@ export class MongoObjStorage implements IObjStorage {
 
     while (!isDone) {
       const objs = await this.objModel
-        .find(filter)
+        .find(filter, undefined, session ? { session } : undefined)
         .skip(page * batchSize)
         .limit(batchSize)
         .lean();
@@ -416,9 +479,12 @@ export class MongoObjStorage implements IObjStorage {
 
       // TODO: Delete objFields if they exist
       // For now, just delete the objects
-      await this.objModel.deleteMany({
-        id: { $in: objs.map((obj) => obj.id) },
-      });
+      await this.objModel.deleteMany(
+        {
+          id: { $in: objs.map((obj) => obj.id) },
+        },
+        session ? { session } : undefined
+      );
 
       cleanedCount += objs.length;
       page++;
@@ -441,7 +507,32 @@ export class MongoObjStorage implements IObjStorage {
     try {
       let result: T;
       await session.withTransaction(async () => {
-        result = await operation(this);
+        // Create a storage instance that passes the session to all operations
+        const storageWithSession = new MongoObjStorage(this.objModel);
+        // Patch all methods to use the session
+        const patch =
+          (fn: any) =>
+          (...args: any[]) => {
+            return fn.apply(storageWithSession, [...args, session]);
+          };
+        // Patch all public methods
+        (storageWithSession as any).create = patch(storageWithSession.create);
+        (storageWithSession as any).read = patch(storageWithSession.read);
+        (storageWithSession as any).update = patch(storageWithSession.update);
+        (storageWithSession as any).delete = patch(storageWithSession.delete);
+        (storageWithSession as any).bulkUpsert = patch(
+          storageWithSession.bulkUpsert
+        );
+        (storageWithSession as any).bulkUpdate = patch(
+          storageWithSession.bulkUpdate
+        );
+        (storageWithSession as any).bulkDelete = patch(
+          storageWithSession.bulkDelete
+        );
+        (storageWithSession as any).cleanupDeletedObjs = patch(
+          storageWithSession.cleanupDeletedObjs
+        );
+        result = await operation(storageWithSession);
       });
       return result!;
     } finally {
@@ -457,8 +548,9 @@ export class MongoObjStorage implements IObjStorage {
     appId: string;
     tag: string;
     date: Date;
+    session?: any;
   }): Promise<(IObj | undefined)[]> {
-    const { items, conflictOnKeys, appId, tag, date } = params;
+    const { items, conflictOnKeys, appId, tag, date, session } = params;
 
     if (!conflictOnKeys.length) {
       return new Array(items.length).fill(undefined);
@@ -479,7 +571,9 @@ export class MongoObjStorage implements IObjStorage {
         continue;
       }
 
-      const existing = await this.objModel.findOne(conflictFilter).lean();
+      const existing = await this.objModel
+        .findOne(conflictFilter, undefined, session ? { session } : undefined)
+        .lean();
       existingObjs.push(existing || undefined);
     }
 
@@ -496,7 +590,7 @@ export class MongoObjStorage implements IObjStorage {
     const filter: any = {
       appId,
       tag,
-      deletedAt: { $exists: false },
+      deletedAt: null,
     };
 
     conflictOnKeys.forEach((key) => {
@@ -541,6 +635,7 @@ export class MongoObjStorage implements IObjStorage {
     createdByType: string;
     shouldIndex: boolean;
     fieldsToIndex?: string[];
+    session?: any;
   }): Promise<IObj[]> {
     const {
       items,
@@ -552,6 +647,7 @@ export class MongoObjStorage implements IObjStorage {
       createdByType,
       shouldIndex,
       fieldsToIndex,
+      session,
     } = params;
 
     const newObjs: IObj[] = items.map((item) => ({
@@ -573,7 +669,7 @@ export class MongoObjStorage implements IObjStorage {
       fieldsToIndex: fieldsToIndex ? Array.from(new Set(fieldsToIndex)) : null,
     }));
 
-    await this.objModel.insertMany(newObjs);
+    await this.objModel.insertMany(newObjs, session ? { session } : {});
     return newObjs;
   }
 
@@ -583,8 +679,9 @@ export class MongoObjStorage implements IObjStorage {
     date: Date;
     by: string;
     byType: string;
+    session?: any;
   }): Promise<IObj[]> {
-    const { existingItems, onConflict, date, by, byType } = params;
+    const { existingItems, onConflict, date, by, byType, session } = params;
 
     const objsToUpdate = existingItems.map(({ obj, inputItem }) => {
       const updatedObjRecord = this.applyMergeStrategy(
@@ -610,8 +707,10 @@ export class MongoObjStorage implements IObjStorage {
         updateOne: {
           filter: { id },
           update: { $set: obj },
+          ...(session ? { session } : {}),
         },
-      }))
+      })),
+      session ? { session } : undefined
     );
 
     return objsToUpdate.map((item) => item.obj);

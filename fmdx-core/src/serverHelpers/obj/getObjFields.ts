@@ -1,5 +1,5 @@
 import { and, desc, eq } from "drizzle-orm";
-import { db, objFields as objFieldsTable } from "../../db/fmdx-schema.js";
+import { db, objFields as objFieldsTable } from "../../db/fmdx.sqlite.js";
 
 async function getFromDb(params: {
   appId: string;
@@ -24,22 +24,16 @@ export async function getObjFields(params: {
   tag: string;
 }) {
   const { appId, page = 0, limit = 100, tag } = params;
-  const [fields, hasMore] = await Promise.all([
-    getFromDb({ appId, page, limit, tag }),
-    getFromDb({ appId, page: page + 1, limit: 1, tag }),
-  ]);
-
-  // const total = await db
-  //   .select({
-  //     count: count(),
-  //   })
-  //   .from(objFieldsTable)
-  //   .where(and(eq(objFieldsTable.appId, appId), eq(objFieldsTable.tag, tag)));
-
+  const fields = await getFromDb({ appId, page, limit, tag });
+  let hasMore = false;
+  if (fields.length === limit) {
+    const nextPage = await getFromDb({ appId, page: page + 1, limit: 1, tag });
+    hasMore = nextPage.length > 0;
+  }
   return {
     fields,
     page,
     limit,
-    hasMore: hasMore.length > 0,
+    hasMore,
   };
 }

@@ -48,3 +48,6 @@ yalc.lock
 dist
 
 .env*
+
+# local mongo
+local-mongo/

@@ -1,4 +1,8 @@
-import type { IObjQuery, IObjSortList } from "../../definitions/obj.js";
+import type {
+  IObjQuery,
+  IObjSortList,
+  ITopLevelFieldQuery,
+} from "../../definitions/obj.js";
 import type { IQueryTransformer } from "../types.js";
 
 export abstract class BaseQueryTransformer<T> implements IQueryTransformer<T> {
@@ -16,6 +20,17 @@ export abstract class BaseQueryTransformer<T> implements IQueryTransformer<T> {
     // Common logic for transforming meta queries
     // This will be implemented by concrete classes
     throw new Error("transformMetaQuery must be implemented by concrete class");
+  }
+
+  protected transformTopLevelFields(
+    topLevelFields: ITopLevelFieldQuery,
+    date: Date
+  ): T {
+    // Common logic for transforming top-level field queries
+    // This will be implemented by concrete classes
+    throw new Error(
+      "transformTopLevelFields must be implemented by concrete class"
+    );
   }
 
   protected getNumberOrDurationMsFromValue(value: any): {

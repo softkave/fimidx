@@ -5,7 +5,8 @@ import type {
   IObjSortList,
   IStringMetaQuery,
 } from "../../definitions/obj.js";
-import { createDefaultStorage } from "../../storage/config.js";
+import { createStorage } from "../../storage/config.js";
+import type { IObjStorage } from "../../storage/types.js";
 
 export function metaQueryToPartQueryList(params: {
   metaQuery: Record<string, IStringMetaQuery | INumberMetaQuery>;
@@ -102,10 +103,19 @@ export async function getManyObjs(params: {
   tag: string;
   sort?: IObjSortList;
   date?: Date;
+  storage?: IObjStorage;
+  storageType?: "mongo" | "postgres";
 }) {
-  const { objQuery, page, limit, tag, sort, date } = params;
-
-  const storage = createDefaultStorage();
+  const {
+    objQuery,
+    page,
+    limit,
+    tag,
+    sort,
+    date,
+    storageType = "mongo",
+    storage = createStorage({ type: storageType }),
+  } = params;
 
   // Use the new read method from the storage abstraction
   const result = await storage.read({

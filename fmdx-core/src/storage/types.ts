@@ -17,13 +17,11 @@ export interface IObjStorage {
   delete(params: DeleteObjsParams): Promise<DeleteObjsResult>;
 
   // Bulk/Batch Operations (Phase 1 & 2)
-  bulkUpsert?(params: BulkUpsertParams): Promise<BulkUpsertResult>;
-  bulkUpdate?(params: BulkUpdateParams): Promise<BulkUpdateResult>;
-  bulkDelete?(params: BulkDeleteParams): Promise<BulkDeleteResult>;
-  cleanupDeletedObjs?(
-    params?: CleanupDeletedObjsParams
-  ): Promise<CleanupResult>;
-  withTransaction?<T>(
+  bulkUpsert(params: BulkUpsertParams): Promise<BulkUpsertResult>;
+  bulkUpdate(params: BulkUpdateParams): Promise<BulkUpdateResult>;
+  bulkDelete(params: BulkDeleteParams): Promise<BulkDeleteResult>;
+  cleanupDeletedObjs(params?: CleanupDeletedObjsParams): Promise<CleanupResult>;
+  withTransaction<T>(
     operation: (storage: IObjStorage) => Promise<T>
   ): Promise<T>;
 }
@@ -36,7 +34,7 @@ export interface CreateObjsParams {
 
 export interface ReadObjsParams {
   query: IObjQuery;
-  tag: string;
+  tag?: string; // Optional: if provided, filters by tag; if not provided, no tag filtering is applied
   page?: number;
   limit?: number;
   sort?: IObjSortList;
@@ -46,7 +44,7 @@ export interface ReadObjsParams {
 
 export interface UpdateObjsParams {
   query: IObjQuery;
-  tag: string;
+  tag?: string; // Optional: if provided, filters by tag; if not provided, no tag filtering is applied
   update: AnyObject;
   by: string;
   byType: string;
@@ -58,7 +56,7 @@ export interface UpdateObjsParams {
 
 export interface DeleteObjsParams {
   query: IObjQuery;
-  tag: string;
+  tag?: string; // Optional: if provided, filters by tag; if not provided, no tag filtering is applied
   date?: Date;
   deletedBy: string;
   deletedByType: string;

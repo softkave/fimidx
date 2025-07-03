@@ -72,9 +72,7 @@ export const objParts = sqliteTable("objPart", {
     .primaryKey()
     .$defaultFn(() => uuidv7()),
   objId: text("objId").notNull(),
-  field: text("field")
-    .references(() => objFields.field, { onDelete: "cascade" })
-    .notNull(),
+  field: text("field").notNull(),
   value: text("value").notNull(),
   valueNumber: integer("valueNumber"),
   valueBoolean: integer("valueBoolean", { mode: "boolean" }),

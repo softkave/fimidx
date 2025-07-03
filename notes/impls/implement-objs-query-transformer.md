@@ -347,11 +347,11 @@ I recommend **Option A (Repository Pattern)** as it provides:
    - Verify conflict resolution logic
    - Test merge strategies
    - Validate batch processing
+   - Verify transaction support
 
 2. **Integration Tests**
 
    - Test with real MongoDB/PostgreSQL
-   - Verify transaction support
    - Test performance with large datasets
 
 3. **Compatibility Tests**

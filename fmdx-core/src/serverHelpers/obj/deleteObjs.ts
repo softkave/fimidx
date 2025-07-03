@@ -1,5 +1,6 @@
 import type { IObjQuery } from "../../definitions/obj.js";
-import { createDefaultStorage } from "../../storage/config.js";
+import { createStorage } from "../../storage/config.js";
+import type { IObjStorage } from "../../storage/types.js";
 
 export async function deleteManyObjs(params: {
   objQuery: IObjQuery;
@@ -8,6 +9,8 @@ export async function deleteManyObjs(params: {
   deletedBy: string;
   deletedByType: string;
   deleteMany?: boolean;
+  storageType?: "mongo" | "postgres";
+  storage?: IObjStorage;
 }) {
   const {
     objQuery,
@@ -16,12 +19,12 @@ export async function deleteManyObjs(params: {
     deletedBy,
     deletedByType,
     deleteMany = false,
+    storageType = "mongo",
+    storage = createStorage({ type: storageType }),
   } = params;
 
-  const storage = createDefaultStorage();
-
   // Use the new bulkDelete method from the storage abstraction
-  const result = await storage.bulkDelete!({
+  const result = await storage.bulkDelete({
     query: objQuery,
     tag,
     date,
@@ -35,11 +38,17 @@ export async function deleteManyObjs(params: {
   return result;
 }
 
-export async function cleanupDeletedObjs() {
-  const storage = createDefaultStorage();
+export async function cleanupDeletedObjs(params?: {
+  storageType?: "mongo" | "postgres";
+  storage?: IObjStorage;
+}) {
+  const {
+    storageType = "mongo",
+    storage = createStorage({ type: storageType }),
+  } = params ?? {};
 
   // Use the new cleanupDeletedObjs method from the storage abstraction
-  const result = await storage.cleanupDeletedObjs!({
+  const result = await storage.cleanupDeletedObjs({
     batchSize: 1000,
     onProgress: (processed) => {
       console.log(`Cleaned up ${processed} deleted objects`);

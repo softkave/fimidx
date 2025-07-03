@@ -1,6 +1,4 @@
-import { set } from "lodash-es";
 import type { FilterQuery, SortOrder } from "mongoose";
-import { isObjectEmpty } from "softkave-js-utils";
 import type {
   INumberMetaQuery,
   IObj,
@@ -10,6 +8,7 @@ import type {
   IObjQuery,
   IObjSortList,
   IStringMetaQuery,
+  ITopLevelFieldQuery,
 } from "../../definitions/obj.js";
 import { BaseQueryTransformer } from "./BaseQueryTransformer.js";
 
@@ -17,26 +16,37 @@ export class MongoQueryTransformer extends BaseQueryTransformer<
   FilterQuery<IObj>
 > {
   transformFilter(query: IObjQuery, date: Date): FilterQuery<IObj> {
-    const filter: FilterQuery<IObj> = {};
+    const filters: FilterQuery<IObj>[] = [];
 
     // Add appId filter
     if (query.appId) {
-      filter.appId = query.appId;
+      filters.push({ appId: query.appId });
     }
 
     // Add part query filter
     if (query.partQuery) {
       const partFilter = this.transformLogicalQuery(query.partQuery, date);
-      Object.assign(filter, partFilter);
+      if (Object.keys(partFilter).length > 0) filters.push(partFilter);
     }
 
     // Add meta query filter
     if (query.metaQuery) {
       const metaFilter = this.transformMetaQuery(query.metaQuery, date);
-      Object.assign(filter, metaFilter);
+      if (Object.keys(metaFilter).length > 0) filters.push(metaFilter);
     }
 
-    return filter;
+    // Add top-level fields filter
+    if (query.topLevelFields) {
+      const topLevelFilter = this.transformTopLevelFields(
+        query.topLevelFields,
+        date
+      );
+      if (Object.keys(topLevelFilter).length > 0) filters.push(topLevelFilter);
+    }
+
+    if (filters.length === 0) return {};
+    if (filters.length === 1) return filters[0];
+    return { $and: filters };
   }
 
   transformSort(sort: IObjSortList): Record<string, SortOrder> {
@@ -64,75 +74,71 @@ export class MongoQueryTransformer extends BaseQueryTransformer<
     partQuery: IObjPartQueryList,
     date: Date
   ): FilterQuery<IObj> {
-    const pongoQuery: FilterQuery<IObj> = {};
+    const fieldOps: Record<string, Record<string, any>> = {};
 
     partQuery.forEach((part) => {
       const field = `objRecord.${part.field}`;
-
+      if (!fieldOps[field]) fieldOps[field] = {};
       switch (part.op) {
         case "eq":
-          set(pongoQuery, `${field}.$eq`, part.value);
+          fieldOps[field]["$eq"] = part.value;
           break;
         case "neq":
-          set(pongoQuery, `${field}.$ne`, part.value);
+          fieldOps[field]["$ne"] = part.value;
           break;
         case "gt": {
           const value = this.getGtGteValue(part.value, date);
-          if (value !== undefined) {
-            set(pongoQuery, `${field}.$gt`, value);
-          }
+          if (value !== undefined) fieldOps[field]["$gt"] = value;
           break;
         }
         case "gte": {
           const value = this.getGtGteValue(part.value, date);
-          if (value !== undefined) {
-            set(pongoQuery, `${field}.$gte`, value);
-          }
+          if (value !== undefined) fieldOps[field]["$gte"] = value;
           break;
         }
         case "lt": {
           const value = this.getLtLteValue(part.value, date);
-          if (value !== undefined) {
-            set(pongoQuery, `${field}.$lt`, value);
-          }
+          if (value !== undefined) fieldOps[field]["$lt"] = value;
           break;
         }
         case "lte": {
           const value = this.getLtLteValue(part.value, date);
-          if (value !== undefined) {
-            set(pongoQuery, `${field}.$lte`, value);
-          }
+          if (value !== undefined) fieldOps[field]["$lte"] = value;
           break;
         }
         case "like": {
-          set(
-            pongoQuery,
-            `${field}.$regex`,
-            new RegExp(part.value, part.caseSensitive ? "" : "i")
+          fieldOps[field]["$regex"] = new RegExp(
+            part.value,
+            part.caseSensitive ? "" : "i"
           );
           break;
         }
         case "in":
-          set(pongoQuery, `${field}.$in`, part.value);
+          fieldOps[field]["$in"] = part.value;
           break;
         case "not_in":
-          set(pongoQuery, `${field}.$nin`, part.value);
+          fieldOps[field]["$nin"] = part.value;
           break;
         case "between": {
           const [min, max] = this.getBetweenValue(part.value, date) || [];
           if (min !== undefined && max !== undefined) {
-            set(pongoQuery, `${field}.$gte`, min);
-            set(pongoQuery, `${field}.$lte`, max);
+            fieldOps[field]["$gte"] = min;
+            fieldOps[field]["$lte"] = max;
           }
           break;
         }
         case "exists": {
-          set(pongoQuery, `${field}.$exists`, part.value);
+          fieldOps[field]["$exists"] = part.value;
           break;
         }
       }
     });
 
+    // Flatten: if only $eq, keep as { $eq: value }, not just value
+    const pongoQuery: FilterQuery<IObj> = {};
+    for (const [field, ops] of Object.entries(fieldOps)) {
+      pongoQuery[field] = { ...ops };
+    }
     return pongoQuery;
   }
 
@@ -142,18 +148,22 @@ export class MongoQueryTransformer extends BaseQueryTransformer<
   ): FilterQuery<IObj> {
     let filter: FilterQuery<IObj> = {};
 
-    if (logicalQuery.and) {
-      const andQuery = this.transformPartQuery(logicalQuery.and, date);
-      if (andQuery && !isObjectEmpty(andQuery)) {
-        filter = andQuery;
-      }
-    }
+    const hasAnd = !!logicalQuery.and;
+    const hasOr = !!logicalQuery.or;
 
-    if (logicalQuery.or) {
-      const orQuery = this.transformPartQuery(logicalQuery.or, date);
-      if (orQuery && !isObjectEmpty(orQuery)) {
-        set(filter, "$or", Object.values(orQuery));
-      }
+    if (hasAnd && hasOr) {
+      const andQuery = this.transformPartQuery(logicalQuery.and!, date);
+      const orArray = logicalQuery.or!.map((part) =>
+        this.transformPartQuery([part], date)
+      );
+      filter = { $or: [andQuery, ...orArray] };
+    } else if (hasAnd) {
+      filter = this.transformPartQuery(logicalQuery.and!, date);
+    } else if (hasOr) {
+      const orArray = logicalQuery.or!.map((part) =>
+        this.transformPartQuery([part], date)
+      );
+      filter = { $or: orArray };
     }
 
     return filter;
@@ -166,12 +176,94 @@ export class MongoQueryTransformer extends BaseQueryTransformer<
     const filter: FilterQuery<IObj> = {};
 
     Object.entries(metaQuery).forEach(([key, value]) => {
+      // Map meta fields to top-level fields
+      const fieldMap: Record<string, string> = {
+        createdAt: "createdAt",
+        updatedAt: "updatedAt",
+        updatedBy: "updatedBy",
+        updatedByType: "updatedByType",
+        createdBy: "createdBy",
+        createdByType: "createdByType",
+        deletedAt: "deletedAt",
+        deletedBy: "deletedBy",
+        deletedByType: "deletedByType",
+      };
+      const mappedKey = fieldMap[key] || key;
       if (this.isStringMetaQuery(value)) {
-        this.transformStringMetaQuery(filter, key, value);
+        this.transformStringMetaQuery(filter, mappedKey, value, true);
       } else if (this.isNumberMetaQuery(value)) {
-        this.transformNumberMetaQuery(filter, key, value, date);
+        this.transformNumberMetaQuery(filter, mappedKey, value, date, true);
       }
     });
+
+    return filter;
+  }
+
+  protected transformTopLevelFields(
+    topLevelFields: ITopLevelFieldQuery,
+    date: Date
+  ): FilterQuery<IObj> {
+    const filter: FilterQuery<IObj> = {};
+
+    // Handle shouldIndex (boolean field)
+    if (topLevelFields.shouldIndex !== undefined) {
+      filter.shouldIndex = topLevelFields.shouldIndex;
+    }
+
+    // Handle fieldsToIndex (array field)
+    if (topLevelFields.fieldsToIndex !== undefined) {
+      filter.fieldsToIndex = topLevelFields.fieldsToIndex;
+    }
+
+    // Handle tag (string meta query)
+    if (topLevelFields.tag) {
+      this.transformStringMetaQuery(filter, "tag", topLevelFields.tag, true);
+    }
+
+    // Handle groupId (string meta query)
+    if (topLevelFields.groupId) {
+      this.transformStringMetaQuery(
+        filter,
+        "groupId",
+        topLevelFields.groupId,
+        true
+      );
+    }
+
+    // Handle deletedAt (null or number meta query)
+    if (topLevelFields.deletedAt !== undefined) {
+      if (topLevelFields.deletedAt === null) {
+        filter.deletedAt = null;
+      } else {
+        this.transformNumberMetaQuery(
+          filter,
+          "deletedAt",
+          topLevelFields.deletedAt,
+          date,
+          true
+        );
+      }
+    }
+
+    // Handle deletedBy (string meta query)
+    if (topLevelFields.deletedBy) {
+      this.transformStringMetaQuery(
+        filter,
+        "deletedBy",
+        topLevelFields.deletedBy,
+        true
+      );
+    }
+
+    // Handle deletedByType (string meta query)
+    if (topLevelFields.deletedByType) {
+      this.transformStringMetaQuery(
+        filter,
+        "deletedByType",
+        topLevelFields.deletedByType,
+        true
+      );
+    }
 
     return filter;
   }
@@ -199,19 +291,24 @@ export class MongoQueryTransformer extends BaseQueryTransformer<
   private transformStringMetaQuery(
     filter: FilterQuery<IObj>,
     key: string,
-    value: IStringMetaQuery
+    value: IStringMetaQuery,
+    useFlatKeys = false
   ): void {
-    if (value.eq !== undefined) {
+    const hasEq = value.eq !== undefined;
+    const hasOther =
+      value.neq !== undefined ||
+      value.in !== undefined ||
+      value.not_in !== undefined;
+    // Always use object form for meta queries (fix for $in, $ne, etc.)
+    if (hasEq && !hasOther) {
       filter[key] = value.eq;
-    }
-    if (value.neq !== undefined) {
-      set(filter, `${key}.$ne`, value.neq);
-    }
-    if (value.in !== undefined) {
-      set(filter, `${key}.$in`, value.in);
-    }
-    if (value.not_in !== undefined) {
-      set(filter, `${key}.$nin`, value.not_in);
+    } else {
+      const obj: any = {};
+      if (hasEq) obj.$eq = value.eq;
+      if (value.neq !== undefined) obj.$ne = value.neq;
+      if (value.in !== undefined) obj.$in = value.in;
+      if (value.not_in !== undefined) obj.$nin = value.not_in;
+      filter[key] = obj;
     }
   }
 
@@ -219,37 +316,94 @@ export class MongoQueryTransformer extends BaseQueryTransformer<
     filter: FilterQuery<IObj>,
     key: string,
     value: INumberMetaQuery,
-    date: Date
+    date: Date,
+    useFlatKeys = false
   ): void {
-    if (value.eq !== undefined) {
-      const eqValue = this.getNumberOrDurationMsFromValue(value.eq).valueNumber;
-      if (eqValue !== undefined) {
-        filter[key] = eqValue;
-      }
-    }
-    if (value.neq !== undefined) {
-      const neqValue = this.getNumberOrDurationMsFromValue(
-        value.neq
-      ).valueNumber;
-      if (neqValue !== undefined) {
-        set(filter, `${key}.$ne`, neqValue);
-      }
-    }
-    if (value.in !== undefined) {
-      const inValues = value.in
-        .map((v) => this.getNumberOrDurationMsFromValue(v).valueNumber)
-        .filter((v) => v !== undefined);
-      if (inValues.length > 0) {
-        set(filter, `${key}.$in`, inValues);
-      }
-    }
-    if (value.not_in !== undefined) {
-      const notInValues = value.not_in
-        .map((v) => this.getNumberOrDurationMsFromValue(v).valueNumber)
-        .filter((v) => v !== undefined);
-      if (notInValues.length > 0) {
-        set(filter, `${key}.$nin`, notInValues);
-      }
+    // If the key is a date field, always convert values to Date objects
+    const isDateField = ["createdAt", "updatedAt", "deletedAt"].includes(key);
+    const toDate = (v: any) => {
+      if (v instanceof Date) return v;
+      if (typeof v === "string" || typeof v === "number") return new Date(v);
+      return v;
+    };
+    const eqValue =
+      value.eq !== undefined
+        ? isDateField
+          ? toDate(value.eq)
+          : this.getNumberOrDurationMsFromValue(value.eq).valueNumber
+        : undefined;
+    const neqValue =
+      value.neq !== undefined
+        ? isDateField
+          ? toDate(value.neq)
+          : this.getNumberOrDurationMsFromValue(value.neq).valueNumber
+        : undefined;
+    const inValues = value.in
+      ? value.in
+          .map((v) =>
+            isDateField
+              ? toDate(v)
+              : this.getNumberOrDurationMsFromValue(v).valueNumber
+          )
+          .filter((v) => v !== undefined)
+      : undefined;
+    const notInValues = value.not_in
+      ? value.not_in
+          .map((v) =>
+            isDateField
+              ? toDate(v)
+              : this.getNumberOrDurationMsFromValue(v).valueNumber
+          )
+          .filter((v) => v !== undefined)
+      : undefined;
+    // Handle gt/gte/lt/lte
+    const gtValue =
+      value.gt !== undefined
+        ? isDateField
+          ? toDate(value.gt)
+          : this.getGtGteValue(value.gt, date)
+        : undefined;
+    const gteValue =
+      value.gte !== undefined
+        ? isDateField
+          ? toDate(value.gte)
+          : this.getGtGteValue(value.gte, date)
+        : undefined;
+    const ltValue =
+      value.lt !== undefined
+        ? isDateField
+          ? toDate(value.lt)
+          : this.getLtLteValue(value.lt, date)
+        : undefined;
+    const lteValue =
+      value.lte !== undefined
+        ? isDateField
+          ? toDate(value.lte)
+          : this.getLtLteValue(value.lte, date)
+        : undefined;
+    const hasEq = eqValue !== undefined;
+    const hasOther =
+      neqValue !== undefined ||
+      (inValues && inValues.length > 0) ||
+      (notInValues && notInValues.length > 0) ||
+      gtValue !== undefined ||
+      gteValue !== undefined ||
+      ltValue !== undefined ||
+      lteValue !== undefined;
+    // Always use object form for meta queries (fix for $in, $ne, etc.)
+    if (hasEq && !hasOther) {
+      filter[key] = eqValue;
+    } else {
+      const obj: any = {};
+      if (hasEq) obj.$eq = eqValue;
+      if (neqValue !== undefined) obj.$ne = neqValue;
+      if (inValues && inValues.length > 0) obj.$in = inValues;
+      if (notInValues && notInValues.length > 0) obj.$nin = notInValues;
+      if (gtValue !== undefined) obj.$gt = gtValue;
+      if (gteValue !== undefined) obj.$gte = gteValue;
+      if (ltValue !== undefined) obj.$lt = ltValue;
+      if (lteValue !== undefined) obj.$lte = lteValue;
+      filter[key] = obj;
     }
   }
 }

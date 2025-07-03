@@ -27,9 +27,11 @@ import type {
 
 export class PostgresObjStorage implements IObjStorage {
   private queryTransformer: PostgresQueryTransformer;
+  private db: any;
 
-  constructor() {
+  constructor(dbClient?: any) {
     this.queryTransformer = new PostgresQueryTransformer();
+    this.db = dbClient || fmdxPostgresDb;
   }
 
   async create(params: CreateObjsParams): Promise<CreateObjsResult> {
@@ -52,13 +54,13 @@ export class PostgresObjStorage implements IObjStorage {
       fieldsToIndex: obj.fieldsToIndex,
     }));
 
-    const insertedObjs = await fmdxPostgresDb
+    const insertedObjs = await this.db
       .insert(objs)
       .values(objsToInsert)
       .returning();
 
     // Convert back to IObj format
-    const resultObjs: IObj[] = insertedObjs.map((obj) => ({
+    const resultObjs: IObj[] = insertedObjs.map((obj: any) => ({
       id: obj.id,
       createdAt: obj.createdAt,
       createdBy: obj.createdBy,
@@ -93,8 +95,10 @@ export class PostgresObjStorage implements IObjStorage {
       conditions.push(eq(objs.appId, params.query.appId));
     }
 
-    // Add tag filter
-    conditions.push(eq(objs.tag, params.tag));
+    // Add tag filter if provided
+    if (params.tag) {
+      conditions.push(eq(objs.tag, params.tag));
+    }
 
     // Add deleted filter if not including deleted
     if (!params.includeDeleted) {
@@ -102,7 +106,11 @@ export class PostgresObjStorage implements IObjStorage {
     }
 
     // Add query transformer filters
-    if (params.query.partQuery || params.query.metaQuery) {
+    if (
+      params.query.partQuery ||
+      params.query.metaQuery ||
+      params.query.topLevelFields
+    ) {
       const filterCondition = this.queryTransformer.transformFilter(
         params.query,
         date
@@ -116,7 +124,7 @@ export class PostgresObjStorage implements IObjStorage {
       ? sql`${this.queryTransformer.transformSort(params.sort)}`
       : sql`created_at DESC`;
 
-    const result = await fmdxPostgresDb
+    const result = await this.db
       .select()
       .from(objs)
       .where(whereClause)
@@ -125,7 +133,7 @@ export class PostgresObjStorage implements IObjStorage {
       .offset(page * limit);
 
     // Convert to IObj format
-    const objsResult: IObj[] = result.map((obj) => ({
+    const objsResult: IObj[] = result.map((obj: any) => ({
       id: obj.id,
       createdAt: obj.createdAt,
       createdBy: obj.createdBy,
@@ -154,82 +162,81 @@ export class PostgresObjStorage implements IObjStorage {
 
   async update(params: UpdateObjsParams): Promise<UpdateObjsResult> {
     const date = new Date();
-
-    // Build conditions array
     const conditions = [];
-
-    // Add appId filter if provided
     if (params.query.appId) {
       conditions.push(eq(objs.appId, params.query.appId));
     }
-
-    // Add tag filter
-    conditions.push(eq(objs.tag, params.tag));
-
-    // Add deleted filter
+    if (params.tag) {
+      conditions.push(eq(objs.tag, params.tag));
+    }
     conditions.push(isNull(objs.deletedAt));
-
-    // Add query transformer filters
-    if (params.query.partQuery || params.query.metaQuery) {
+    if (
+      params.query.partQuery ||
+      params.query.metaQuery ||
+      params.query.topLevelFields
+    ) {
       const filterCondition = this.queryTransformer.transformFilter(
         params.query,
         date
       );
       conditions.push(filterCondition);
     }
-
-    // Get the objects to update first
     const whereClause = and(...conditions);
-    const objsToUpdate = await fmdxPostgresDb
-      .select()
-      .from(objs)
-      .where(whereClause);
-
+    const objsToUpdate = await this.db.select().from(objs).where(whereClause);
     if (objsToUpdate.length === 0) {
       return {
         updatedCount: 0,
         updatedObjs: [],
       };
     }
-
-    // Prepare update data
-    const updateData = {
-      ...params.update,
-      updatedAt: date,
-      updatedBy: params.by,
-      updatedByType: params.byType,
-    };
-
-    // Update the objects
-    const updateConditions = objsToUpdate.map((obj) => eq(objs.id, obj.id));
-    const updateResult = await fmdxPostgresDb
-      .update(objs)
-      .set(updateData)
-      .where(and(...updateConditions))
-      .returning();
-
-    // Convert back to IObj format
-    const updatedObjs: IObj[] = updateResult.map((obj) => ({
-      id: obj.id,
-      createdAt: obj.createdAt,
-      createdBy: obj.createdBy,
-      createdByType: obj.createdByType,
-      appId: obj.appId,
-      groupId: obj.groupId,
-      updatedAt: obj.updatedAt,
-      updatedBy: obj.updatedBy,
-      updatedByType: obj.updatedByType,
-      tag: obj.tag,
-      objRecord: obj.objRecord as AnyObject,
-      deletedAt: obj.deletedAt,
-      deletedBy: obj.deletedBy,
-      deletedByType: obj.deletedByType,
-      shouldIndex: obj.shouldIndex,
-      fieldsToIndex: obj.fieldsToIndex,
-    }));
-
+    // Prepare update data for each object
+    const updateWay = params.updateWay || "replace";
+    const updatedObjs: IObj[] = [];
+    for (const obj of objsToUpdate as any[]) {
+      const updatedObjRecord = this.applyMergeStrategy(
+        obj.objRecord as AnyObject,
+        params.update,
+        updateWay
+      );
+      const updateData = {
+        objRecord: updatedObjRecord,
+        updatedAt: date,
+        updatedBy: params.by,
+        updatedByType: params.byType,
+        shouldIndex: params.shouldIndex ?? obj.shouldIndex,
+        fieldsToIndex: params.fieldsToIndex
+          ? Array.from(new Set(params.fieldsToIndex))
+          : obj.fieldsToIndex,
+      };
+      const result = await this.db
+        .update(objs)
+        .set(updateData)
+        .where(eq(objs.id, obj.id))
+        .returning();
+      if (result.length > 0) {
+        const updatedObj = result[0];
+        updatedObjs.push({
+          id: updatedObj.id,
+          createdAt: updatedObj.createdAt,
+          createdBy: updatedObj.createdBy,
+          createdByType: updatedObj.createdByType,
+          appId: updatedObj.appId,
+          groupId: updatedObj.groupId,
+          updatedAt: updatedObj.updatedAt,
+          updatedBy: updatedObj.updatedBy,
+          updatedByType: updatedObj.updatedByType,
+          tag: updatedObj.tag,
+          objRecord: updatedObj.objRecord as AnyObject,
+          deletedAt: updatedObj.deletedAt,
+          deletedBy: updatedObj.deletedBy,
+          deletedByType: updatedObj.deletedByType,
+          shouldIndex: updatedObj.shouldIndex,
+          fieldsToIndex: updatedObj.fieldsToIndex,
+        });
+      }
+    }
     return {
-      updatedCount: updateResult.length,
+      updatedCount: updatedObjs.length,
       updatedObjs,
     };
   }
@@ -245,14 +252,20 @@ export class PostgresObjStorage implements IObjStorage {
       conditions.push(eq(objs.appId, params.query.appId));
     }
 
-    // Add tag filter
-    conditions.push(eq(objs.tag, params.tag));
+    // Add tag filter if provided
+    if (params.tag) {
+      conditions.push(eq(objs.tag, params.tag));
+    }
 
     // Add deleted filter
     conditions.push(isNull(objs.deletedAt));
 
     // Add query transformer filters
-    if (params.query.partQuery || params.query.metaQuery) {
+    if (
+      params.query.partQuery ||
+      params.query.metaQuery ||
+      params.query.topLevelFields
+    ) {
       const filterCondition = this.queryTransformer.transformFilter(
         params.query,
         date
@@ -262,10 +275,7 @@ export class PostgresObjStorage implements IObjStorage {
 
     // Get the objects to delete first
     const whereClause = and(...conditions);
-    const objsToDelete = await fmdxPostgresDb
-      .select()
-      .from(objs)
-      .where(whereClause);
+    const objsToDelete = await this.db.select().from(objs).where(whereClause);
 
     if (objsToDelete.length === 0) {
       return {
@@ -274,14 +284,16 @@ export class PostgresObjStorage implements IObjStorage {
     }
 
     // Soft delete the objects
-    const deleteConditions = objsToDelete.map((obj) => eq(objs.id, obj.id));
+    const deleteConditions = objsToDelete.map((obj: IObj) =>
+      eq(objs.id, obj.id)
+    );
     const deleteData = {
       deletedAt: date,
       deletedBy: params.deletedBy,
       deletedByType: params.deletedByType,
     };
 
-    const deleteResult = await fmdxPostgresDb
+    const deleteResult = await this.db
       .update(objs)
       .set(deleteData)
       .where(and(...deleteConditions))
@@ -327,6 +339,7 @@ export class PostgresObjStorage implements IObjStorage {
         appId,
         tag,
         date,
+        db: this.db,
       });
 
       // Group items into new and existing
@@ -388,93 +401,78 @@ export class PostgresObjStorage implements IObjStorage {
       update,
       by,
       byType,
-      updateWay = "mergeButReplaceArrays",
+      updateWay = "replace",
       count,
       shouldIndex,
       fieldsToIndex,
       batchSize = 1000,
       onProgress,
     } = params;
-
     const date = new Date();
     const conditions = [];
-
-    // Add appId filter if provided
     if (query.appId) {
       conditions.push(eq(objs.appId, query.appId));
     }
-
-    // Add tag filter
-    conditions.push(eq(objs.tag, tag));
-
-    // Add deleted filter
+    if (tag) {
+      conditions.push(eq(objs.tag, tag));
+    }
     conditions.push(isNull(objs.deletedAt));
-
-    // Add query transformer filters
-    if (query.partQuery || query.metaQuery) {
+    if (query.partQuery || query.metaQuery || query.topLevelFields) {
       const filterCondition = this.queryTransformer.transformFilter(
         query,
         date
       );
       conditions.push(filterCondition);
     }
-
-    const whereClause = and(...conditions);
+    const whereClauseBase = and(...conditions);
     const updatedObjs: IObj[] = [];
     let totalProcessed = 0;
-    let page = 0;
     let isDone = false;
-
+    const updatedIds = new Set<string>();
     while (!isDone) {
       let currentBatchSize = batchSize;
       if (count && count - totalProcessed < batchSize) {
         currentBatchSize = count - totalProcessed;
       }
-
-      const objsToUpdate = await fmdxPostgresDb
+      // Exclude already updated IDs
+      let whereClause = whereClauseBase;
+      if (updatedIds.size > 0) {
+        whereClause = and(
+          whereClauseBase,
+          not(inArray(objs.id, Array.from(updatedIds)))
+        );
+      }
+      const objsToUpdate = await this.db
         .select()
         .from(objs)
         .where(whereClause)
         .limit(currentBatchSize)
-        .offset(page * currentBatchSize)
         .orderBy(sql`created_at DESC`);
-
       if (objsToUpdate.length === 0) {
         isDone = true;
         break;
       }
-
-      // Apply updates to each object
-      const updateOperations = objsToUpdate.map((obj) => {
+      for (const obj of objsToUpdate as any[]) {
         const updatedObjRecord = this.applyMergeStrategy(
           obj.objRecord as AnyObject,
           update,
           updateWay
         );
-
-        return {
-          id: obj.id,
-          updateData: {
-            objRecord: updatedObjRecord,
-            updatedAt: date,
-            updatedBy: by,
-            updatedByType: byType,
-            shouldIndex: shouldIndex ?? obj.shouldIndex,
-            fieldsToIndex: fieldsToIndex
-              ? Array.from(new Set(fieldsToIndex))
-              : obj.fieldsToIndex,
-          },
+        const updateData = {
+          objRecord: updatedObjRecord,
+          updatedAt: date,
+          updatedBy: by,
+          updatedByType: byType,
+          shouldIndex: shouldIndex ?? obj.shouldIndex,
+          fieldsToIndex: fieldsToIndex
+            ? Array.from(new Set(fieldsToIndex))
+            : obj.fieldsToIndex,
         };
-      });
-
-      // Perform bulk update
-      for (const { id, updateData } of updateOperations) {
-        const result = await fmdxPostgresDb
+        const result = await this.db
           .update(objs)
           .set(updateData)
-          .where(eq(objs.id, id))
+          .where(eq(objs.id, obj.id))
           .returning();
-
         if (result.length > 0) {
           const updatedObj = result[0];
           updatedObjs.push({
@@ -495,21 +493,17 @@ export class PostgresObjStorage implements IObjStorage {
             shouldIndex: updatedObj.shouldIndex,
             fieldsToIndex: updatedObj.fieldsToIndex,
           });
+          updatedIds.add(updatedObj.id);
         }
       }
-
       totalProcessed += objsToUpdate.length;
-      page++;
-
       if (onProgress) {
         onProgress(totalProcessed, count || totalProcessed);
       }
-
       isDone = count
         ? totalProcessed >= count
         : objsToUpdate.length < currentBatchSize;
     }
-
     return {
       updatedCount: updatedObjs.length,
       updatedObjs,
@@ -528,56 +522,41 @@ export class PostgresObjStorage implements IObjStorage {
       batchSize = 1000,
       hardDelete = false,
     } = params;
-
     const conditions = [];
-
-    // Add appId filter if provided
     if (query.appId) {
       conditions.push(eq(objs.appId, query.appId));
     }
-
-    // Add tag filter
-    conditions.push(eq(objs.tag, tag));
-
-    // Add deleted filter
+    if (tag) {
+      conditions.push(eq(objs.tag, tag));
+    }
     conditions.push(isNull(objs.deletedAt));
-
-    // Add query transformer filters
-    if (query.partQuery || query.metaQuery) {
+    if (query.partQuery || query.metaQuery || query.topLevelFields) {
       const filterCondition = this.queryTransformer.transformFilter(
         query,
         date
       );
       conditions.push(filterCondition);
     }
-
     const whereClause = and(...conditions);
     let totalProcessed = 0;
-    let page = 0;
     let isDone = false;
-
     while (!isDone) {
-      const objsToDelete = await fmdxPostgresDb
+      // Always fetch from the start, don't use offset
+      const objsToDelete = await this.db
         .select()
         .from(objs)
         .where(whereClause)
         .limit(batchSize)
-        .offset(page * batchSize)
         .orderBy(sql`created_at DESC`);
-
       if (objsToDelete.length === 0) {
         isDone = true;
         break;
       }
-
-      const objIds = objsToDelete.map((obj) => obj.id);
-
+      const objIds = objsToDelete.map((obj: any) => obj.id);
       if (hardDelete) {
-        // Hard delete
-        await fmdxPostgresDb.delete(objs).where(inArray(objs.id, objIds));
+        await this.db.delete(objs).where(inArray(objs.id, objIds));
       } else {
-        // Soft delete
-        await fmdxPostgresDb
+        await this.db
           .update(objs)
           .set({
             deletedAt: date,
@@ -586,12 +565,9 @@ export class PostgresObjStorage implements IObjStorage {
           })
           .where(inArray(objs.id, objIds));
       }
-
       totalProcessed += objsToDelete.length;
-      page++;
       isDone = objsToDelete.length < batchSize;
     }
-
     return {
       deletedCount: totalProcessed,
       totalProcessed,
@@ -607,7 +583,7 @@ export class PostgresObjStorage implements IObjStorage {
     let isDone = false;
 
     while (!isDone) {
-      const objsToCleanup = await fmdxPostgresDb
+      const objsToCleanup = await this.db
         .select()
         .from(objs)
         .where(not(isNull(objs.deletedAt)))
@@ -621,8 +597,8 @@ export class PostgresObjStorage implements IObjStorage {
 
       // TODO: Delete objFields if they exist
       // For now, just delete the objects
-      const objIds = objsToCleanup.map((obj) => obj.id);
-      await fmdxPostgresDb.delete(objs).where(inArray(objs.id, objIds));
+      const objIds = objsToCleanup.map((obj: any) => obj.id);
+      await this.db.delete(objs).where(inArray(objs.id, objIds));
 
       cleanedCount += objsToCleanup.length;
       page++;
@@ -640,11 +616,9 @@ export class PostgresObjStorage implements IObjStorage {
   async withTransaction<T>(
     operation: (storage: IObjStorage) => Promise<T>
   ): Promise<T> {
-    return await fmdxPostgresDb.transaction(async (tx) => {
-      // Create a new instance with the transaction
-      const txStorage = new PostgresObjStorage();
-      // Note: In a real implementation, you'd need to pass the transaction to the storage
-      // For now, we'll use the global transaction
+    return await this.db.transaction(async (tx: any) => {
+      // Create a new instance with the transaction context
+      const txStorage = new PostgresObjStorage(tx);
       return await operation(txStorage);
     });
   }
@@ -657,8 +631,10 @@ export class PostgresObjStorage implements IObjStorage {
     appId: string;
     tag: string;
     date: Date;
+    db?: any;
   }): Promise<(IObj | undefined)[]> {
-    const { items, conflictOnKeys, appId, tag, date } = params;
+    const { items, conflictOnKeys, appId, tag, date, db } = params;
+    const dbClient = db || this.db;
 
     if (!conflictOnKeys.length) {
       return new Array(items.length).fill(undefined);
@@ -679,7 +655,7 @@ export class PostgresObjStorage implements IObjStorage {
         continue;
       }
 
-      const result = await fmdxPostgresDb
+      const result = await dbClient
         .select()
         .from(objs)
         .where(and(...conflictFilter))
@@ -801,13 +777,13 @@ export class PostgresObjStorage implements IObjStorage {
       fieldsToIndex: fieldsToIndex ? Array.from(new Set(fieldsToIndex)) : null,
     }));
 
-    const insertedObjs = await fmdxPostgresDb
+    const insertedObjs = await this.db
       .insert(objs)
       .values(objsToInsert)
       .returning();
 
     // Convert back to IObj format
-    return insertedObjs.map((obj) => ({
+    return insertedObjs.map((obj: IObj) => ({
       id: obj.id,
       createdAt: obj.createdAt,
       createdBy: obj.createdBy,
@@ -851,7 +827,7 @@ export class PostgresObjStorage implements IObjStorage {
         updatedByType: byType,
       };
 
-      const result = await fmdxPostgresDb
+      const result = await this.db
         .update(objs)
         .set(updateData)
         .where(eq(objs.id, obj.id))

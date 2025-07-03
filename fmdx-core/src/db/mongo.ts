@@ -1,5 +1,21 @@
-import mongoose, { Schema } from "mongoose";
+import assert from "assert";
+import { Connection, createConnection, Schema } from "mongoose";
 import type { IObj } from "../definitions/obj.js";
+
+let connection: Connection | null = null;
+let promise: Promise<Connection> | null = null;
+
+export function getMongoConnection() {
+  if (!connection) {
+    const uri = process.env.MONGO_URI;
+    const dbName = process.env.MONGO_DB_NAME;
+    assert(uri, "MONGO_URI is not set");
+    assert(dbName, "MONGO_DB_NAME is not set");
+    connection = createConnection(uri, { dbName });
+    promise = connection.asPromise();
+  }
+  return { connection, promise };
+}
 
 export const objSchema = new Schema<IObj>({
   createdAt: { type: Date, default: Date.now, index: true },
@@ -19,4 +35,11 @@ export const objSchema = new Schema<IObj>({
   shouldIndex: { type: Boolean, default: true },
 });
 
-export const objModel = mongoose.model("Obj", objSchema);
+const modelName = "obj";
+const collectionName = "objs";
+
+export function getObjModel() {
+  const { connection } = getMongoConnection();
+  const model = connection.model<IObj>(modelName, objSchema, collectionName);
+  return model;
+}

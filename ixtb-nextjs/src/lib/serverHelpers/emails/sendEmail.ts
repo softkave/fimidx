@@ -4,7 +4,7 @@ import {
   db,
   emailBlockLists as emailBlockListTable,
   emailRecords as emailRecordTable,
-} from "fmdx-core/db/fmdx-schema";
+} from "fmdx-core/db/fmdx.sqlite";
 import {
   EmailRecordReason,
   EmailRecordStatus,

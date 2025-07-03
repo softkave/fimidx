@@ -1,3 +1,3 @@
 export * from "./auth-schema.js";
-export * from "./fmdx-schema.js";
+export * from "./fmdx.sqlite.js";
 export * from "./mongo.js";

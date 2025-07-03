@@ -218,10 +218,22 @@ export const objMetaQuerySchema = z.object({
   updatedBy: stringMetaQuerySchema.optional(),
 });
 
+// New schema for top-level field queries
+export const topLevelFieldQuerySchema = z.object({
+  shouldIndex: z.boolean().optional(),
+  fieldsToIndex: z.array(z.string()).optional(),
+  tag: stringMetaQuerySchema.optional(),
+  groupId: stringMetaQuerySchema.optional(),
+  deletedAt: z.union([z.null(), numberMetaQuerySchema]).optional(),
+  deletedBy: stringMetaQuerySchema.optional(),
+  deletedByType: stringMetaQuerySchema.optional(),
+});
+
 export const objQuerySchema = z.object({
   appId: z.string(),
   partQuery: objPartLogicalQuerySchema.optional(),
   metaQuery: objMetaQuerySchema.optional(),
+  topLevelFields: topLevelFieldQuerySchema.optional(),
 });
 
 export const objSortSchema = z.object({
@@ -274,6 +286,7 @@ export type IObjPartLogicalQuery = z.infer<typeof objPartLogicalQuerySchema>;
 export type IStringMetaQuery = z.infer<typeof stringMetaQuerySchema>;
 export type INumberMetaQuery = z.infer<typeof numberMetaQuerySchema>;
 export type IObjMetaQuery = z.infer<typeof objMetaQuerySchema>;
+export type ITopLevelFieldQuery = z.infer<typeof topLevelFieldQuerySchema>;
 export type IObjQuery = z.infer<typeof objQuerySchema>;
 export type IObjSort = z.infer<typeof objSortSchema>;
 export type IObjSortList = z.infer<typeof objSortListSchema>;
@@ -318,3 +331,6 @@ export interface IGetObjFieldValuesEndpointResponse {
   limit: number;
   hasMore: boolean;
 }
+
+// NOTE: For Postgres, meta query keys (createdAt, updatedBy, etc.) are mapped
+// to snake_case columns (created_at, updated_by, etc.) in SQL.

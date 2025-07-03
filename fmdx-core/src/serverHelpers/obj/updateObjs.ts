@@ -5,7 +5,8 @@ import type {
   IObjQuery,
   OnConflict,
 } from "../../definitions/obj.js";
-import { createDefaultStorage } from "../../storage/config.js";
+import { createStorage } from "../../storage/config.js";
+import type { IObjStorage } from "../../storage/types.js";
 
 export function getUpdateObj(params: {
   obj: IObj;
@@ -55,6 +56,8 @@ export async function updateManyObjs(params: {
   count?: number;
   shouldIndex?: boolean;
   fieldsToIndex?: string[];
+  storageType?: "mongo" | "postgres";
+  storage?: IObjStorage;
 }) {
   const {
     objQuery,
@@ -66,12 +69,11 @@ export async function updateManyObjs(params: {
     updateWay = "mergeButReplaceArrays",
     shouldIndex = true,
     fieldsToIndex,
+    storageType = "mongo",
+    storage = createStorage({ type: storageType }),
   } = params;
 
-  const storage = createDefaultStorage();
-
-  // Use the new bulkUpdate method from the storage abstraction
-  const result = await storage.bulkUpdate!({
+  const result = await storage.bulkUpdate({
     query: objQuery,
     tag,
     update,

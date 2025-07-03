@@ -1,4 +1,4 @@
-import { objModel } from "../db/mongo.js";
+import { getObjModel } from "../db/mongo.js";
 import { StorageFactory } from "./StorageFactory.js";
 import type { IObjStorage } from "./types.js";
 
@@ -11,7 +11,7 @@ export function createStorage(options: StorageOptions): IObjStorage {
     case "mongo":
       return StorageFactory.createStorage({
         type: "mongo",
-        mongoModel: objModel,
+        mongoModel: getObjModel(),
       });
 
     case "postgres":

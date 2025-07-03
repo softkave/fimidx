@@ -7,8 +7,8 @@ assert.ok(fmdxDbURL, "FMDX_DB_TURSO_DATABASE_URL is required");
 assert.ok(fmdxDbAuthToken, "FMDX_DB_TURSO_AUTH_TOKEN is required");
 
 export default defineConfig({
-  out: "./drizzle/fmdx",
-  schema: "./src/db/fmdx-schema.ts",
+  out: "./drizzle/fmdx/sqlite",
+  schema: "./src/db/fmdx.sqlite.ts",
   dialect: "turso",
   dbCredentials: {
     authToken: fmdxDbAuthToken,

@@ -7,6 +7,7 @@ import type {
   IObjQuery,
   IObjSortList,
   IStringMetaQuery,
+  ITopLevelFieldQuery,
 } from "../../definitions/obj.js";
 import { BaseQueryTransformer } from "./BaseQueryTransformer.js";
 
@@ -31,6 +32,15 @@ export class PostgresQueryTransformer extends BaseQueryTransformer<
     if (query.metaQuery) {
       const metaFilter = this.transformMetaQuery(query.metaQuery, date);
       conditions.push(metaFilter);
+    }
+
+    // Add top-level fields filter
+    if (query.topLevelFields) {
+      const topLevelFilter = this.transformTopLevelFields(
+        query.topLevelFields,
+        date
+      );
+      conditions.push(topLevelFilter);
     }
 
     if (conditions.length === 0) {
@@ -59,145 +69,148 @@ export class PostgresQueryTransformer extends BaseQueryTransformer<
 
   protected transformPartQuery(
     partQuery: IObjPartQueryList,
-    date: Date
+    date: Date,
+    joinOp: "AND" | "OR" = "AND"
   ): ReturnType<typeof sql> {
     const conditions: ReturnType<typeof sql>[] = [];
-
     partQuery.forEach((part) => {
-      const fieldPath = `obj_record.${part.field}`;
-      const jsonPath = fieldPath
-        .split(".")
-        .map((segment) => `"${segment}"`)
-        .join("->");
-
+      // Build JSON path for obj_record: use -> for all but last, ->> for last
+      const segments = part.field.split(".");
+      const jsonPath = segments
+        .map((segment, i) =>
+          i === segments.length - 1 ? `->'${segment}'` : `->'${segment}'`
+        )
+        .join("");
+      const fieldExpr = sql.raw(`obj_record${jsonPath}`);
+      const fieldExprText = sql.raw(`obj_record${jsonPath}::text`);
       switch (part.op) {
         case "eq":
           conditions.push(
-            sql`${sql.raw(`obj_record->${jsonPath}`)} = ${JSON.stringify(
-              part.value
-            )}`
+            sql`${fieldExprText} = ${JSON.stringify(part.value)}`
           );
           break;
         case "neq":
           conditions.push(
-            sql`${sql.raw(`obj_record->${jsonPath}`)} != ${JSON.stringify(
-              part.value
-            )}`
+            sql`${fieldExprText} != ${JSON.stringify(part.value)}`
           );
           break;
         case "gt": {
-          const value = this.getGtGteValue(part.value, date);
-          if (value !== undefined) {
+          if (typeof part.value === "number") {
+            const typeCheck = sql.raw(
+              `jsonb_typeof(obj_record${jsonPath}) = 'number'`
+            );
             conditions.push(
-              sql`${sql.raw(`obj_record->${jsonPath}`)}::numeric > ${value}`
+              sql`(${typeCheck} AND (${fieldExpr})::numeric > ${part.value})`
             );
           }
           break;
         }
         case "gte": {
-          const value = this.getGtGteValue(part.value, date);
-          if (value !== undefined) {
+          if (typeof part.value === "number") {
+            const typeCheck = sql.raw(
+              `jsonb_typeof(obj_record${jsonPath}) = 'number'`
+            );
             conditions.push(
-              sql`${sql.raw(`obj_record->${jsonPath}`)}::numeric >= ${value}`
+              sql`(${typeCheck} AND (${fieldExpr})::numeric >= ${part.value})`
             );
           }
           break;
         }
         case "lt": {
-          const value = this.getLtLteValue(part.value, date);
-          if (value !== undefined) {
+          if (typeof part.value === "number") {
+            const typeCheck = sql.raw(
+              `jsonb_typeof(obj_record${jsonPath}) = 'number'`
+            );
             conditions.push(
-              sql`${sql.raw(`obj_record->${jsonPath}`)}::numeric < ${value}`
+              sql`(${typeCheck} AND (${fieldExpr})::numeric < ${part.value})`
             );
           }
           break;
         }
         case "lte": {
-          const value = this.getLtLteValue(part.value, date);
-          if (value !== undefined) {
+          if (typeof part.value === "number") {
+            const typeCheck = sql.raw(
+              `jsonb_typeof(obj_record${jsonPath}) = 'number'`
+            );
             conditions.push(
-              sql`${sql.raw(`obj_record->${jsonPath}`)}::numeric <= ${value}`
+              sql`(${typeCheck} AND (${fieldExpr})::numeric <= ${part.value})`
             );
           }
           break;
         }
         case "like": {
           const regex = part.caseSensitive ? part.value : `(?i)${part.value}`;
-          conditions.push(
-            sql`${sql.raw(`obj_record->${jsonPath}`)}::text ~ ${regex}`
-          );
+          conditions.push(sql`${fieldExprText} ~ ${regex}`);
           break;
         }
-        case "in":
-          const inValues = part.value.map((v) => JSON.stringify(v));
-          conditions.push(
-            sql`${sql.raw(`obj_record->${jsonPath}`)} IN (${sql.join(
-              inValues.map((v) => sql`${v}`),
-              sql`, `
-            )})`
-          );
+        case "in": {
+          // If the field is an array, use @> for containment
+          if (Array.isArray(part.value)) {
+            conditions.push(sql`${fieldExpr} @> ${JSON.stringify(part.value)}`);
+          }
           break;
-        case "not_in":
-          const notInValues = part.value.map((v) => JSON.stringify(v));
-          conditions.push(
-            sql`${sql.raw(`obj_record->${jsonPath}`)} NOT IN (${sql.join(
-              notInValues.map((v) => sql`${v}`),
-              sql`, `
-            )})`
-          );
-          break;
-        case "between": {
-          const [min, max] = this.getBetweenValue(part.value, date) || [];
-          if (min !== undefined && max !== undefined) {
+        }
+        case "not_in": {
+          if (Array.isArray(part.value)) {
             conditions.push(
-              sql`${sql.raw(
-                `obj_record->${jsonPath}`
-              )}::numeric BETWEEN ${min} AND ${max}`
+              sql`NOT (${fieldExpr} @> ${JSON.stringify(part.value)})`
+            );
+          }
+          break;
+        }
+        case "between": {
+          if (
+            Array.isArray(part.value) &&
+            part.value.length === 2 &&
+            typeof part.value[0] === "number" &&
+            typeof part.value[1] === "number"
+          ) {
+            const typeCheck = sql.raw(
+              `jsonb_typeof(obj_record${jsonPath}) = 'number'`
+            );
+            conditions.push(
+              sql`(${typeCheck} AND (${fieldExpr})::numeric BETWEEN ${part.value[0]} AND ${part.value[1]})`
             );
           }
           break;
         }
         case "exists": {
           if (part.value) {
-            conditions.push(
-              sql`${sql.raw(`obj_record->${jsonPath}`)} IS NOT NULL`
-            );
+            conditions.push(sql`${fieldExpr} IS NOT NULL`);
           } else {
-            conditions.push(sql`${sql.raw(`obj_record->${jsonPath}`)} IS NULL`);
+            conditions.push(sql`${fieldExpr} IS NULL`);
           }
           break;
         }
       }
     });
-
     if (conditions.length === 0) {
       return sql`TRUE`;
     }
-
-    return sql.join(conditions, sql` AND `);
+    return sql.join(conditions, joinOp === "AND" ? sql` AND ` : sql` OR `);
   }
 
   protected transformLogicalQuery(
     logicalQuery: IObjPartLogicalQuery,
     date: Date
   ): ReturnType<typeof sql> {
-    const conditions: ReturnType<typeof sql>[] = [];
+    // If both 'and' and 'or' are present, generate ((AND ...) OR (OR ...))
+    const andQuery = logicalQuery.and
+      ? this.transformPartQuery(logicalQuery.and, date, "AND")
+      : undefined;
+    const orQuery = logicalQuery.or
+      ? this.transformPartQuery(logicalQuery.or, date, "OR")
+      : undefined;
 
-    if (logicalQuery.and) {
-      const andQuery = this.transformPartQuery(logicalQuery.and, date);
-      conditions.push(andQuery);
-    }
-
-    if (logicalQuery.or) {
-      const orQuery = this.transformPartQuery(logicalQuery.or, date);
-      conditions.push(sql`(${orQuery})`);
-    }
-
-    if (conditions.length === 0) {
+    if (andQuery && orQuery) {
+      return sql`((${andQuery}) OR (${orQuery}))`;
+    } else if (andQuery) {
+      return andQuery;
+    } else if (orQuery) {
+      return orQuery;
+    } else {
       return sql`TRUE`;
     }
-
-    return sql.join(conditions, sql` AND `);
   }
 
   protected transformMetaQuery(
@@ -205,16 +218,112 @@ export class PostgresQueryTransformer extends BaseQueryTransformer<
     date: Date
   ): ReturnType<typeof sql> {
     const conditions: ReturnType<typeof sql>[] = [];
-
+    // Map camelCase keys to snake_case columns
+    const keyMap: Record<string, string> = {
+      id: "id",
+      createdAt: "created_at",
+      updatedAt: "updated_at",
+      createdBy: "created_by",
+      updatedBy: "updated_by",
+    };
     Object.entries(metaQuery).forEach(([key, value]) => {
+      const dbKey = keyMap[key] || key;
       if (this.isStringMetaQuery(value)) {
-        const stringCondition = this.transformStringMetaQuery(key, value);
+        const stringCondition = this.transformStringMetaQuery(dbKey, value);
         conditions.push(stringCondition);
       } else if (this.isNumberMetaQuery(value)) {
-        const numberCondition = this.transformNumberMetaQuery(key, value, date);
-        conditions.push(numberCondition);
+        // If the key is a date column, convert value to ISO string
+        if (["created_at", "updated_at"].includes(dbKey)) {
+          const numberCondition = this.transformNumberMetaQuery(
+            dbKey,
+            value,
+            date,
+            true
+          );
+          conditions.push(numberCondition);
+        } else {
+          const numberCondition = this.transformNumberMetaQuery(
+            dbKey,
+            value,
+            date
+          );
+          conditions.push(numberCondition);
+        }
       }
     });
+    if (conditions.length === 0) {
+      return sql`TRUE`;
+    }
+    return sql.join(conditions, sql` AND `);
+  }
+
+  protected transformTopLevelFields(
+    topLevelFields: ITopLevelFieldQuery,
+    date: Date
+  ): ReturnType<typeof sql> {
+    const conditions: ReturnType<typeof sql>[] = [];
+
+    // Handle shouldIndex (boolean field)
+    if (topLevelFields.shouldIndex !== undefined) {
+      conditions.push(sql`should_index = ${topLevelFields.shouldIndex}`);
+    }
+
+    // Handle fieldsToIndex (array field)
+    if (topLevelFields.fieldsToIndex !== undefined) {
+      conditions.push(
+        sql`fields_to_index = ${JSON.stringify(topLevelFields.fieldsToIndex)}`
+      );
+    }
+
+    // Handle tag (string meta query)
+    if (topLevelFields.tag) {
+      const tagCondition = this.transformStringMetaQuery(
+        "tag",
+        topLevelFields.tag
+      );
+      conditions.push(tagCondition);
+    }
+
+    // Handle groupId (string meta query)
+    if (topLevelFields.groupId) {
+      const groupIdCondition = this.transformStringMetaQuery(
+        "group_id",
+        topLevelFields.groupId
+      );
+      conditions.push(groupIdCondition);
+    }
+
+    // Handle deletedAt (null or number meta query)
+    if (topLevelFields.deletedAt !== undefined) {
+      if (topLevelFields.deletedAt === null) {
+        conditions.push(sql`deleted_at IS NULL`);
+      } else {
+        const deletedAtCondition = this.transformNumberMetaQuery(
+          "deleted_at",
+          topLevelFields.deletedAt,
+          date
+        );
+        conditions.push(deletedAtCondition);
+      }
+    }
+
+    // Handle deletedBy (string meta query)
+    if (topLevelFields.deletedBy) {
+      const deletedByCondition = this.transformStringMetaQuery(
+        "deleted_by",
+        topLevelFields.deletedBy
+      );
+      conditions.push(deletedByCondition);
+    }
+
+    // Handle deletedByType (string meta query)
+    if (topLevelFields.deletedByType) {
+      const deletedByTypeCondition = this.transformStringMetaQuery(
+        "deleted_by_type",
+        topLevelFields.deletedByType
+      );
+      conditions.push(deletedByTypeCondition);
+    }
 
     if (conditions.length === 0) {
       return sql`TRUE`;
@@ -287,27 +396,39 @@ export class PostgresQueryTransformer extends BaseQueryTransformer<
   private transformNumberMetaQuery(
     key: string,
     value: INumberMetaQuery,
-    date: Date
+    date: Date,
+    forceString: boolean = false
   ): ReturnType<typeof sql> {
     const conditions: ReturnType<typeof sql>[] = [];
 
+    const getValue = (v: any) =>
+      forceString
+        ? v instanceof Date
+          ? v.toISOString()
+          : typeof v === "number"
+          ? v > 1e12
+            ? new Date(v).toISOString()
+            : new Date(v * 1000).toISOString()
+          : typeof v === "string" && !isNaN(Date.parse(v))
+          ? new Date(v).toISOString()
+          : v
+        : this.getNumberOrDurationMsFromValue(v).valueNumber;
+
     if (value.eq !== undefined) {
-      const eqValue = this.getNumberOrDurationMsFromValue(value.eq).valueNumber;
+      const eqValue = getValue(value.eq);
       if (eqValue !== undefined) {
         conditions.push(sql`${sql.identifier(key)} = ${eqValue}`);
       }
     }
     if (value.neq !== undefined) {
-      const neqValue = this.getNumberOrDurationMsFromValue(
-        value.neq
-      ).valueNumber;
+      const neqValue = getValue(value.neq);
       if (neqValue !== undefined) {
         conditions.push(sql`${sql.identifier(key)} != ${neqValue}`);
       }
     }
     if (value.in !== undefined && value.in.length > 0) {
       const inValues = value.in
-        .map((v) => this.getNumberOrDurationMsFromValue(v).valueNumber)
+        .map((v) => getValue(v))
         .filter((v) => v !== undefined);
       if (inValues.length > 0) {
         conditions.push(
@@ -320,7 +441,7 @@ export class PostgresQueryTransformer extends BaseQueryTransformer<
     }
     if (value.not_in !== undefined && value.not_in.length > 0) {
       const notInValues = value.not_in
-        .map((v) => this.getNumberOrDurationMsFromValue(v).valueNumber)
+        .map((v) => getValue(v))
         .filter((v) => v !== undefined);
       if (notInValues.length > 0) {
         conditions.push(
@@ -332,31 +453,32 @@ export class PostgresQueryTransformer extends BaseQueryTransformer<
       }
     }
     if (value.gt !== undefined) {
-      const gtValue = this.getGtGteValue(value.gt, date);
+      const gtValue = getValue(value.gt);
       if (gtValue !== undefined) {
         conditions.push(sql`${sql.identifier(key)} > ${gtValue}`);
       }
     }
     if (value.gte !== undefined) {
-      const gteValue = this.getGtGteValue(value.gte, date);
+      const gteValue = getValue(value.gte);
       if (gteValue !== undefined) {
         conditions.push(sql`${sql.identifier(key)} >= ${gteValue}`);
       }
     }
     if (value.lt !== undefined) {
-      const ltValue = this.getLtLteValue(value.lt, date);
+      const ltValue = getValue(value.lt);
       if (ltValue !== undefined) {
         conditions.push(sql`${sql.identifier(key)} < ${ltValue}`);
       }
     }
     if (value.lte !== undefined) {
-      const lteValue = this.getLtLteValue(value.lte, date);
+      const lteValue = getValue(value.lte);
       if (lteValue !== undefined) {
         conditions.push(sql`${sql.identifier(key)} <= ${lteValue}`);
       }
     }
     if (value.between !== undefined) {
-      const [min, max] = this.getBetweenValue(value.between, date) || [];
+      const [min, max] =
+        (Array.isArray(value.between) ? value.between.map(getValue) : []) || [];
       if (min !== undefined && max !== undefined) {
         conditions.push(sql`${sql.identifier(key)} BETWEEN ${min} AND ${max}`);
       }

@@ -20,7 +20,8 @@
   "exclude": [
     "node_modules",
     "vitest.config.ts",
-    "fmdx.drizzle.config.ts",
+    "fmdx.sqlite.drizzle.config.ts",
+    "fmdx.postgres.drizzle.config.ts",
     "dist"
   ]
 }

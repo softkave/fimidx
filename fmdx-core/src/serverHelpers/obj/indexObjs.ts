@@ -1,18 +1,18 @@
 import { and, eq, inArray } from "drizzle-orm";
 import { forEach, uniq } from "lodash-es";
 import { LRUCache } from "lru-cache";
-import type { FilterQuery } from "mongoose";
 import { indexJson } from "softkave-js-utils";
 import { v7 as uuidv7 } from "uuid";
 import {
   db,
   objFields as objFieldsTable,
   objParts as objPartsTable,
-} from "../../db/fmdx-schema.js";
-import { objModel } from "../../db/mongo.js";
+} from "../../db/fmdx.sqlite.js";
 import type { IApp } from "../../definitions/app.js";
 import type { IObj, IObjField, IObjPart } from "../../definitions/obj.js";
 import { kId0 } from "../../definitions/system.js";
+import { createStorage } from "../../storage/config.js";
+import type { IObjStorage } from "../../storage/types.js";
 import { getApps } from "../app/getApps.js";
 
 async function indexObjFields(params: {
@@ -273,27 +273,44 @@ function initAppGetter() {
   };
 }
 
-export async function indexObjs(params: { lastSuccessAt: Date | null }) {
-  const { lastSuccessAt } = params;
+export async function indexObjs(params: {
+  lastSuccessAt: Date | null;
+  storage?: IObjStorage;
+  storageType?: "mongo" | "postgres";
+}) {
+  const {
+    lastSuccessAt,
+    storageType = "mongo",
+    storage = createStorage({ type: storageType }),
+  } = params;
 
   const { getApp, prefetchApps } = initAppGetter();
 
-  const filter: FilterQuery<IObj> = {
-    updatedAt: {
-      $gte: lastSuccessAt ?? new Date("1970-01-01T00:00:00.000Z"),
-    },
-    shouldIndex: true,
-  };
-
-  let batch: IObj[] = [];
   const batchSize = 1000;
   let page = 0;
+  let batch: IObj[] = [];
+
   do {
-    batch = await objModel
-      .find(filter)
-      .skip(page * batchSize)
-      .limit(batchSize)
-      .lean();
+    const readResult = await storage.read({
+      query: {
+        appId: "", // This will be filtered by the query transformer
+        metaQuery: {
+          updatedAt: {
+            gte: (
+              lastSuccessAt ?? new Date("1970-01-01T00:00:00.000Z")
+            ).getTime(),
+          },
+        },
+        topLevelFields: {
+          shouldIndex: true,
+        },
+      },
+      // tag is optional - not provided means no tag filtering
+      page: page + 1, // IObjStorage uses 1-based pagination
+      limit: batchSize,
+    });
+
+    batch = readResult.objs;
 
     await prefetchApps(batch);
 
@@ -318,5 +335,7 @@ export async function indexObjs(params: { lastSuccessAt: Date | null }) {
 
     await indexObjFields({ objs: batch, indexList });
     await indexObjParts({ objs: batch, indexList });
+
+    page++;
   } while (batch.length > 0);
 }

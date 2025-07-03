@@ -2,7 +2,8 @@ import type {
   ISetManyObjsEndpointArgs,
   ISetManyObjsEndpointResponse,
 } from "../../definitions/obj.js";
-import { createDefaultStorage } from "../../storage/config.js";
+import { createStorage } from "../../storage/config.js";
+import type { IObjStorage } from "../../storage/types.js";
 
 export async function setManyObjs(params: {
   tag: string;
@@ -10,13 +11,21 @@ export async function setManyObjs(params: {
   by: string;
   byType: string;
   groupId: string;
+  storageType?: "mongo" | "postgres";
+  storage?: IObjStorage;
 }): Promise<ISetManyObjsEndpointResponse> {
-  const { tag, input, by, byType, groupId } = params;
-
-  const storage = createDefaultStorage();
+  const {
+    tag,
+    input,
+    by,
+    byType,
+    groupId,
+    storageType = "mongo",
+    storage = createStorage({ type: storageType }),
+  } = params;
 
   // Use the new bulkUpsert method from the storage abstraction
-  const result = await storage.bulkUpsert!({
+  const result = await storage.bulkUpsert({
     items: input.items,
     conflictOnKeys: input.conflictOnKeys || [],
     onConflict: input.onConflict || "replace",
