@@ -2,6 +2,7 @@ import type { FilterQuery, SortOrder } from "mongoose";
 import type {
   INumberMetaQuery,
   IObj,
+  IObjField,
   IObjMetaQuery,
   IObjPartLogicalQuery,
   IObjPartQueryList,
@@ -49,13 +50,43 @@ export class MongoQueryTransformer extends BaseQueryTransformer<
     return { $and: filters };
   }
 
-  transformSort(sort: IObjSortList): Record<string, SortOrder> {
+  transformSort(
+    sort: IObjSortList,
+    fields?: IObjField[]
+  ): Record<string, SortOrder> {
+    if (sort.length === 0) {
+      return { createdAt: -1 };
+    }
+
     const sortObj: Record<string, SortOrder> = {};
 
     sort.forEach((sortItem) => {
       const direction = sortItem.direction === "asc" ? 1 : -1;
-      sortObj[sortItem.field] = direction;
+      let outputField = sortItem.field;
+      let matchField = sortItem.field;
+
+      // If the field starts with 'objRecord.', strip it for matching
+      if (sortItem.field.startsWith("objRecord.")) {
+        matchField = sortItem.field.slice("objRecord.".length);
+      }
+
+      // Check if field exists in fields array
+      if (fields) {
+        const fieldInfo = fields.find((f) => f.field === matchField);
+        if (!fieldInfo) {
+          // Skip this sort field if not found in fields array
+          return;
+        }
+      }
+
+      // Output field: use as-is (do not add objRecord. prefix if not present)
+      sortObj[outputField] = direction;
     });
+
+    // If no valid sort clauses, return default
+    if (Object.keys(sortObj).length === 0) {
+      return { createdAt: -1 };
+    }
 
     return sortObj;
   }
@@ -284,7 +315,12 @@ export class MongoQueryTransformer extends BaseQueryTransformer<
       (value.eq !== undefined ||
         value.neq !== undefined ||
         value.in !== undefined ||
-        value.not_in !== undefined)
+        value.not_in !== undefined ||
+        value.gt !== undefined ||
+        value.gte !== undefined ||
+        value.lt !== undefined ||
+        value.lte !== undefined ||
+        value.between !== undefined)
     );
   }
 

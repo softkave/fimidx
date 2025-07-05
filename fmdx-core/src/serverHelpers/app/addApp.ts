@@ -6,6 +6,7 @@ import type {
 } from "../../definitions/app.js";
 import { kObjTags } from "../../definitions/obj.js";
 import { kId0 } from "../../definitions/system.js";
+import type { IObjStorage } from "../../storage/types.js";
 import { setManyObjs } from "../obj/setObjs.js";
 import { objToApp } from "./objToApp.js";
 
@@ -13,8 +14,9 @@ export async function addApp(params: {
   args: AddAppEndpointArgs;
   by: string;
   byType: string;
+  storage?: IObjStorage;
 }) {
-  const { args, by, byType } = params;
+  const { args, by, byType, storage } = params;
   const { name, description, groupId, objFieldsToIndex } = args;
   const objRecord: IAppObjRecord = {
     name,
@@ -33,9 +35,13 @@ export async function addApp(params: {
     input: {
       appId: kId0,
       items: [objRecord],
-      conflictOnKeys: ["name"],
+      conflictOnKeys: ["name", "groupId"],
       onConflict: "fail",
+      fieldsToIndex: objFieldsToIndex
+        ? Array.from(new Set(objFieldsToIndex))
+        : undefined,
     },
+    storage,
   });
 
   assert(

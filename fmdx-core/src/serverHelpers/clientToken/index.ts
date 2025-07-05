@@ -1,7 +1,9 @@
-export * from "./addClientToken.js";
-export * from "./deleteClientTokens.js";
-export * from "./encodeClientTokenJWT.js";
-export * from "./getClientTokens.js";
-export * from "./objToClientToken.js";
-export * from "./refreshClientTokenJWT.js";
-export * from "./updateClientTokens.js";
+export { addClientToken } from "./addClientToken.js";
+export { addClientTokenPermissions } from "./addClientTokenPermissions.js";
+export { checkClientTokenPermissions } from "./checkClientTokenPermissions.js";
+export { deleteClientTokens } from "./deleteClientTokens.js";
+export { encodeClientTokenJWT } from "./encodeClientTokenJWT.js";
+export { getClientTokens } from "./getClientTokens.js";
+export { refreshClientTokenJWT } from "./refreshClientTokenJWT.js";
+export { updateClientTokenPermissions } from "./updateClientTokenPermissions.js";
+export { updateClientTokens } from "./updateClientTokens.js";

@@ -13,7 +13,7 @@ export function objToMember(
     email: obj.objRecord.email,
     memberId: obj.objRecord.memberId,
     groupId: obj.groupId,
-    permissions: permissions ?? obj.objRecord.permissions,
+    permissions: permissions,
     status: obj.objRecord.status,
     statusUpdatedAt: obj.objRecord.statusUpdatedAt,
     sentEmailCount: obj.objRecord.sentEmailCount,

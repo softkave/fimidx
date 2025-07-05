@@ -8,13 +8,15 @@ import {
 } from "../../definitions/member.js";
 import { kObjTags } from "../../definitions/obj.js";
 import { kId0 } from "../../definitions/system.js";
+import type { IObjStorage } from "../../storage/types.js";
 import { updateManyObjs } from "../obj/updateObjs.js";
 import { getMembers } from "./getMembers.js";
 
 export async function respondToMemberRequest(params: {
   args: RespondToMemberRequestEndpointArgs;
+  storage?: IObjStorage;
 }) {
-  const { args } = params;
+  const { args, storage } = params;
   const { status, requestId, appId, groupId } = args;
 
   const { members } = await getMembers({
@@ -27,6 +29,7 @@ export async function respondToMemberRequest(params: {
       limit: 1,
     },
     includePermissions: false,
+    storage,
   });
 
   const member = first(members);
@@ -53,5 +56,6 @@ export async function respondToMemberRequest(params: {
     updateWay: "merge",
     by: kId0,
     byType: kId0,
+    storage,
   });
 }

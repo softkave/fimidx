@@ -1,6 +1,6 @@
 import { and, eq } from "drizzle-orm";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
-import { getObjModel } from "../../../db/mongo.js";
+import { getObjModel } from "../../../db/fmdx.mongo.js";
 import type {
   IInputObjRecord,
   ISetManyObjsEndpointArgs,

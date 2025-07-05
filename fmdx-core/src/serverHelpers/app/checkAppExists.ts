@@ -24,7 +24,7 @@ export async function checkAppExists(params: {
 
   return {
     exists: !!app,
-    isId,
+    isId: isId || false,
   };
 }
 
@@ -40,7 +40,6 @@ export async function checkAppAvailable(params: {
   }
 
   return {
-    exists,
-    isId,
+    available: !exists,
   };
 }

@@ -49,7 +49,7 @@ export class MongoObjStorage implements IObjStorage {
     );
 
     const sort = params.sort
-      ? this.queryTransformer.transformSort(params.sort)
+      ? this.queryTransformer.transformSort(params.sort, params.fields)
       : { createdAt: -1 as SortOrder };
 
     const pagination = this.queryTransformer.transformPagination(
@@ -125,9 +125,10 @@ export class MongoObjStorage implements IObjStorage {
         updatedBy: params.by,
         updatedByType: params.byType,
         shouldIndex: params.shouldIndex ?? obj.shouldIndex,
-        fieldsToIndex: params.fieldsToIndex
-          ? Array.from(new Set(params.fieldsToIndex))
-          : obj.fieldsToIndex,
+        fieldsToIndex:
+          params.fieldsToIndex !== undefined
+            ? Array.from(new Set(params.fieldsToIndex || []))
+            : obj.fieldsToIndex,
       };
       await this.objModel.updateOne(
         { id: obj.id },
@@ -341,9 +342,10 @@ export class MongoObjStorage implements IObjStorage {
             updatedBy: by,
             updatedByType: byType,
             shouldIndex: shouldIndex ?? obj.shouldIndex,
-            fieldsToIndex: fieldsToIndex
-              ? Array.from(new Set(fieldsToIndex))
-              : obj.fieldsToIndex,
+            fieldsToIndex:
+              fieldsToIndex !== undefined
+                ? Array.from(new Set(fieldsToIndex || []))
+                : obj.fieldsToIndex,
           },
         };
       });
@@ -407,11 +409,14 @@ export class MongoObjStorage implements IObjStorage {
     let page = 0;
     let isDone = false;
 
+    // If deleteMany is false, we only want to delete one object
+    const effectiveBatchSize = deleteMany ? batchSize : 1;
+
     while (!isDone) {
       const objs = await this.objModel
         .find(filter, undefined, session ? { session } : undefined)
-        .skip(page * batchSize)
-        .limit(batchSize)
+        .skip(page * effectiveBatchSize)
+        .limit(effectiveBatchSize)
         .sort({ createdAt: -1 })
         .lean();
 
@@ -444,8 +449,14 @@ export class MongoObjStorage implements IObjStorage {
       }
 
       totalProcessed += objs.length;
-      page++;
-      isDone = objs.length < batchSize;
+
+      // If deleteMany is false, we're done after processing one batch
+      if (!deleteMany) {
+        isDone = true;
+      } else {
+        page++;
+        isDone = objs.length < effectiveBatchSize;
+      }
     }
 
     return {

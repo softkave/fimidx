@@ -1,5 +1,6 @@
 export * from "./addMember.js";
 export * from "./addMemberPermissions.js";
+export * from "./checkMemberPermissions.js";
 export * from "./deleteMembers.js";
 export * from "./getMemberRequests.js";
 export * from "./getMembers.js";

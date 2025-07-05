@@ -8,6 +8,7 @@ import {
 } from "../../definitions/member.js";
 import { kObjTags } from "../../definitions/obj.js";
 import type { IPermission } from "../../definitions/permission.js";
+import type { IObjStorage } from "../../storage/types.js";
 import { setManyObjs } from "../obj/setObjs.js";
 import { addMemberPermissions } from "./addMemberPermissions.js";
 import { objToMember } from "./objToMember.js";
@@ -18,8 +19,9 @@ export async function addMember(params: {
   byType: string;
   memberId: string;
   seed?: Partial<IMemberObjRecord>;
+  storage?: IObjStorage;
 }) {
-  const { args, by, byType, seed } = params;
+  const { args, by, byType, seed, storage } = params;
   const {
     name,
     description,
@@ -54,6 +56,7 @@ export async function addMember(params: {
       conflictOnKeys: ["memberId", "email"],
       onConflict: "fail",
     },
+    storage,
   });
 
   assert(
@@ -73,6 +76,7 @@ export async function addMember(params: {
       appId,
       permissions,
       memberId,
+      storage,
     }));
   }
 

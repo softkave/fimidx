@@ -33,6 +33,7 @@ export const objSchema = new Schema<IObj>({
   deletedBy: { type: String, index: true },
   deletedByType: { type: String, index: true },
   shouldIndex: { type: Boolean, default: true },
+  fieldsToIndex: { type: [String], index: true },
 });
 
 const modelName = "obj";

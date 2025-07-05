@@ -1,5 +1,6 @@
 import type { UpdateMembersEndpointArgs } from "../../definitions/member.js";
 import { kObjTags } from "../../definitions/obj.js";
+import type { IObjStorage } from "../../storage/types.js";
 import { updateManyObjs } from "../obj/updateObjs.js";
 import { getMembersObjQuery } from "./getMembers.js";
 
@@ -7,8 +8,9 @@ export async function updateMembers(params: {
   args: UpdateMembersEndpointArgs;
   by: string;
   byType: string;
+  storage?: IObjStorage;
 }) {
-  const { args, by, byType } = params;
+  const { args, by, byType, storage } = params;
   const { update, updateMany } = args;
 
   const objQuery = getMembersObjQuery({ args });
@@ -19,6 +21,7 @@ export async function updateMembers(params: {
     byType,
     update,
     count: updateMany ? undefined : 1,
-    updateWay: "replace",
+    updateWay: "merge",
+    storage,
   });
 }

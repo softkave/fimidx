@@ -43,8 +43,7 @@ export async function getObjFieldValues(params: {
     limit: limit + 1,
     tag,
   });
-  // eslint-disable-next-line no-console
-  console.log("getObjFieldValues results:", results);
+
   const hasMore = results.length > limit;
   const values = hasMore ? results.slice(0, limit) : results;
   return {

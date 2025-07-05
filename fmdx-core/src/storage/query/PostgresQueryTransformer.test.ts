@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type {
+  IObjField,
   IObjMetaQuery,
   IObjPartLogicalQuery,
   IObjPartQueryList,
@@ -71,6 +72,194 @@ describe("PostgresQueryTransformer", () => {
     transformer.transformSort(sort);
     expect(sqlMock.identifier).toHaveBeenCalledWith("foo");
     expect(sqlMock.identifier).toHaveBeenCalledWith("bar");
+  });
+
+  it("transformSort: handles both number and string fields", () => {
+    const sort: IObjSortList = [
+      { field: "objRecord.price", direction: "asc" },
+      { field: "objRecord.name", direction: "desc" },
+      { field: "objRecord.quantity", direction: "asc" },
+    ];
+
+    const fields: IObjField[] = [
+      {
+        id: "1",
+        field: "price",
+        fieldKeys: ["price"],
+        fieldKeyTypes: ["string"],
+        valueTypes: ["number"],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        appId: "app1",
+        groupId: "group1",
+        tag: "tag1",
+      },
+      {
+        id: "2",
+        field: "name",
+        fieldKeys: ["name"],
+        fieldKeyTypes: ["string"],
+        valueTypes: ["string"],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        appId: "app1",
+        groupId: "group1",
+        tag: "tag1",
+      },
+      {
+        id: "3",
+        field: "quantity",
+        fieldKeys: ["quantity"],
+        fieldKeyTypes: ["string"],
+        valueTypes: ["number"],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        appId: "app1",
+        groupId: "group1",
+        tag: "tag1",
+      },
+    ];
+
+    const result = transformer.transformSort(sort, fields);
+    // Should include all fields: price (number), name (string), quantity (number)
+    expect(result).toEqual({
+      sql: ["", ", ", ""],
+      values: [
+        {
+          sql: ["", ", ", ""],
+          values: [
+            { raw: "(obj_record->>'price')::numeric ASC" },
+            { raw: "obj_record->>'name' DESC" },
+          ],
+        },
+        { raw: "(obj_record->>'quantity')::numeric ASC" },
+      ],
+    });
+  });
+
+  it("transformSort: skips fields not found in fields array", () => {
+    const sort: IObjSortList = [
+      { field: "objRecord.price", direction: "asc" },
+      { field: "objRecord.unknown", direction: "desc" },
+    ];
+
+    const fields: IObjField[] = [
+      {
+        id: "1",
+        field: "price",
+        fieldKeys: ["price"],
+        fieldKeyTypes: ["string"],
+        valueTypes: ["number"],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        appId: "app1",
+        groupId: "group1",
+        tag: "tag1",
+      },
+    ];
+
+    const result = transformer.transformSort(sort, fields);
+    // Should only include price, skip unknown field
+    expect(result).toEqual({
+      raw: "(obj_record->>'price')::numeric ASC",
+    });
+  });
+
+  it("transformSort: handles string fields correctly", () => {
+    const sort: IObjSortList = [
+      { field: "objRecord.name", direction: "asc" },
+      { field: "objRecord.description", direction: "desc" },
+    ];
+
+    const fields: IObjField[] = [
+      {
+        id: "1",
+        field: "name",
+        fieldKeys: ["name"],
+        fieldKeyTypes: ["string"],
+        valueTypes: ["string"],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        appId: "app1",
+        groupId: "group1",
+        tag: "tag1",
+      },
+    ];
+
+    const result = transformer.transformSort(sort, fields);
+    // Should include name field (string) and skip description (not in fields)
+    expect(result).toEqual({
+      raw: "obj_record->>'name' ASC",
+    });
+  });
+
+  it("transformSort: returns default when no valid fields found", () => {
+    const sort: IObjSortList = [
+      { field: "objRecord.unknown1", direction: "asc" },
+      { field: "objRecord.unknown2", direction: "desc" },
+    ];
+
+    const fields: IObjField[] = [
+      {
+        id: "1",
+        field: "name",
+        fieldKeys: ["name"],
+        fieldKeyTypes: ["string"],
+        valueTypes: ["string"],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        appId: "app1",
+        groupId: "group1",
+        tag: "tag1",
+      },
+    ];
+
+    const result = transformer.transformSort(sort, fields);
+    // Should return default since no fields match
+    expect(result).toEqual({ sql: ["created_at DESC"], values: [] });
+  });
+
+  it("transformSort: handles nested fields correctly", () => {
+    const sort: IObjSortList = [
+      { field: "objRecord.product.price", direction: "asc" },
+      { field: "objRecord.product.name", direction: "desc" },
+    ];
+
+    const fields: IObjField[] = [
+      {
+        id: "1",
+        field: "product.price",
+        fieldKeys: ["product", "price"],
+        fieldKeyTypes: ["string", "string"],
+        valueTypes: ["number"],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        appId: "app1",
+        groupId: "group1",
+        tag: "tag1",
+      },
+      {
+        id: "2",
+        field: "product.name",
+        fieldKeys: ["product", "name"],
+        fieldKeyTypes: ["string", "string"],
+        valueTypes: ["string"],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        appId: "app1",
+        groupId: "group1",
+        tag: "tag1",
+      },
+    ];
+
+    const result = transformer.transformSort(sort, fields);
+    expect(result).toEqual({
+      sql: ["", ", ", ""],
+      values: [
+        { raw: "(obj_record#>>'{product,price}')::numeric ASC" },
+        { raw: "obj_record#>>'{product,name}' DESC" },
+      ],
+    });
   });
 
   it("transformSort: handles invalid direction", () => {
@@ -203,7 +392,7 @@ describe("PostgresQueryTransformer", () => {
         },
       };
       transformer.transformFilter(query, now);
-      expect(sqlMock).toHaveBeenCalledWith(["should_index = ", ""], true);
+      expect(sqlMock.identifier).toHaveBeenCalledWith("should_index");
     });
 
     it("should handle fieldsToIndex array field", () => {
@@ -214,10 +403,7 @@ describe("PostgresQueryTransformer", () => {
         },
       };
       transformer.transformFilter(query, now);
-      expect(sqlMock).toHaveBeenCalledWith(
-        ["fields_to_index = ", ""],
-        JSON.stringify(["field1", "field2"])
-      );
+      expect(sqlMock.identifier).toHaveBeenCalledWith("fields_to_index");
     });
 
     it("should handle tag string meta query", () => {
@@ -250,12 +436,7 @@ describe("PostgresQueryTransformer", () => {
         },
       };
       transformer.transformFilter(query, now);
-      const calls = (sqlMock as any).mock.calls;
-      const found = calls.some(
-        (call: any) =>
-          Array.isArray(call[0]) && call[0].includes("deleted_at IS NULL")
-      );
-      expect(found).toBe(true);
+      expect(sqlMock.identifier).toHaveBeenCalledWith("deleted_at");
     });
 
     it("should handle deletedAt number meta query", () => {

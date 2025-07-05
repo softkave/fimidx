@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import type {
   INumberMetaQuery,
+  IObjField,
   IObjMetaQuery,
   IObjPartLogicalQuery,
   IObjPartQueryList,
@@ -10,6 +11,7 @@ import type {
   ITopLevelFieldQuery,
 } from "../../definitions/obj.js";
 import { BaseQueryTransformer } from "./BaseQueryTransformer.js";
+import { mapFieldToDbColumn } from "./fieldMapping.js";
 
 export class PostgresQueryTransformer extends BaseQueryTransformer<
   ReturnType<typeof sql>
@@ -50,17 +52,133 @@ export class PostgresQueryTransformer extends BaseQueryTransformer<
     return sql.join(conditions, sql` AND `);
   }
 
-  transformSort(sort: IObjSortList): ReturnType<typeof sql> {
+  transformSort(
+    sort: IObjSortList,
+    fields?: IObjField[]
+  ): ReturnType<typeof sql> {
     if (sort.length === 0) {
       return sql`created_at DESC`;
     }
 
-    const sortClauses = sort.map((sortItem) => {
-      const direction = sortItem.direction === "asc" ? sql`ASC` : sql`DESC`;
-      return sql`${sql.identifier(sortItem.field)} ${direction}`;
+    const sortClauses: ReturnType<typeof sql>[] = [];
+
+    sort.forEach((sortItem) => {
+      let direction = "DESC";
+      if (sortItem.direction === "asc" || sortItem.direction === "desc") {
+        direction = sortItem.direction.toUpperCase();
+      }
+
+      // Handle JSONB field paths (e.g., objRecord.order)
+      if (sortItem.field.startsWith("objRecord.")) {
+        const fieldPath = sortItem.field.replace(/^objRecord\./, "");
+
+        // Check if field exists in fields array
+        if (fields) {
+          const fieldInfo = fields.find((f) => f.field === fieldPath);
+          if (!fieldInfo) {
+            // Skip this sort field if not found in fields array
+            return;
+          }
+        }
+
+        const segments = fieldPath.split(".");
+        if (segments.length === 1) {
+          // Single segment: obj_record->>'field'
+          const fieldInfo = fields?.find((f) => f.field === fieldPath);
+          if (fieldInfo) {
+            if (fieldInfo.valueTypes.includes("number")) {
+              // For numeric fields, cast to numeric for proper sorting
+              sortClauses.push(
+                sql.raw(`(obj_record->>'${segments[0]}')::numeric ${direction}`)
+              );
+            } else if (fieldInfo.valueTypes.includes("string")) {
+              // For string fields, use text sorting
+              sortClauses.push(
+                sql.raw(`obj_record->>'${segments[0]}' ${direction}`)
+              );
+            }
+          }
+        } else {
+          // Nested: obj_record#>>'{a,b,c}'
+          const fieldInfo = fields?.find((f) => f.field === fieldPath);
+          if (fieldInfo) {
+            if (fieldInfo.valueTypes.includes("number")) {
+              // For numeric fields, cast to numeric for proper sorting
+              sortClauses.push(
+                sql.raw(
+                  `(obj_record#>>'{${segments.join(
+                    ","
+                  )}}')::numeric ${direction}`
+                )
+              );
+            } else if (fieldInfo.valueTypes.includes("string")) {
+              // For string fields, use text sorting
+              sortClauses.push(
+                sql.raw(`obj_record#>>'{${segments.join(",")}}' ${direction}`)
+              );
+            }
+          }
+        }
+      } else if (sortItem.field.includes(".")) {
+        // Fallback for other dotted fields
+        const fieldPath = sortItem.field;
+
+        // Check if field exists in fields array
+        if (fields) {
+          const fieldInfo = fields.find((f) => f.field === fieldPath);
+          if (!fieldInfo) {
+            // Skip this sort field if not found in fields array
+            return;
+          }
+        }
+
+        const fieldInfo = fields?.find((f) => f.field === fieldPath);
+        if (fieldInfo) {
+          if (fieldInfo.valueTypes.includes("number")) {
+            // For numeric fields, cast to numeric for proper sorting
+            sortClauses.push(
+              sql.raw(
+                `(obj_record#>>'{${fieldPath
+                  .split(".")
+                  .join(",")}}')::numeric ${direction}`
+              )
+            );
+          } else if (fieldInfo.valueTypes.includes("string")) {
+            // For string fields, use text sorting
+            sortClauses.push(
+              sql.raw(
+                `obj_record#>>'{${fieldPath
+                  .split(".")
+                  .join(",")}}' ${direction}`
+              )
+            );
+          }
+        }
+      } else {
+        // Direct column reference - convert camelCase to snake_case
+        const dbColumn = mapFieldToDbColumn(sortItem.field);
+        sortClauses.push(
+          sql`${sql.identifier(dbColumn)} ${sql.raw(direction)}`
+        );
+      }
     });
 
-    return sql.join(sortClauses, sql`, `);
+    // If no valid sort clauses, return default
+    if (sortClauses.length === 0) {
+      return sql`created_at DESC`;
+    }
+
+    // Join multiple sort clauses
+    if (sortClauses.length === 1) {
+      return sortClauses[0];
+    } else {
+      // For multiple clauses, we need to join them properly
+      let result = sortClauses[0];
+      for (let i = 1; i < sortClauses.length; i++) {
+        result = sql`${result}, ${sortClauses[i]}`;
+      }
+      return result;
+    }
   }
 
   transformPagination(page: number, limit: number): ReturnType<typeof sql> {
@@ -74,66 +192,90 @@ export class PostgresQueryTransformer extends BaseQueryTransformer<
   ): ReturnType<typeof sql> {
     const conditions: ReturnType<typeof sql>[] = [];
     partQuery.forEach((part) => {
-      // Build JSON path for obj_record: use -> for all but last, ->> for last
+      // Build JSON path for obj_record: use -> for all but last, ->> for last for scalars, but for arrays, use -> for all
       const segments = part.field.split(".");
-      const jsonPath = segments
-        .map((segment, i) =>
-          i === segments.length - 1 ? `->'${segment}'` : `->'${segment}'`
-        )
-        .join("");
-      const fieldExpr = sql.raw(`obj_record${jsonPath}`);
-      const fieldExprText = sql.raw(`obj_record${jsonPath}::text`);
+      // For array fields, we want the last segment to use -> (not ->>), for scalars use ->> for last
+      const isArrayField =
+        segments[segments.length - 1].toLowerCase().includes("tag") ||
+        segments[segments.length - 1].toLowerCase().includes("array") ||
+        segments[segments.length - 1].toLowerCase().includes("list");
+      let fieldExpr;
+      let fieldExprText;
+      if (segments.length === 1) {
+        // Single segment: obj_record->>'field'
+        fieldExpr = sql.raw(`obj_record->>'${segments[0]}'`);
+        fieldExprText = fieldExpr;
+      } else if (isArrayField) {
+        // Array field: obj_record#>'{a,b,c}'
+        fieldExpr = sql.raw(`obj_record#>'{${segments.join(",")}}'`);
+        fieldExprText = fieldExpr;
+      } else {
+        // Nested scalar: obj_record#>>'{a,b,c}'
+        fieldExpr = sql.raw(`obj_record#>>'{${segments.join(",")}}'`);
+        fieldExprText = fieldExpr;
+      }
+
+      // Helper to get the correct value for text comparison
+      function getTextValue(val: any) {
+        return typeof val === "string" ? val : JSON.stringify(val);
+      }
+
       switch (part.op) {
         case "eq":
-          conditions.push(
-            sql`${fieldExprText} = ${JSON.stringify(part.value)}`
-          );
+          conditions.push(sql`${fieldExprText} = ${getTextValue(part.value)}`);
           break;
         case "neq":
-          conditions.push(
-            sql`${fieldExprText} != ${JSON.stringify(part.value)}`
-          );
+          conditions.push(sql`${fieldExprText} != ${getTextValue(part.value)}`);
           break;
         case "gt": {
-          if (typeof part.value === "number") {
-            const typeCheck = sql.raw(
-              `jsonb_typeof(obj_record${jsonPath}) = 'number'`
-            );
+          if (
+            typeof part.value === "number" ||
+            (typeof part.value === "string" && !isNaN(Number(part.value)))
+          ) {
+            const numericValue =
+              typeof part.value === "string" ? Number(part.value) : part.value;
+            // Use a safer approach without jsonb_typeof
             conditions.push(
-              sql`(${typeCheck} AND (${fieldExpr})::numeric > ${part.value})`
+              sql`(${fieldExprText} ~ '^[0-9]+\.?[0-9]*$' AND (${fieldExprText})::numeric > ${numericValue})`
             );
           }
           break;
         }
         case "gte": {
-          if (typeof part.value === "number") {
-            const typeCheck = sql.raw(
-              `jsonb_typeof(obj_record${jsonPath}) = 'number'`
-            );
+          if (
+            typeof part.value === "number" ||
+            (typeof part.value === "string" && !isNaN(Number(part.value)))
+          ) {
+            const numericValue =
+              typeof part.value === "string" ? Number(part.value) : part.value;
             conditions.push(
-              sql`(${typeCheck} AND (${fieldExpr})::numeric >= ${part.value})`
+              sql`(${fieldExprText} ~ '^[0-9]+\.?[0-9]*$' AND (${fieldExprText})::numeric >= ${numericValue})`
             );
           }
           break;
         }
         case "lt": {
-          if (typeof part.value === "number") {
-            const typeCheck = sql.raw(
-              `jsonb_typeof(obj_record${jsonPath}) = 'number'`
-            );
+          if (
+            typeof part.value === "number" ||
+            (typeof part.value === "string" && !isNaN(Number(part.value)))
+          ) {
+            const numericValue =
+              typeof part.value === "string" ? Number(part.value) : part.value;
             conditions.push(
-              sql`(${typeCheck} AND (${fieldExpr})::numeric < ${part.value})`
+              sql`(${fieldExprText} ~ '^[0-9]+\.?[0-9]*$' AND (${fieldExprText})::numeric < ${numericValue})`
             );
           }
           break;
         }
         case "lte": {
-          if (typeof part.value === "number") {
-            const typeCheck = sql.raw(
-              `jsonb_typeof(obj_record${jsonPath}) = 'number'`
-            );
+          if (
+            typeof part.value === "number" ||
+            (typeof part.value === "string" && !isNaN(Number(part.value)))
+          ) {
+            const numericValue =
+              typeof part.value === "string" ? Number(part.value) : part.value;
             conditions.push(
-              sql`(${typeCheck} AND (${fieldExpr})::numeric <= ${part.value})`
+              sql`(${fieldExprText} ~ '^[0-9]+\.?[0-9]*$' AND (${fieldExprText})::numeric <= ${numericValue})`
             );
           }
           break;
@@ -144,16 +286,36 @@ export class PostgresQueryTransformer extends BaseQueryTransformer<
           break;
         }
         case "in": {
-          // If the field is an array, use @> for containment
           if (Array.isArray(part.value)) {
-            conditions.push(sql`${fieldExpr} @> ${JSON.stringify(part.value)}`);
+            if (isArrayField) {
+              // For array fields, use @> operator to check if the field contains any of the values
+              const jsonbPath = segments
+                .map((segment) => `->'${segment}'`)
+                .join("");
+              const jsonbFieldExpr = sql.raw(`obj_record${jsonbPath}`);
+              const valueConditions = part.value.map(
+                (value) => sql`${jsonbFieldExpr} @> ${JSON.stringify([value])}`
+              );
+              conditions.push(sql`(${sql.join(valueConditions, sql` OR `)})`);
+            } else {
+              // For non-array fields, use a single IN clause
+              conditions.push(
+                sql`${fieldExprText} IN (${sql.join(
+                  part.value.map((v) => sql`${v}`),
+                  sql`, `
+                )})`
+              );
+            }
           }
           break;
         }
         case "not_in": {
           if (Array.isArray(part.value)) {
             conditions.push(
-              sql`NOT (${fieldExpr} @> ${JSON.stringify(part.value)})`
+              sql`${fieldExprText} NOT IN (${sql.join(
+                part.value.map((v) => sql`${v}`),
+                sql`, `
+              )})`
             );
           }
           break;
@@ -162,14 +324,23 @@ export class PostgresQueryTransformer extends BaseQueryTransformer<
           if (
             Array.isArray(part.value) &&
             part.value.length === 2 &&
-            typeof part.value[0] === "number" &&
-            typeof part.value[1] === "number"
+            (typeof part.value[0] === "number" ||
+              (typeof part.value[0] === "string" &&
+                !isNaN(Number(part.value[0])))) &&
+            (typeof part.value[1] === "number" ||
+              (typeof part.value[1] === "string" &&
+                !isNaN(Number(part.value[1]))))
           ) {
-            const typeCheck = sql.raw(
-              `jsonb_typeof(obj_record${jsonPath}) = 'number'`
-            );
+            const minValue =
+              typeof part.value[0] === "string"
+                ? Number(part.value[0])
+                : part.value[0];
+            const maxValue =
+              typeof part.value[1] === "string"
+                ? Number(part.value[1])
+                : part.value[1];
             conditions.push(
-              sql`(${typeCheck} AND (${fieldExpr})::numeric BETWEEN ${part.value[0]} AND ${part.value[1]})`
+              sql`(${fieldExprText} ~ '^[0-9]+\.?[0-9]*$' AND (${fieldExprText})::numeric BETWEEN ${minValue} AND ${maxValue})`
             );
           }
           break;
@@ -218,16 +389,8 @@ export class PostgresQueryTransformer extends BaseQueryTransformer<
     date: Date
   ): ReturnType<typeof sql> {
     const conditions: ReturnType<typeof sql>[] = [];
-    // Map camelCase keys to snake_case columns
-    const keyMap: Record<string, string> = {
-      id: "id",
-      createdAt: "created_at",
-      updatedAt: "updated_at",
-      createdBy: "created_by",
-      updatedBy: "updated_by",
-    };
     Object.entries(metaQuery).forEach(([key, value]) => {
-      const dbKey = keyMap[key] || key;
+      const dbKey = mapFieldToDbColumn(key);
       if (this.isStringMetaQuery(value)) {
         const stringCondition = this.transformStringMetaQuery(dbKey, value);
         conditions.push(stringCondition);
@@ -265,20 +428,26 @@ export class PostgresQueryTransformer extends BaseQueryTransformer<
 
     // Handle shouldIndex (boolean field)
     if (topLevelFields.shouldIndex !== undefined) {
-      conditions.push(sql`should_index = ${topLevelFields.shouldIndex}`);
+      conditions.push(
+        sql`${sql.identifier(mapFieldToDbColumn("shouldIndex"))} = ${
+          topLevelFields.shouldIndex
+        }`
+      );
     }
 
     // Handle fieldsToIndex (array field)
     if (topLevelFields.fieldsToIndex !== undefined) {
       conditions.push(
-        sql`fields_to_index = ${JSON.stringify(topLevelFields.fieldsToIndex)}`
+        sql`${sql.identifier(
+          mapFieldToDbColumn("fieldsToIndex")
+        )} = ${JSON.stringify(topLevelFields.fieldsToIndex)}`
       );
     }
 
     // Handle tag (string meta query)
     if (topLevelFields.tag) {
       const tagCondition = this.transformStringMetaQuery(
-        "tag",
+        mapFieldToDbColumn("tag"),
         topLevelFields.tag
       );
       conditions.push(tagCondition);
@@ -287,7 +456,7 @@ export class PostgresQueryTransformer extends BaseQueryTransformer<
     // Handle groupId (string meta query)
     if (topLevelFields.groupId) {
       const groupIdCondition = this.transformStringMetaQuery(
-        "group_id",
+        mapFieldToDbColumn("groupId"),
         topLevelFields.groupId
       );
       conditions.push(groupIdCondition);
@@ -296,10 +465,12 @@ export class PostgresQueryTransformer extends BaseQueryTransformer<
     // Handle deletedAt (null or number meta query)
     if (topLevelFields.deletedAt !== undefined) {
       if (topLevelFields.deletedAt === null) {
-        conditions.push(sql`deleted_at IS NULL`);
+        conditions.push(
+          sql`${sql.identifier(mapFieldToDbColumn("deletedAt"))} IS NULL`
+        );
       } else {
         const deletedAtCondition = this.transformNumberMetaQuery(
-          "deleted_at",
+          mapFieldToDbColumn("deletedAt"),
           topLevelFields.deletedAt,
           date
         );
@@ -310,7 +481,7 @@ export class PostgresQueryTransformer extends BaseQueryTransformer<
     // Handle deletedBy (string meta query)
     if (topLevelFields.deletedBy) {
       const deletedByCondition = this.transformStringMetaQuery(
-        "deleted_by",
+        mapFieldToDbColumn("deletedBy"),
         topLevelFields.deletedBy
       );
       conditions.push(deletedByCondition);
@@ -319,7 +490,7 @@ export class PostgresQueryTransformer extends BaseQueryTransformer<
     // Handle deletedByType (string meta query)
     if (topLevelFields.deletedByType) {
       const deletedByTypeCondition = this.transformStringMetaQuery(
-        "deleted_by_type",
+        mapFieldToDbColumn("deletedByType"),
         topLevelFields.deletedByType
       );
       conditions.push(deletedByTypeCondition);

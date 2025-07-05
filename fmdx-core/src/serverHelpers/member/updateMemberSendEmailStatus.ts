@@ -2,6 +2,7 @@ import type { EmailRecordStatus } from "../../definitions/email.js";
 import type { IMemberObjRecord } from "../../definitions/member.js";
 import { kObjTags } from "../../definitions/obj.js";
 import { kId0 } from "../../definitions/system.js";
+import type { IObjStorage } from "../../storage/types.js";
 import { updateManyObjs } from "../obj/updateObjs.js";
 
 export async function updateMemberSendEmailStatus(params: {
@@ -11,6 +12,7 @@ export async function updateMemberSendEmailStatus(params: {
   sentEmailCount: number;
   emailLastSentAt: Date;
   emailLastSentStatus: EmailRecordStatus;
+  storage?: IObjStorage;
 }) {
   const {
     appId,
@@ -19,6 +21,7 @@ export async function updateMemberSendEmailStatus(params: {
     sentEmailCount,
     emailLastSentAt,
     emailLastSentStatus,
+    storage,
   } = params;
   const update: Partial<IMemberObjRecord> = {
     sentEmailCount,
@@ -41,5 +44,6 @@ export async function updateMemberSendEmailStatus(params: {
     updateWay: "merge",
     by: kId0,
     byType: kId0,
+    storage,
   });
 }

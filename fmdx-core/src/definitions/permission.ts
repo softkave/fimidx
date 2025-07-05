@@ -31,6 +31,7 @@ export const kFmdxPermissions = {
   },
   clientToken: {
     read: "clientToken:read",
+    readPermissions: "clientToken:readPermissions",
     update: "clientToken:update",
     delete: "clientToken:delete",
   },
@@ -71,6 +72,7 @@ export const kFmdxPermissionsList = [
   kFmdxPermissions.log.read,
   kFmdxPermissions.log.ingest,
   kFmdxPermissions.clientToken.read,
+  kFmdxPermissions.clientToken.readPermissions,
   kFmdxPermissions.clientToken.update,
   kFmdxPermissions.clientToken.delete,
   kFmdxPermissions.monitor.read,

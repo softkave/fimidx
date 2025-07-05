@@ -5,6 +5,10 @@ import {
   objSortListSchema,
   stringMetaQuerySchema,
 } from "./obj.js";
+import {
+  checkPermissionItemSchema,
+  permissionAtomSchema,
+} from "./permission.js";
 
 export interface IClientToken {
   id: string;
@@ -19,14 +23,22 @@ export interface IClientToken {
   appId: string;
   groupId: string;
   meta?: Record<string, string> | null;
-  permissions: string[] | null;
+  /** Permissions are null if reading other client tokens and user does not have
+   * clientToken:readPermissions permission. */
+  permissions: import("./permission.js").IPermissionAtom[] | null;
 }
 
 export interface IClientTokenObjRecord {
   name: string;
   description?: string | null;
   meta?: Record<string, string> | null;
-  permissions: string[] | null;
+  permissions: import("./permission.js").IPermissionAtom[] | null;
+}
+
+export interface IClientTokenObjRecordMeta
+  extends NonNullable<import("./permission.js").IPermissionMeta> {
+  __fmdx_managed_clientTokenId: string;
+  __fmdx_managed_groupId: string;
 }
 
 export const addClientTokenSchema = z.object({
@@ -34,7 +46,7 @@ export const addClientTokenSchema = z.object({
   name: z.string().optional(),
   description: z.string().optional(),
   meta: z.record(z.string(), z.string()).optional(),
-  permissions: z.array(z.string()).optional(),
+  permissions: z.array(permissionAtomSchema).optional(),
 });
 
 export const clientTokenQuerySchema = z.object({
@@ -54,10 +66,28 @@ export const updateClientTokensSchema = z.object({
     name: z.string().optional(),
     description: z.string().optional(),
     meta: z.record(z.string(), z.string()).optional(),
-    permissions: z.array(z.string()).optional(),
+    permissions: z.array(permissionAtomSchema).optional(),
   }),
   query: clientTokenQuerySchema,
   updateMany: z.boolean().optional(),
+});
+
+export const updateClientTokenPermissionsSchema = z.object({
+  query: z.object({
+    id: z.string().min(1),
+    groupId: z.string(),
+    appId: z.string(),
+  }),
+  update: z.object({
+    permissions: z.array(permissionAtomSchema),
+  }),
+});
+
+export const addClientTokenPermissionsSchema = z.object({
+  groupId: z.string(),
+  appId: z.string(),
+  permissions: z.array(permissionAtomSchema),
+  clientTokenId: z.string(),
 });
 
 export const deleteClientTokensSchema = z.object({
@@ -82,9 +112,22 @@ export const refreshClientTokenJWTSchema = z.object({
   refreshToken: z.string(),
 });
 
+export const checkClientTokenPermissionsSchema = z.object({
+  appId: z.string(),
+  clientTokenId: z.string(),
+  groupId: z.string(),
+  items: z.array(checkPermissionItemSchema),
+});
+
 export type AddClientTokenEndpointArgs = z.infer<typeof addClientTokenSchema>;
 export type UpdateClientTokensEndpointArgs = z.infer<
   typeof updateClientTokensSchema
+>;
+export type UpdateClientTokenPermissionsEndpointArgs = z.infer<
+  typeof updateClientTokenPermissionsSchema
+>;
+export type AddClientTokenPermissionsEndpointArgs = z.infer<
+  typeof addClientTokenPermissionsSchema
 >;
 export type DeleteClientTokensEndpointArgs = z.infer<
   typeof deleteClientTokensSchema
@@ -95,6 +138,9 @@ export type EncodeClientTokenJWTEndpointArgs = z.infer<
 >;
 export type RefreshClientTokenJWTEndpointArgs = z.infer<
   typeof refreshClientTokenJWTSchema
+>;
+export type CheckClientTokenPermissionsEndpointArgs = z.infer<
+  typeof checkClientTokenPermissionsSchema
 >;
 
 export interface AddClientTokenEndpointResponse {
@@ -108,6 +154,14 @@ export interface GetClientTokensEndpointResponse {
   hasMore: boolean;
 }
 
+export interface UpdateClientTokenPermissionsEndpointResponse {
+  clientToken: IClientToken;
+}
+
+export interface AddClientTokenPermissionsEndpointResponse {
+  permissions: import("./permission.js").IPermission[];
+}
+
 export interface EncodeClientTokenJWTEndpointResponse {
   token: string;
   refreshToken?: string;
@@ -116,4 +170,10 @@ export interface EncodeClientTokenJWTEndpointResponse {
 export interface RefreshClientTokenJWTEndpointResponse {
   token: string;
   refreshToken?: string;
+}
+
+export interface CheckClientTokenPermissionsEndpointResponse {
+  results: {
+    hasPermission: boolean;
+  }[];
 }

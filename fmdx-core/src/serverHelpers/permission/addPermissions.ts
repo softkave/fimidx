@@ -5,6 +5,7 @@ import type {
   AddPermissionsEndpointArgs,
   IPermissionObjRecord,
 } from "../../definitions/permission.js";
+import type { IObjStorage } from "../../storage/types.js";
 import { setManyObjs } from "../obj/setObjs.js";
 import { objToPermission } from "./objToPermission.js";
 
@@ -13,8 +14,9 @@ export async function addPermissions(params: {
   groupId: string;
   by: string;
   byType: string;
+  storage?: IObjStorage;
 }) {
-  const { args, groupId, by, byType } = params;
+  const { args, groupId, by, byType, storage } = params;
   const { appId, permissions } = args;
 
   const objRecords = permissions.map((permission): IPermissionObjRecord => {
@@ -36,6 +38,7 @@ export async function addPermissions(params: {
       appId,
       items: objRecords,
     },
+    storage,
   });
 
   assert(

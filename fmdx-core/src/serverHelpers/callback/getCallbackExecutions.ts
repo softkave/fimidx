@@ -1,19 +1,24 @@
 import type { GetCallbackExecutionsEndpointArgs } from "../../definitions/callback.js";
 import { kObjTags, type IObjQuery } from "../../definitions/obj.js";
+import type { IObjStorage } from "../../storage/types.js";
 import { getManyObjs } from "../obj/getObjs.js";
 import { objToCallbackExecution } from "./objToCallbackExecution.js";
 
 export async function getCallbackExecutions(params: {
   args: GetCallbackExecutionsEndpointArgs;
+  appId: string;
+  storage?: IObjStorage;
 }) {
-  const { args } = params;
+  const { args, appId, storage } = params;
   const { page: inputPage, limit: inputLimit, sort } = args;
 
+  // Convert 1-based pagination to 0-based for storage layer
   const pageNumber = inputPage ?? 1;
   const limitNumber = inputLimit ?? 100;
+  const storagePage = pageNumber - 1; // Convert to 0-based
 
   const objQuery: IObjQuery = {
-    appId: args.callbackId,
+    appId,
     partQuery: {
       and: [
         {
@@ -24,14 +29,21 @@ export async function getCallbackExecutions(params: {
       ],
     },
   };
-  const { objs, hasMore, page, limit } = await getManyObjs({
+
+  const result = await getManyObjs({
     objQuery,
-    tag: kObjTags.callbackExecution,
+    page: storagePage,
     limit: limitNumber,
-    page: pageNumber,
+    tag: kObjTags.callbackExecution,
     sort: sort ? sort : undefined,
+    storage,
   });
 
-  const executions = objs.map(objToCallbackExecution);
-  return { executions, hasMore, page, limit };
+  const executions = result.objs.map(objToCallbackExecution);
+  return {
+    executions,
+    page: pageNumber, // Return 1-based page number
+    limit: limitNumber,
+    hasMore: result.hasMore,
+  };
 }

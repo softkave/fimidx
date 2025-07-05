@@ -505,6 +505,51 @@ describe("PostgresObjStorage (integration)", () => {
       expect(result.objs[0].objRecord.metadata.tags).toContain("important");
     });
 
+    it("should query string fields with in operator (objRecord.name)", async () => {
+      const obj1 = makeObjFields({
+        objRecord: { name: "Alpha Group" },
+        tag: "string-in-tag",
+        appId: "string-in-app",
+      });
+      const obj2 = makeObjFields({
+        objRecord: { name: "Beta Group" },
+        tag: "string-in-tag",
+        appId: "string-in-app",
+      });
+      const obj3 = makeObjFields({
+        objRecord: { name: "Gamma Group" },
+        tag: "string-in-tag",
+        appId: "string-in-app",
+      });
+      await fmdxPostgresDb.insert(objs).values([obj1, obj2, obj3]);
+
+      // First, let's verify all objects exist
+      const allObjs = await storage.read({
+        query: { appId: "string-in-app" },
+        tag: "string-in-tag",
+      });
+
+      const result = await storage.read({
+        query: {
+          appId: "string-in-app",
+          partQuery: {
+            and: [
+              {
+                op: "in",
+                field: "name",
+                value: ["Alpha Group", "Beta Group"],
+              },
+            ],
+          },
+        },
+        tag: "string-in-tag",
+      });
+
+      expect(result.objs).toHaveLength(2);
+      const objectNames = result.objs.map((o) => o.objRecord.name).sort();
+      expect(objectNames).toEqual(["Alpha Group", "Beta Group"]);
+    });
+
     it("should query boolean field existence (objRecord.settings.enabled)", async () => {
       const obj1 = makeObjFields({
         objRecord: { settings: { enabled: true } },
@@ -649,6 +694,598 @@ describe("PostgresObjStorage (integration)", () => {
       });
       expect(result.objs.length).toBe(1);
       expect(result.objs[0].updatedBy).toBe("user1");
+    });
+
+    it("should query using metaQuery with updatedAt (like indexObjs)", async () => {
+      const now = new Date();
+      const cutoffDate = new Date(now.getTime() - 1000 * 60 * 60 * 24); // 1 day ago
+
+      const obj1 = makeObjFields({
+        updatedAt: now,
+        tag: "meta-updated-tag",
+        appId: "meta-updated-app",
+      });
+      const obj2 = makeObjFields({
+        updatedAt: new Date(now.getTime() - 1000 * 60 * 60 * 48), // 2 days ago
+        tag: "meta-updated-tag",
+        appId: "meta-updated-app",
+      });
+      await fmdxPostgresDb.insert(objs).values([obj1, obj2]);
+
+      const result = await storage.read({
+        query: {
+          metaQuery: {
+            updatedAt: {
+              gte: cutoffDate.getTime(),
+            },
+          },
+        },
+        tag: "meta-updated-tag",
+      });
+
+      expect(result.objs.length).toBe(1);
+      expect(result.objs[0].id).toBe(obj1.id);
+    });
+
+    it("should query using topLevelFields with shouldIndex (like indexObjs)", async () => {
+      const obj1 = makeObjFields({
+        shouldIndex: true,
+        tag: "top-level-tag",
+        appId: "top-level-app",
+      });
+      const obj2 = makeObjFields({
+        shouldIndex: false,
+        tag: "top-level-tag",
+        appId: "top-level-app",
+      });
+      await fmdxPostgresDb.insert(objs).values([obj1, obj2]);
+
+      const result = await storage.read({
+        query: {
+          topLevelFields: {
+            shouldIndex: true,
+          },
+        },
+        tag: "top-level-tag",
+      });
+
+      expect(result.objs.length).toBe(1);
+      expect(result.objs[0].id).toBe(obj1.id);
+      expect(result.objs[0].shouldIndex).toBe(true);
+    });
+
+    it("should query using both metaQuery and topLevelFields together (like indexObjs)", async () => {
+      const now = new Date();
+      const cutoffDate = new Date(now.getTime() - 1000 * 60 * 60 * 24); // 1 day ago
+
+      // Object 1: shouldIndex=true, updatedAt=now (should match)
+      const obj1 = makeObjFields({
+        shouldIndex: true,
+        updatedAt: now,
+        tag: "combined-tag",
+        appId: "combined-app",
+      });
+
+      // Object 2: shouldIndex=false, updatedAt=now (should not match - wrong shouldIndex)
+      const obj2 = makeObjFields({
+        shouldIndex: false,
+        updatedAt: now,
+        tag: "combined-tag",
+        appId: "combined-app",
+      });
+
+      // Object 3: shouldIndex=true, updatedAt=2 days ago (should not match - wrong updatedAt)
+      const obj3 = makeObjFields({
+        shouldIndex: true,
+        updatedAt: new Date(now.getTime() - 1000 * 60 * 60 * 48),
+        tag: "combined-tag",
+        appId: "combined-app",
+      });
+
+      // Object 4: shouldIndex=false, updatedAt=2 days ago (should not match - both wrong)
+      const obj4 = makeObjFields({
+        shouldIndex: false,
+        updatedAt: new Date(now.getTime() - 1000 * 60 * 60 * 48),
+        tag: "combined-tag",
+        appId: "combined-app",
+      });
+
+      await fmdxPostgresDb.insert(objs).values([obj1, obj2, obj3, obj4]);
+
+      const result = await storage.read({
+        query: {
+          metaQuery: {
+            updatedAt: {
+              gte: cutoffDate.getTime(),
+            },
+          },
+          topLevelFields: {
+            shouldIndex: true,
+          },
+        },
+        tag: "combined-tag",
+      });
+
+      expect(result.objs.length).toBe(1);
+      expect(result.objs[0].id).toBe(obj1.id);
+      expect(result.objs[0].shouldIndex).toBe(true);
+      expect(result.objs[0].updatedAt.getTime()).toBeGreaterThanOrEqual(
+        cutoffDate.getTime()
+      );
+    });
+  });
+
+  describe("sorting", () => {
+    it("should sort by simple string field in objRecord", async () => {
+      const obj1 = makeObjFields({
+        objRecord: { name: "Charlie" },
+        tag: "sort-string-tag",
+        appId: "sort-string-app",
+      });
+      const obj2 = makeObjFields({
+        objRecord: { name: "Alice" },
+        tag: "sort-string-tag",
+        appId: "sort-string-app",
+      });
+      const obj3 = makeObjFields({
+        objRecord: { name: "Bob" },
+        tag: "sort-string-tag",
+        appId: "sort-string-app",
+      });
+      await fmdxPostgresDb.insert(objs).values([obj1, obj2, obj3]);
+
+      const result = await storage.read({
+        query: { appId: "sort-string-app" },
+        tag: "sort-string-tag",
+        sort: [{ field: "objRecord.name", direction: "asc" }],
+        fields: [
+          {
+            id: "name-field",
+            field: "name",
+            fieldKeys: ["name"],
+            fieldKeyTypes: ["string"],
+            valueTypes: ["string"],
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            appId: "sort-string-app",
+            groupId: "test-group",
+            tag: "sort-string-tag",
+          },
+        ],
+      });
+
+      expect(result.objs).toHaveLength(3);
+      expect(result.objs[0].objRecord.name).toBe("Alice");
+      expect(result.objs[1].objRecord.name).toBe("Bob");
+      expect(result.objs[2].objRecord.name).toBe("Charlie");
+    });
+
+    it("should sort by simple number field in objRecord", async () => {
+      const obj1 = makeObjFields({
+        objRecord: { score: 300 },
+        tag: "sort-number-tag",
+        appId: "sort-number-app",
+      });
+      const obj2 = makeObjFields({
+        objRecord: { score: 100 },
+        tag: "sort-number-tag",
+        appId: "sort-number-app",
+      });
+      const obj3 = makeObjFields({
+        objRecord: { score: 200 },
+        tag: "sort-number-tag",
+        appId: "sort-number-app",
+      });
+      await fmdxPostgresDb.insert(objs).values([obj1, obj2, obj3]);
+
+      const result = await storage.read({
+        query: { appId: "sort-number-app" },
+        tag: "sort-number-tag",
+        sort: [{ field: "objRecord.score", direction: "asc" }],
+        fields: [
+          {
+            id: "score-field",
+            field: "score",
+            fieldKeys: ["score"],
+            fieldKeyTypes: ["string"],
+            valueTypes: ["number"],
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            appId: "sort-number-app",
+            groupId: "test-group",
+            tag: "sort-number-tag",
+          },
+        ],
+      });
+
+      expect(result.objs).toHaveLength(3);
+      expect(result.objs[0].objRecord.score).toBe(100);
+      expect(result.objs[1].objRecord.score).toBe(200);
+      expect(result.objs[2].objRecord.score).toBe(300);
+    });
+
+    it("should sort by nested field in objRecord", async () => {
+      const obj1 = makeObjFields({
+        objRecord: { user: { age: 30 } },
+        tag: "sort-nested-tag",
+        appId: "sort-nested-app",
+      });
+      const obj2 = makeObjFields({
+        objRecord: { user: { age: 25 } },
+        tag: "sort-nested-tag",
+        appId: "sort-nested-app",
+      });
+      const obj3 = makeObjFields({
+        objRecord: { user: { age: 35 } },
+        tag: "sort-nested-tag",
+        appId: "sort-nested-app",
+      });
+      await fmdxPostgresDb.insert(objs).values([obj1, obj2, obj3]);
+
+      const result = await storage.read({
+        query: { appId: "sort-nested-app" },
+        tag: "sort-nested-tag",
+        sort: [{ field: "objRecord.user.age", direction: "asc" }],
+        fields: [
+          {
+            id: "user-age-field",
+            field: "user.age",
+            fieldKeys: ["user", "age"],
+            fieldKeyTypes: ["string", "string"],
+            valueTypes: ["number"],
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            appId: "sort-nested-app",
+            groupId: "test-group",
+            tag: "sort-nested-tag",
+          },
+        ],
+      });
+
+      expect(result.objs).toHaveLength(3);
+      expect(result.objs[0].objRecord.user.age).toBe(25);
+      expect(result.objs[1].objRecord.user.age).toBe(30);
+      expect(result.objs[2].objRecord.user.age).toBe(35);
+    });
+
+    it("should sort by deeply nested field in objRecord", async () => {
+      const obj1 = makeObjFields({
+        objRecord: { stats: { views: { daily: 1500 } } },
+        tag: "sort-deep-tag",
+        appId: "sort-deep-app",
+      });
+      const obj2 = makeObjFields({
+        objRecord: { stats: { views: { daily: 500 } } },
+        tag: "sort-deep-tag",
+        appId: "sort-deep-app",
+      });
+      const obj3 = makeObjFields({
+        objRecord: { stats: { views: { daily: 1000 } } },
+        tag: "sort-deep-tag",
+        appId: "sort-deep-app",
+      });
+      await fmdxPostgresDb.insert(objs).values([obj1, obj2, obj3]);
+
+      const result = await storage.read({
+        query: { appId: "sort-deep-app" },
+        tag: "sort-deep-tag",
+        sort: [{ field: "objRecord.stats.views.daily", direction: "asc" }],
+        fields: [
+          {
+            id: "stats-views-daily-field",
+            field: "stats.views.daily",
+            fieldKeys: ["stats", "views", "daily"],
+            fieldKeyTypes: ["string", "string", "string"],
+            valueTypes: ["number"],
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            appId: "sort-deep-app",
+            groupId: "test-group",
+            tag: "sort-deep-tag",
+          },
+        ],
+      });
+
+      expect(result.objs).toHaveLength(3);
+      expect(result.objs[0].objRecord.stats.views.daily).toBe(500);
+      expect(result.objs[1].objRecord.stats.views.daily).toBe(1000);
+      expect(result.objs[2].objRecord.stats.views.daily).toBe(1500);
+    });
+
+    it("should sort by multiple fields in objRecord", async () => {
+      const obj1 = makeObjFields({
+        objRecord: { category: "A", priority: 1 },
+        tag: "sort-multi-tag",
+        appId: "sort-multi-app",
+      });
+      const obj2 = makeObjFields({
+        objRecord: { category: "A", priority: 2 },
+        tag: "sort-multi-tag",
+        appId: "sort-multi-app",
+      });
+      const obj3 = makeObjFields({
+        objRecord: { category: "B", priority: 1 },
+        tag: "sort-multi-tag",
+        appId: "sort-multi-app",
+      });
+      const obj4 = makeObjFields({
+        objRecord: { category: "B", priority: 2 },
+        tag: "sort-multi-tag",
+        appId: "sort-multi-app",
+      });
+      await fmdxPostgresDb.insert(objs).values([obj1, obj2, obj3, obj4]);
+
+      const result = await storage.read({
+        query: { appId: "sort-multi-app" },
+        tag: "sort-multi-tag",
+        sort: [
+          { field: "objRecord.category", direction: "asc" },
+          { field: "objRecord.priority", direction: "desc" },
+        ],
+        fields: [
+          {
+            id: "category-field",
+            field: "category",
+            fieldKeys: ["category"],
+            fieldKeyTypes: ["string"],
+            valueTypes: ["string"],
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            appId: "sort-multi-app",
+            groupId: "test-group",
+            tag: "sort-multi-tag",
+          },
+          {
+            id: "priority-field",
+            field: "priority",
+            fieldKeys: ["priority"],
+            fieldKeyTypes: ["string"],
+            valueTypes: ["number"],
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            appId: "sort-multi-app",
+            groupId: "test-group",
+            tag: "sort-multi-tag",
+          },
+        ],
+      });
+
+      expect(result.objs).toHaveLength(4);
+      // Should be sorted by category ASC, then priority DESC
+      expect(result.objs[0].objRecord.category).toBe("A");
+      expect(result.objs[0].objRecord.priority).toBe(2);
+      expect(result.objs[1].objRecord.category).toBe("A");
+      expect(result.objs[1].objRecord.priority).toBe(1);
+      expect(result.objs[2].objRecord.category).toBe("B");
+      expect(result.objs[2].objRecord.priority).toBe(2);
+      expect(result.objs[3].objRecord.category).toBe("B");
+      expect(result.objs[3].objRecord.priority).toBe(1);
+    });
+
+    it("should sort by top-level fields (createdAt, updatedAt)", async () => {
+      const now = new Date();
+      const obj1 = makeObjFields({
+        createdAt: new Date(now.getTime() + 1000),
+        updatedAt: new Date(now.getTime() + 2000),
+        tag: "sort-top-level-tag",
+        appId: "sort-top-level-app",
+      });
+      const obj2 = makeObjFields({
+        createdAt: now,
+        updatedAt: new Date(now.getTime() + 1000),
+        tag: "sort-top-level-tag",
+        appId: "sort-top-level-app",
+      });
+      const obj3 = makeObjFields({
+        createdAt: new Date(now.getTime() + 2000),
+        updatedAt: now,
+        tag: "sort-top-level-tag",
+        appId: "sort-top-level-app",
+      });
+      await fmdxPostgresDb.insert(objs).values([obj1, obj2, obj3]);
+
+      const result = await storage.read({
+        query: { appId: "sort-top-level-app" },
+        tag: "sort-top-level-tag",
+        sort: [
+          { field: "createdAt", direction: "asc" },
+          { field: "updatedAt", direction: "desc" },
+        ],
+      });
+
+      expect(result.objs).toHaveLength(3);
+      // Should be sorted by createdAt ASC, then updatedAt DESC
+      expect(result.objs[0].id).toBe(obj2.id); // earliest createdAt
+      expect(result.objs[1].id).toBe(obj1.id); // middle createdAt, higher updatedAt
+      expect(result.objs[2].id).toBe(obj3.id); // latest createdAt
+    });
+
+    it("should skip sorting by fields not in fields parameter", async () => {
+      const obj1 = makeObjFields({
+        objRecord: { name: "Charlie", score: 300 },
+        tag: "sort-skip-tag",
+        appId: "sort-skip-app",
+      });
+      const obj2 = makeObjFields({
+        objRecord: { name: "Alice", score: 100 },
+        tag: "sort-skip-tag",
+        appId: "sort-skip-app",
+      });
+      const obj3 = makeObjFields({
+        objRecord: { name: "Bob", score: 200 },
+        tag: "sort-skip-tag",
+        appId: "sort-skip-app",
+      });
+      await fmdxPostgresDb.insert(objs).values([obj1, obj2, obj3]);
+
+      const result = await storage.read({
+        query: { appId: "sort-skip-app" },
+        tag: "sort-skip-tag",
+        sort: [
+          { field: "objRecord.name", direction: "asc" }, // Should be skipped (not in fields)
+          { field: "objRecord.score", direction: "asc" }, // Should work (in fields)
+        ],
+        fields: [
+          {
+            id: "score-field",
+            field: "score",
+            fieldKeys: ["score"],
+            fieldKeyTypes: ["string"],
+            valueTypes: ["number"],
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            appId: "sort-skip-app",
+            groupId: "test-group",
+            tag: "sort-skip-tag",
+          },
+          // Note: name field is not included in fields, so it should be skipped
+        ],
+      });
+
+      expect(result.objs).toHaveLength(3);
+      // Should be sorted by score ASC since name is skipped
+      expect(result.objs[0].objRecord.score).toBe(100);
+      expect(result.objs[1].objRecord.score).toBe(200);
+      expect(result.objs[2].objRecord.score).toBe(300);
+    });
+
+    it("should handle mixed field types in sorting", async () => {
+      const obj1 = makeObjFields({
+        objRecord: {
+          status: "active",
+          priority: 1,
+          metadata: {
+            views: 100,
+            tags: ["important"],
+          },
+        },
+        tag: "sort-mixed-tag",
+        appId: "sort-mixed-app",
+      });
+      const obj2 = makeObjFields({
+        objRecord: {
+          status: "inactive",
+          priority: 2,
+          metadata: {
+            views: 200,
+            tags: ["urgent"],
+          },
+        },
+        tag: "sort-mixed-tag",
+        appId: "sort-mixed-app",
+      });
+      const obj3 = makeObjFields({
+        objRecord: {
+          status: "active",
+          priority: 3,
+          metadata: {
+            views: 150,
+            tags: ["normal"],
+          },
+        },
+        tag: "sort-mixed-tag",
+        appId: "sort-mixed-app",
+      });
+      await fmdxPostgresDb.insert(objs).values([obj1, obj2, obj3]);
+
+      const result = await storage.read({
+        query: { appId: "sort-mixed-app" },
+        tag: "sort-mixed-tag",
+        sort: [
+          { field: "objRecord.status", direction: "asc" },
+          { field: "objRecord.priority", direction: "desc" },
+          { field: "objRecord.metadata.views", direction: "asc" },
+        ],
+        fields: [
+          {
+            id: "priority-field",
+            field: "priority",
+            fieldKeys: ["priority"],
+            fieldKeyTypes: ["string"],
+            valueTypes: ["number"],
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            appId: "sort-mixed-app",
+            groupId: "test-group",
+            tag: "sort-mixed-tag",
+          },
+          {
+            id: "metadata-views-field",
+            field: "metadata.views",
+            fieldKeys: ["metadata", "views"],
+            fieldKeyTypes: ["string", "string"],
+            valueTypes: ["number"],
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            appId: "sort-mixed-app",
+            groupId: "test-group",
+            tag: "sort-mixed-tag",
+          },
+        ],
+      });
+
+      expect(result.objs).toHaveLength(3);
+      // Should be sorted by status ASC, then priority DESC (if available), then metadata.views ASC
+      // The exact order depends on how the PostgresQueryTransformer handles mixed field types
+    });
+
+    it("should handle empty sort array", async () => {
+      const obj1 = makeObjFields({
+        objRecord: { name: "First" },
+        tag: "sort-empty-tag",
+        appId: "sort-empty-app",
+      });
+      const obj2 = makeObjFields({
+        objRecord: { name: "Second" },
+        tag: "sort-empty-tag",
+        appId: "sort-empty-app",
+      });
+      await fmdxPostgresDb.insert(objs).values([obj1, obj2]);
+
+      const result = await storage.read({
+        query: { appId: "sort-empty-app" },
+        tag: "sort-empty-tag",
+        sort: [], // Empty sort array
+      });
+
+      expect(result.objs).toHaveLength(2);
+      // Should use default sorting (createdAt DESC)
+    });
+
+    it("should handle sort with invalid field names", async () => {
+      const obj1 = makeObjFields({
+        objRecord: { name: "Test" },
+        tag: "sort-invalid-tag",
+        appId: "sort-invalid-app",
+      });
+      await fmdxPostgresDb.insert(objs).values([obj1]);
+
+      const result = await storage.read({
+        query: { appId: "sort-invalid-app" },
+        tag: "sort-invalid-tag",
+        sort: [
+          { field: "objRecord.nonexistent", direction: "asc" }, // Should be skipped (not in fields)
+          { field: "objRecord.name", direction: "asc" }, // Should work (in fields)
+        ],
+        fields: [
+          {
+            id: "name-field",
+            field: "name",
+            fieldKeys: ["name"],
+            fieldKeyTypes: ["string"],
+            valueTypes: ["string"],
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            appId: "sort-invalid-app",
+            groupId: "test-group",
+            tag: "sort-invalid-tag",
+          },
+        ],
+      });
+
+      expect(result.objs).toHaveLength(1);
+      // Should be sorted by name ASC since nonexistent is skipped
+      expect(result.objs[0].objRecord.name).toBe("Test");
     });
   });
 });

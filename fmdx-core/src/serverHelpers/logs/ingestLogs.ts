@@ -1,15 +1,17 @@
 import type { IngestLogsEndpointArgs } from "../../definitions/log.js";
 import { kObjTags } from "../../definitions/obj.js";
+import type { IObjStorage } from "../../storage/types.js";
 import { setManyObjs } from "../obj/setObjs.js";
 
-export async function ingestLogs(
-  params: IngestLogsEndpointArgs & {
-    groupId: string;
-    by: string;
-    byType: string;
-  }
-) {
-  const { appId, logs, by, byType, groupId } = params;
+export async function ingestLogs(params: {
+  args: IngestLogsEndpointArgs;
+  by: string;
+  byType: string;
+  groupId: string;
+  storage?: IObjStorage;
+}) {
+  const { args, by, byType, groupId, storage } = params;
+  const { appId, logs } = args;
 
   const date = new Date();
   const dateMs = date.getTime();
@@ -17,7 +19,7 @@ export async function ingestLogs(
     log.timestamp = log.timestamp || dateMs;
   });
 
-  await setManyObjs({
+  const { failedItems, newObjs } = await setManyObjs({
     by,
     byType,
     groupId,
@@ -26,5 +28,11 @@ export async function ingestLogs(
       appId,
       items: logs,
     },
+    storage,
   });
+
+  return {
+    logs: newObjs,
+    failedCount: failedItems.length,
+  };
 }

@@ -13,6 +13,6 @@ export function objToApp(obj: IObj): IApp {
     description: obj.objRecord.description,
     createdByType: obj.createdByType,
     updatedByType: obj.updatedByType,
-    objFieldsToIndex: obj.fieldsToIndex,
+    objFieldsToIndex: obj.objRecord.objFieldsToIndex,
   };
 }

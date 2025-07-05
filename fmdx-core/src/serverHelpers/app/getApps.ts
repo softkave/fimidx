@@ -8,7 +8,8 @@ import {
   type IObjQuery,
 } from "../../definitions/obj.js";
 import { kId0 } from "../../definitions/system.js";
-import { getManyObjs, metaQueryToPartQueryList } from "../obj/getObjs.js";
+import type { IObjStorage } from "../../storage/types.js";
+import { getManyObjs } from "../obj/getObjs.js";
 import { objToApp } from "./objToApp.js";
 
 export function getAppsObjQuery(params: { args: GetAppsEndpointArgs }) {
@@ -17,60 +18,83 @@ export function getAppsObjQuery(params: { args: GetAppsEndpointArgs }) {
   const { groupId, id, name, createdAt, updatedAt, createdBy, updatedBy } =
     query;
 
-  const namePartQuery = name
-    ? metaQueryToPartQueryList({
-        metaQuery: { name },
-      })
-    : undefined;
-  const groupIdPartQuery = groupId
-    ? metaQueryToPartQueryList({
-        metaQuery: { groupId: { eq: groupId } },
-      })
-    : undefined;
+  const filterArr: Array<IObjPartQueryItem> = [];
 
-  const filterArr: Array<IObjPartQueryItem> = [
-    ...(namePartQuery ?? []),
-    ...(groupIdPartQuery ?? []),
-  ];
+  // Handle name filtering - name is stored in objRecord.name
+  if (name) {
+    // Convert name query to partQuery for the name field
+    Object.entries(name).forEach(([op, value]) => {
+      if (value !== undefined) {
+        filterArr.push({
+          op: op as any,
+          field: "name",
+          value,
+        });
+      }
+    });
+  }
+
+  // Handle groupId filtering
+  if (groupId) {
+    filterArr.push({
+      op: "eq",
+      field: "groupId",
+      value: groupId,
+    });
+  }
 
   const objQuery: IObjQuery = {
     appId: kId0,
-    partQuery: {
-      and: filterArr,
-    },
-    metaQuery: {
-      id,
-      createdAt,
-      updatedAt,
-      createdBy,
-      updatedBy,
-    },
+    partQuery: filterArr.length > 0 ? { and: filterArr } : undefined,
+    metaQuery: { id, createdAt, updatedAt, createdBy, updatedBy },
   };
 
   return objQuery;
 }
 
-export async function getApps(params: { args: GetAppsEndpointArgs }) {
-  const { args } = params;
-  const { page: inputPage, limit: inputLimit } = args;
+export async function getApps(params: {
+  args: GetAppsEndpointArgs;
+  storage?: IObjStorage;
+}) {
+  const { args, storage } = params;
+  const { page, limit, sort } = args;
 
-  const pageNumber = inputPage ?? 1;
-  const limitNumber = inputLimit ?? 100;
+  // Convert 1-based pagination to 0-based for storage layer
+  const pageNumber = page ?? 1;
+  const limitNumber = limit ?? 100;
+  const storagePage = pageNumber - 1; // Convert to 0-based
 
-  const objQuery = getAppsObjQuery({ args });
-  const { objs, hasMore, page, limit } = await getManyObjs({
-    objQuery,
-    tag: kObjTags.app,
-    limit: limitNumber,
-    page: pageNumber,
+  // Transform sort fields to use objRecord prefix for name field
+  const transformedSort = sort?.map((sortItem: any) => {
+    if (sortItem.field === "name") {
+      return { ...sortItem, field: "objRecord.name" };
+    }
+    return sortItem;
   });
 
-  const apps = objs.map(objToApp);
-  return { apps, hasMore, page, limit };
+  const objQuery = getAppsObjQuery({ args });
+  const result = await getManyObjs({
+    objQuery,
+    page: storagePage,
+    limit: limitNumber,
+    tag: kObjTags.app,
+    sort: transformedSort,
+    storage,
+  });
+
+  return {
+    apps: result.objs.map(objToApp),
+    page: pageNumber, // Return 1-based page number
+    limit: limitNumber,
+    hasMore: result.hasMore,
+  };
 }
 
-export async function getAppById(params: { id: string }) {
-  const { id } = params;
+export async function getAppById(params: {
+  id: string;
+  storage?: IObjStorage;
+}) {
+  const { id, storage } = params;
 
   if (id === kId0) {
     return null;
@@ -89,6 +113,7 @@ export async function getAppById(params: { id: string }) {
     objQuery,
     tag: kObjTags.app,
     limit: 1,
+    storage,
   });
 
   const obj = first(objs);

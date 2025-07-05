@@ -5,6 +5,7 @@ import type {
   IMonitorObjRecord,
 } from "../../definitions/monitor.js";
 import { kObjTags } from "../../definitions/obj.js";
+import type { IObjStorage } from "../../storage/types.js";
 import { setManyObjs } from "../obj/setObjs.js";
 import { objToMonitor } from "./objToMonitor.js";
 
@@ -13,8 +14,9 @@ export async function addMonitor(params: {
   by: string;
   byType: string;
   groupId: string;
+  storage?: IObjStorage;
 }) {
-  const { args, by, byType, groupId } = params;
+  const { args, by, byType, groupId, storage } = params;
   const { name, status, interval, reportsTo, appId, logsQuery, description } =
     args;
   const objRecord: IMonitorObjRecord = {
@@ -37,6 +39,7 @@ export async function addMonitor(params: {
       conflictOnKeys: ["name"],
       onConflict: "fail",
     },
+    storage,
   });
 
   assert(

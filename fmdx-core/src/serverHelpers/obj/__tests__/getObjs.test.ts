@@ -1,10 +1,12 @@
 import { and, eq } from "drizzle-orm";
 import { v7 as uuidv7 } from "uuid";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
-import { getObjModel } from "../../../db/mongo.js";
+import { getObjModel } from "../../../db/fmdx.mongo.js";
+import { db, objFields as objFieldsTable } from "../../../db/fmdx.sqlite.js";
 import type {
   IInputObjRecord,
   IObj,
+  IObjField,
   IObjSortList,
 } from "../../../definitions/obj.js";
 import { createStorage } from "../../../storage/config.js";
@@ -46,6 +48,43 @@ function makeObjFields(overrides: Partial<IObj> = {}): IObj {
     fieldsToIndex: null,
     ...overrides,
   };
+}
+
+function makeObjField(overrides: Partial<IObjField> = {}): IObjField {
+  const now = new Date();
+  return {
+    id: uuidv7(),
+    createdAt: now,
+    updatedAt: now,
+    appId: "test-app",
+    groupId: "test-group",
+    field: "objRecord.order",
+    fieldKeys: ["order"],
+    fieldKeyTypes: ["string"],
+    valueTypes: ["number"],
+    tag: "test-tag",
+    ...overrides,
+  };
+}
+
+async function setupObjFields(fields: IObjField[]) {
+  // Clean up existing fields first
+  if (fields.length > 0) {
+    await db
+      .delete(objFieldsTable)
+      .where(
+        and(
+          eq(objFieldsTable.appId, fields[0].appId),
+          eq(objFieldsTable.tag, fields[0].tag)
+        )
+      )
+      .execute();
+  }
+
+  // Insert new fields
+  if (fields.length > 0) {
+    await db.insert(objFieldsTable).values(fields);
+  }
 }
 
 describe("metaQueryToPartQueryList", () => {
@@ -126,6 +165,17 @@ describe.each(backends)("getManyObjs integration (%s)", (backend) => {
         .delete(objs)
         .where(and(eq(objs.appId, "test-app"), eq(objs.tag, "test-tag")));
     }
+
+    // Clean up obj fields for all backends
+    await db
+      .delete(objFieldsTable)
+      .where(
+        and(
+          eq(objFieldsTable.appId, "test-app"),
+          eq(objFieldsTable.tag, "test-tag")
+        )
+      )
+      .execute();
   });
 
   it("returns objects by appId and tag", async () => {
@@ -142,6 +192,16 @@ describe.each(backends)("getManyObjs integration (%s)", (backend) => {
 
   it("supports partQuery (eq)", async () => {
     const obj = makeObjFields({ objRecord: { foo: "bar" } });
+
+    // Set up obj fields for querying
+    const objField = makeObjField({
+      field: "foo",
+      fieldKeys: ["foo"],
+      fieldKeyTypes: ["string"],
+      valueTypes: ["string"],
+    });
+    await setupObjFields([objField]);
+
     await storage.create({ objs: [obj] });
     const result = await getManyObjs({
       objQuery: {
@@ -176,8 +236,24 @@ describe.each(backends)("getManyObjs integration (%s)", (backend) => {
       makeObjFields({ objRecord: { order: 2 } }),
       makeObjFields({ objRecord: { order: 3 } }),
     ];
+
+    // Set up obj fields for sorting
+    const objField = makeObjField({
+      field: "order",
+      fieldKeys: ["order"],
+      fieldKeyTypes: ["string"],
+      valueTypes: ["number"],
+    });
+    await setupObjFields([objField]);
+
     await storage.create({ objs });
-    const sort: IObjSortList = [{ field: "order", direction: "desc" }];
+
+    const sort: IObjSortList = [
+      {
+        field: "objRecord.order",
+        direction: "desc",
+      },
+    ];
     const result = await getManyObjs({
       objQuery: { appId: objs[0].appId },
       tag: objs[0].tag,
@@ -186,6 +262,7 @@ describe.each(backends)("getManyObjs integration (%s)", (backend) => {
       sort,
       storageType: backend.type,
     });
+
     expect(result.objs.length).toBe(2);
     expect(result.objs[0].objRecord.order).toBeGreaterThanOrEqual(
       result.objs[1].objRecord.order

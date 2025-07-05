@@ -157,9 +157,7 @@ describe("getObjFieldValues integration", () => {
       page: 1,
       limit: 2,
     });
-    // Debug output
-    // eslint-disable-next-line no-console
-    console.log("Page 1 result.values:", result.values);
+
     expect(result.values.length).toBe(0);
     expect(result.page).toBe(1);
     expect(result.limit).toBe(2);
@@ -179,11 +177,14 @@ describe("getObjFieldValues integration", () => {
       appId: "other-app",
       tag: "other-tag",
       field: "other-field",
+      value: "other-unique-value",
     });
     await db.insert(objPartsTable).values(otherPart);
     insertedPartIds.push(otherPart.id);
     // Insert a part for the test app/tag/field
-    const testPart = makeObjPart();
+    const testPart = makeObjPart({
+      value: "test-unique-value",
+    });
     await db.insert(objPartsTable).values(testPart);
     insertedPartIds.push(testPart.id);
     // Should only return the test app/tag/field value
@@ -192,20 +193,8 @@ describe("getObjFieldValues integration", () => {
       field: TEST_FIELD,
       tag: TEST_TAG,
     });
-    // Debug output
-    // eslint-disable-next-line no-console
-    console.log("Filter test result.values:", result.values);
     const returnedValues = result.values.map(
       (v: { value: string; type: string }) => v.value
-    );
-    // eslint-disable-next-line no-console
-    console.log(
-      "Returned values:",
-      returnedValues,
-      "Test value:",
-      testPart.value,
-      "Other value:",
-      otherPart.value
     );
     expect(returnedValues).toContain(testPart.value);
     expect(returnedValues).not.toContain(otherPart.value);

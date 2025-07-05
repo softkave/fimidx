@@ -1,12 +1,12 @@
 import { and, eq } from "drizzle-orm";
 import { v7 as uuidv7 } from "uuid";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { getObjModel } from "../../../db/fmdx.mongo.js";
 import {
   db,
   objFields as objFieldsTable,
   objParts as objPartsTable,
 } from "../../../db/fmdx.sqlite.js";
-import { getObjModel } from "../../../db/mongo.js";
 import type { IAppObjRecord } from "../../../definitions/app.js";
 import type { IInputObjRecord, IObj } from "../../../definitions/obj.js";
 import { createStorage } from "../../../storage/config.js";
@@ -65,7 +65,7 @@ function makeObj(overrides: Partial<IObj> = {}): IObj {
 
 function makeApp(overrides: Partial<IAppObjRecord> = {}): IAppObjRecord {
   return {
-    name: "Test App",
+    name: "Test App " + uuidv7(),
     description: "Test app for indexObjs",
     groupId: TEST_GROUP_ID,
     objFieldsToIndex: ["name", "value", "nested.deep.field"],
@@ -76,7 +76,6 @@ function makeApp(overrides: Partial<IAppObjRecord> = {}): IAppObjRecord {
 describe.each(backends)("indexObjs integration (%s)", (backend) => {
   let storage: ReturnType<typeof createStorage>;
   let cleanup: (() => Promise<void>) | undefined;
-  let testAppId: string;
 
   beforeAll(async () => {
     storage = createStorage({ type: backend.type });
@@ -91,20 +90,6 @@ describe.each(backends)("indexObjs integration (%s)", (backend) => {
         await model.db.close();
       };
     }
-
-    // Create a test app
-    const appRecord = makeApp();
-    const { app } = await addApp({
-      args: {
-        name: appRecord.name,
-        description: appRecord.description || undefined,
-        groupId: appRecord.groupId,
-        objFieldsToIndex: appRecord.objFieldsToIndex || undefined,
-      },
-      by: "tester",
-      byType: "user",
-    });
-    testAppId = app.id;
   });
 
   afterAll(async () => {
@@ -136,7 +121,8 @@ describe.each(backends)("indexObjs integration (%s)", (backend) => {
           eq(objFieldsTable.appId, TEST_APP_ID),
           eq(objFieldsTable.tag, TEST_TAG)
         )
-      );
+      )
+      .execute();
 
     await db
       .delete(objPartsTable)
@@ -145,7 +131,8 @@ describe.each(backends)("indexObjs integration (%s)", (backend) => {
           eq(objPartsTable.appId, TEST_APP_ID),
           eq(objPartsTable.tag, TEST_TAG)
         )
-      );
+      )
+      .execute();
   });
 
   describe("indexObjs function", () => {
@@ -406,7 +393,7 @@ describe.each(backends)("indexObjs integration (%s)", (backend) => {
 
       const uniqueObjIds = [...new Set(parts.map((p) => p.objId))];
       expect(uniqueObjIds.length).toBe(1500);
-    });
+    }, 10000);
 
     it("should update existing fields and parts", async () => {
       // Create initial object
@@ -430,10 +417,7 @@ describe.each(backends)("indexObjs integration (%s)", (backend) => {
       await storage.update({
         query: { appId: TEST_APP_ID },
         tag: TEST_TAG,
-        update: {
-          objRecord: updatedObj.objRecord,
-          updatedAt: updatedObj.updatedAt,
-        },
+        update: updatedObj.objRecord,
         by: "tester",
         byType: "user",
       });

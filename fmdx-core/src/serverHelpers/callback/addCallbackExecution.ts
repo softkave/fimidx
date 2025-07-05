@@ -2,6 +2,7 @@ import { tryParseJson } from "../../common/other.js";
 import type { ICallbackExecutionObjRecord } from "../../definitions/callback.js";
 import { kObjTags } from "../../definitions/obj.js";
 import { kByTypes } from "../../definitions/other.js";
+import type { IObjStorage } from "../../storage/types.js";
 import { setManyObjs } from "../obj/setObjs.js";
 
 export async function addCallbackExecution(params: {
@@ -14,6 +15,7 @@ export async function addCallbackExecution(params: {
   responseStatusCode: number | null;
   executedAt: number | Date;
   clientTokenId: string;
+  storage?: IObjStorage;
 }) {
   const {
     appId,
@@ -25,6 +27,7 @@ export async function addCallbackExecution(params: {
     responseStatusCode,
     executedAt,
     clientTokenId,
+    storage,
   } = params;
 
   const responseContentType = responseHeaders?.["content-type"]?.toLowerCase();
@@ -51,5 +54,6 @@ export async function addCallbackExecution(params: {
       appId,
       items: [objRecord],
     },
+    storage,
   });
 }

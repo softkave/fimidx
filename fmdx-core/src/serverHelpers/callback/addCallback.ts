@@ -6,8 +6,8 @@ import type {
   ICallbackObjRecord,
 } from "../../definitions/callback.js";
 import { kObjTags } from "../../definitions/obj.js";
+import type { IObjStorage } from "../../storage/types.js";
 import { setManyObjs } from "../obj/setObjs.js";
-import { getCallbacks } from "./getCallbacks.js";
 
 export async function addCallback(params: {
   args: AddCallbackEndpointArgs;
@@ -15,8 +15,9 @@ export async function addCallback(params: {
   groupId: string;
   by: string;
   byType: string;
+  storage?: IObjStorage;
 }) {
-  const { args, appId, groupId, by, byType } = params;
+  const { args, appId, groupId, by, byType, storage } = params;
   const {
     url,
     method,
@@ -49,7 +50,7 @@ export async function addCallback(params: {
     description,
   };
 
-  const { failedItems } = await setManyObjs({
+  const { failedItems, newObjs } = await setManyObjs({
     by,
     byType,
     groupId,
@@ -60,6 +61,7 @@ export async function addCallback(params: {
       conflictOnKeys: ["idempotencyKey"],
       onConflict: "ignore",
     },
+    storage,
   });
 
   assert(
@@ -69,25 +71,14 @@ export async function addCallback(params: {
       kOwnServerErrorCodes.InternalServerError
     )
   );
-
-  const {
-    callbacks: [callback],
-  } = await getCallbacks({
-    args: {
-      query: {
-        appId,
-        idempotencyKey: { eq: idempotencyKey },
-      },
-    },
-  });
-
   assert(
-    callback,
+    newObjs.length === 1,
     new OwnServerError(
       "Failed to add callback",
       kOwnServerErrorCodes.InternalServerError
     )
   );
 
+  const callback = newObjs[0];
   return callback;
 }

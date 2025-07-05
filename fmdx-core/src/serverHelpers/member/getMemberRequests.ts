@@ -11,7 +11,8 @@ import {
   type IObjQuery,
 } from "../../definitions/obj.js";
 import type { IPermission } from "../../definitions/permission.js";
-import { getManyObjs, metaQueryToPartQueryList } from "../obj/getObjs.js";
+import type { IObjStorage } from "../../storage/types.js";
+import { getManyObjs } from "../obj/getObjs.js";
 import { getMembersPermissions } from "./getMembers.js";
 import { objToMember } from "./objToMember.js";
 import { objToMemberRequest } from "./objToMemberRequest.js";
@@ -23,27 +24,21 @@ export function getMemberRequestsObjQuery(params: {
   const { query } = args;
   const { appId, groupId, memberId } = query;
 
-  const groupIdPartQuery = groupId
-    ? metaQueryToPartQueryList({
-        metaQuery: { id: { eq: groupId } },
-      })
-    : undefined;
-  const memberIdPartQuery = memberId
-    ? metaQueryToPartQueryList({
-        metaQuery: { memberId: { eq: memberId } },
-      })
-    : undefined;
+  const filterArr: Array<IObjPartQueryItem> = [];
 
-  const filterArr: Array<IObjPartQueryItem> = [
-    ...(groupIdPartQuery ?? []),
-    ...(memberIdPartQuery ?? []),
-  ];
+  // Handle memberId filtering
+  if (memberId) {
+    filterArr.push({
+      op: "eq",
+      field: "memberId",
+      value: memberId,
+    });
+  }
 
   const objQuery: IObjQuery = {
     appId,
-    partQuery: {
-      and: filterArr,
-    },
+    partQuery: filterArr.length > 0 ? { and: filterArr } : undefined,
+    topLevelFields: groupId ? { groupId: { eq: groupId } } : undefined,
   };
 
   return objQuery;
@@ -51,20 +46,24 @@ export function getMemberRequestsObjQuery(params: {
 
 export async function getMemberRequests(params: {
   args: GetMemberRequestsEndpointArgs;
+  storage?: IObjStorage;
 }) {
-  const { args } = params;
+  const { args, storage } = params;
   const { page: inputPage, limit: inputLimit } = args;
 
+  // Convert 1-based pagination to 0-based for storage layer
   const pageNumber = inputPage ?? 1;
   const limitNumber = inputLimit ?? 100;
+  const storagePage = pageNumber - 1; // Convert to 0-based
 
   const objQuery = getMemberRequestsObjQuery({ args });
   const { objs, hasMore, page, limit } = await getManyObjs({
     objQuery,
     tag: kObjTags.member,
     limit: limitNumber,
-    page: pageNumber,
+    page: storagePage,
     sort: undefined,
+    storage,
   });
 
   const memberIds = uniq(objs.map((obj) => obj.objRecord.memberId));
@@ -72,6 +71,7 @@ export async function getMemberRequests(params: {
     appId: args.query.appId,
     memberIds,
     groupId: args.query.groupId,
+    storage,
   });
 
   const memberPermissionsMap = indexArray<IPermission, IPermission[]>(
@@ -97,5 +97,10 @@ export async function getMemberRequests(params: {
   });
   const requests = await objToMemberRequest({ requests: members });
 
-  return { requests, hasMore, page, limit };
+  return {
+    requests,
+    hasMore,
+    page: pageNumber, // Return 1-based page number
+    limit: limitNumber,
+  };
 }

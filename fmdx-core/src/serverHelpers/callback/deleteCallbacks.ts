@@ -1,15 +1,17 @@
 import type { DeleteCallbacksEndpointArgs } from "../../definitions/callback.js";
 import { kByTypes } from "../../definitions/index.js";
 import { kObjTags } from "../../definitions/obj.js";
+import type { IObjStorage } from "../../storage/types.js";
 import { deleteManyObjs } from "../obj/deleteObjs.js";
 import { getCallbacksObjQuery } from "./getCallbacks.js";
 
 export async function deleteCallbacks(
   params: DeleteCallbacksEndpointArgs & {
     clientTokenId: string;
+    storage?: IObjStorage;
   }
 ) {
-  const { deleteMany, clientTokenId, ...args } = params;
+  const { deleteMany, clientTokenId, storage, ...args } = params;
   const objQuery = getCallbacksObjQuery({ args });
   await deleteManyObjs({
     objQuery,
@@ -17,5 +19,6 @@ export async function deleteCallbacks(
     deletedBy: clientTokenId,
     deletedByType: kByTypes.clientToken,
     deleteMany,
+    storage,
   });
 }

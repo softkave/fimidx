@@ -1,7 +1,11 @@
 import type { IObj } from "fmdx-core/definitions/obj";
 import type { IClientToken } from "../../definitions/clientToken.js";
+import type { IPermissionAtom } from "../../definitions/permission.js";
 
-export function objToClientToken(obj: IObj): IClientToken {
+export function objToClientToken(
+  obj: IObj,
+  permissions: IPermissionAtom[] | null
+): IClientToken {
   return {
     id: obj.id,
     createdAt: obj.createdAt,
@@ -15,6 +19,6 @@ export function objToClientToken(obj: IObj): IClientToken {
     updatedBy: obj.updatedBy,
     updatedByType: obj.updatedByType,
     groupId: obj.groupId,
-    permissions: obj.objRecord.permissions,
+    permissions: permissions,
   };
 }

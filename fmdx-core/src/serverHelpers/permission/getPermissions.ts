@@ -5,7 +5,8 @@ import {
   type IObjQuery,
 } from "../../definitions/obj.js";
 import type { GetPermissionsEndpointArgs } from "../../definitions/permission.js";
-import { getManyObjs, metaQueryToPartQueryList } from "../obj/getObjs.js";
+import type { IObjStorage } from "../../storage/types.js";
+import { getManyObjs } from "../obj/getObjs.js";
 import { objToPermission } from "./objToPermission.js";
 
 export function getPermissionsObjQuery(params: {
@@ -36,9 +37,11 @@ export function getPermissionsObjQuery(params: {
           } as IObjPartQueryItem)
       )
     : entity
-    ? metaQueryToPartQueryList({
-        metaQuery: { entity },
-      })
+    ? Object.entries(entity).map(([op, value]) => ({
+        op: op as any,
+        field: "entity",
+        value,
+      }))
     : undefined;
   const actionPartQuery = isObjPartQueryList(action)
     ? action?.map(
@@ -50,9 +53,11 @@ export function getPermissionsObjQuery(params: {
           } as IObjPartQueryItem)
       )
     : action
-    ? metaQueryToPartQueryList({
-        metaQuery: { action },
-      })
+    ? Object.entries(action).map(([op, value]) => ({
+        op: op as any,
+        field: "action",
+        value,
+      }))
     : undefined;
   const targetPartQuery = isObjPartQueryList(target)
     ? target?.map(
@@ -64,9 +69,11 @@ export function getPermissionsObjQuery(params: {
           } as IObjPartQueryItem)
       )
     : target
-    ? metaQueryToPartQueryList({
-        metaQuery: { target },
-      })
+    ? Object.entries(target).map(([op, value]) => ({
+        op: op as any,
+        field: "target",
+        value,
+      }))
     : undefined;
 
   const filterArr: Array<IObjPartQueryItem> = [
@@ -77,9 +84,7 @@ export function getPermissionsObjQuery(params: {
 
   const objQuery: IObjQuery = {
     appId,
-    partQuery: {
-      and: filterArr,
-    },
+    partQuery: filterArr.length > 0 ? { and: filterArr } : undefined,
     metaQuery: { id, createdAt, updatedAt, createdBy, updatedBy },
   };
 
@@ -88,23 +93,42 @@ export function getPermissionsObjQuery(params: {
 
 export async function getPermissions(params: {
   args: GetPermissionsEndpointArgs;
+  storage?: IObjStorage;
 }) {
-  const { args } = params;
+  const { args, storage } = params;
   const { page: inputPage, limit: inputLimit, sort } = args;
 
+  // Convert 1-based pagination to 0-based for storage layer
   const pageNumber = inputPage ?? 1;
   const limitNumber = inputLimit ?? 100;
+  const storagePage = pageNumber - 1; // Convert to 0-based
+
+  // Transform sort fields to use objRecord prefix for permission fields
+  const transformedSort = sort?.map((sortItem: any) => {
+    if (
+      ["entity", "action", "target", "description", "meta"].includes(
+        sortItem.field
+      )
+    ) {
+      return { ...sortItem, field: `objRecord.${sortItem.field}` };
+    }
+    return sortItem;
+  });
 
   const objQuery = getPermissionsObjQuery({ args });
-  const { objs, hasMore, page, limit } = await getManyObjs({
+  const result = await getManyObjs({
     objQuery,
     tag: kObjTags.permission,
     limit: limitNumber,
-    page: pageNumber,
-    sort: sort ? sort : undefined,
+    page: storagePage,
+    sort: transformedSort,
+    storage,
   });
 
-  const permissions = objs.map(objToPermission);
-
-  return { permissions, hasMore, page, limit };
+  return {
+    permissions: result.objs.map(objToPermission),
+    page: pageNumber, // Return 1-based page number
+    limit: limitNumber,
+    hasMore: result.hasMore,
+  };
 }

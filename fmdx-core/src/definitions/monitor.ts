@@ -4,6 +4,7 @@ import { z } from "zod";
 import {
   numberMetaQuerySchema,
   objPartLogicalQuerySchema,
+  objSortListSchema,
   stringMetaQuerySchema,
   type IObjPartLogicalQuery,
 } from "./obj.js";
@@ -86,6 +87,7 @@ export const getMonitorsSchema = z.object({
   query: monitorQuerySchema,
   page: z.number().min(1).optional(),
   limit: z.number().min(1).optional(),
+  sort: objSortListSchema.optional(),
 });
 
 export const deleteMonitorsSchema = z.object({

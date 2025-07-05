@@ -2,6 +2,7 @@ import assert from "assert";
 import { first } from "lodash-es";
 import { kOwnServerErrorCodes, OwnServerError } from "../../common/error.js";
 import type { UpdateMemberPermissionsEndpointArgs } from "../../definitions/member.js";
+import type { IObjStorage } from "../../storage/types.js";
 import { addMemberPermissions } from "./addMemberPermissions.js";
 import { getMembers } from "./getMembers.js";
 
@@ -9,8 +10,9 @@ export async function updateMemberPermissions(params: {
   args: UpdateMemberPermissionsEndpointArgs;
   by: string;
   byType: string;
+  storage?: IObjStorage;
 }) {
-  const { args, by, byType } = params;
+  const { args, by, byType, storage } = params;
   const { query, update } = args;
 
   const { members } = await getMembers({
@@ -24,6 +26,7 @@ export async function updateMemberPermissions(params: {
       },
     },
     includePermissions: true,
+    storage,
   });
 
   const member = first(members);
@@ -42,6 +45,7 @@ export async function updateMemberPermissions(params: {
     appId: member.appId,
     permissions: update.permissions,
     memberId: member.memberId,
+    storage,
   });
 
   member.permissions = newPermissions;

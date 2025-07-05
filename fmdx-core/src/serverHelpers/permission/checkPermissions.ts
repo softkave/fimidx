@@ -4,14 +4,16 @@ import type {
   CheckPermissionsEndpointArgs,
   CheckPermissionsEndpointResponse,
 } from "../../definitions/permission.js";
+import type { IObjStorage } from "../../storage/types.js";
 import { getPermissions } from "./getPermissions.js";
 
 export async function checkPermissions(params: {
   args: CheckPermissionsEndpointArgs;
   by: string;
   byType: string;
+  storage?: IObjStorage;
 }) {
-  const { args, by, byType } = params;
+  const { args, by, byType, storage } = params;
   const { appId, items } = args;
 
   const permissions = await Promise.all(
@@ -32,6 +34,7 @@ export async function checkPermissions(params: {
           },
           limit: 1,
         },
+        storage,
       });
 
       return first(permissions);

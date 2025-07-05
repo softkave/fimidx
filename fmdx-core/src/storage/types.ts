@@ -3,6 +3,7 @@ import type { AnyObject } from "softkave-js-utils";
 import type {
   IInputObjRecord,
   IObj,
+  IObjField,
   IObjQuery,
   IObjSortList,
   OnConflict,
@@ -38,6 +39,7 @@ export interface ReadObjsParams {
   page?: number;
   limit?: number;
   sort?: IObjSortList;
+  fields?: IObjField[];
   date?: Date;
   includeDeleted?: boolean;
 }
@@ -93,7 +95,7 @@ export interface StorageConfig {
 // Query transformer interface
 export interface IQueryTransformer<T> {
   transformFilter(query: IObjQuery, date: Date): T;
-  transformSort(sort: IObjSortList): T;
+  transformSort(sort: IObjSortList, fields?: IObjField[]): T;
   transformPagination(page: number, limit: number): T;
 }
 

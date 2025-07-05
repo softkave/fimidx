@@ -1,0 +1,55 @@
+import assert from "assert";
+import { first } from "lodash-es";
+import { kOwnServerErrorCodes, OwnServerError } from "../../common/error.js";
+import type { UpdateClientTokenPermissionsEndpointArgs } from "../../definitions/clientToken.js";
+import type { IObjStorage } from "../../storage/types.js";
+import { addClientTokenPermissions } from "./addClientTokenPermissions.js";
+import { getClientTokens } from "./getClientTokens.js";
+
+export async function updateClientTokenPermissions(params: {
+  args: UpdateClientTokenPermissionsEndpointArgs;
+  by: string;
+  byType: string;
+  storage?: IObjStorage;
+}) {
+  const { args, by, byType, storage } = params;
+  const { query, update } = args;
+
+  const { clientTokens } = await getClientTokens({
+    args: {
+      query: {
+        appId: query.appId,
+        id: {
+          eq: query.id,
+        },
+      },
+    },
+    includePermissions: true,
+    storage,
+  });
+
+  const clientToken = first(clientTokens);
+  assert(
+    clientToken,
+    new OwnServerError(
+      "Client token not found",
+      kOwnServerErrorCodes.InternalServerError
+    )
+  );
+
+  const { permissions: newPermissions } = await addClientTokenPermissions({
+    by,
+    byType,
+    groupId: clientToken.groupId,
+    appId: clientToken.appId,
+    permissions: update.permissions,
+    clientTokenId: clientToken.id,
+    storage,
+  });
+
+  clientToken.permissions = newPermissions;
+
+  return {
+    clientToken,
+  };
+}

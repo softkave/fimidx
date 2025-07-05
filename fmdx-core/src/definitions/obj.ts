@@ -229,8 +229,9 @@ export const topLevelFieldQuerySchema = z.object({
   deletedByType: stringMetaQuerySchema.optional(),
 });
 
+// TODO: appId shouldn't be optional for external use
 export const objQuerySchema = z.object({
-  appId: z.string(),
+  appId: z.string().optional(),
   partQuery: objPartLogicalQuerySchema.optional(),
   metaQuery: objMetaQuerySchema.optional(),
   topLevelFields: topLevelFieldQuerySchema.optional(),

@@ -1,3 +1,5 @@
+import { and, eq, inArray } from "drizzle-orm";
+import { db, objFields as objFieldsTable } from "../../db/fmdx.sqlite.js";
 import type {
   INumberMetaQuery,
   IObjPartQueryList,
@@ -5,7 +7,7 @@ import type {
   IObjSortList,
   IStringMetaQuery,
 } from "../../definitions/obj.js";
-import { createStorage } from "../../storage/config.js";
+import { createStorage, getDefaultStorageType } from "../../storage/config.js";
 import type { IObjStorage } from "../../storage/types.js";
 
 export function metaQueryToPartQueryList(params: {
@@ -17,7 +19,7 @@ export function metaQueryToPartQueryList(params: {
   Object.entries(metaQuery).forEach(([key, value]) => {
     Object.keys(value).forEach((op) => {
       const opValue = value[op as keyof typeof value];
-      if (!opValue) {
+      if (opValue === undefined || opValue === null) {
         return;
       }
 
@@ -96,6 +98,26 @@ export function metaQueryToPartQueryList(params: {
   return partQuery.length ? partQuery : undefined;
 }
 
+async function getObjFieldsFromDb(params: {
+  appId: string;
+  tag: string;
+  limit?: number;
+  fields?: string[];
+}) {
+  const { appId, tag, limit = 100, fields } = params;
+  return await db
+    .select()
+    .from(objFieldsTable)
+    .where(
+      and(
+        eq(objFieldsTable.appId, appId),
+        eq(objFieldsTable.tag, tag),
+        fields ? inArray(objFieldsTable.field, fields) : undefined
+      )
+    )
+    .limit(limit);
+}
+
 export async function getManyObjs(params: {
   objQuery: IObjQuery;
   page?: number;
@@ -113,9 +135,23 @@ export async function getManyObjs(params: {
     tag,
     sort,
     date,
-    storageType = "mongo",
+    storageType = getDefaultStorageType(),
     storage = createStorage({ type: storageType }),
   } = params;
+
+  const sortFields =
+    objQuery.appId && sort
+      ? await getObjFieldsFromDb({
+          appId: objQuery.appId,
+          tag,
+          fields: sort.map((s) => {
+            // Extract field name from sort field path (e.g., "objRecord.order" -> "order")
+            return s.field.startsWith("objRecord.")
+              ? s.field.replace(/^objRecord\./, "")
+              : s.field;
+          }),
+        })
+      : [];
 
   // Use the new read method from the storage abstraction
   const result = await storage.read({
@@ -125,6 +161,7 @@ export async function getManyObjs(params: {
     limit,
     sort,
     date,
+    fields: sortFields,
   });
 
   return result;

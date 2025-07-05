@@ -1,5 +1,5 @@
 import { and, eq, inArray } from "drizzle-orm";
-import { forEach, uniq } from "lodash-es";
+import { forEach, groupBy, uniq } from "lodash-es";
 import { LRUCache } from "lru-cache";
 import { indexJson } from "softkave-js-utils";
 import { v7 as uuidv7 } from "uuid";
@@ -10,10 +10,11 @@ import {
 } from "../../db/fmdx.sqlite.js";
 import type { IApp } from "../../definitions/app.js";
 import type { IObj, IObjField, IObjPart } from "../../definitions/obj.js";
-import { kId0 } from "../../definitions/system.js";
-import { createStorage } from "../../storage/config.js";
+import { createStorage, getDefaultStorageType } from "../../storage/config.js";
 import type { IObjStorage } from "../../storage/types.js";
 import { getApps } from "../app/getApps.js";
+
+const batchSize = 1000;
 
 async function indexObjFields(params: {
   objs: IObj[];
@@ -37,6 +38,7 @@ async function indexObjFields(params: {
   indexList.forEach((index, objIndex) => {
     const obj = objs[objIndex];
     forEach(index, (value, stringKey) => {
+      // const fieldKey = `${obj.appId}-${obj.groupId}-${stringKey}`;
       let field: IWorkingObjField | undefined = fieldsSet.get(stringKey);
 
       if (!field) {
@@ -66,16 +68,16 @@ async function indexObjFields(params: {
   let batchIndex = 0;
   while (batchIndex < fields.length) {
     const batch = fields.slice(batchIndex, batchIndex + batchSize);
-    // const existingFields = await objFieldModel.find({
-    //   field: { $in: batch.map((field) => field.field) },
-    // });
     const existingFields = await db
       .select()
       .from(objFieldsTable)
       .where(
-        inArray(
-          objFieldsTable.field,
-          batch.map((field) => field.field)
+        and(
+          inArray(
+            objFieldsTable.field,
+            batch.map((field) => field.field)
+          ),
+          eq(objFieldsTable.appId, batch[0].appId)
         )
       )
       .limit(batchSize);
@@ -114,23 +116,27 @@ async function indexObjFields(params: {
         });
       }
     });
-    // await Promise.all([
-    //   objFieldModel.insertMany(newFields),
-    //   objFieldModel.bulkWrite(
-    //     existingFieldsToUpdate.map(({ id, obj }) => ({
-    //       updateOne: {
-    //         filter: { id },
-    //         update: { $set: obj },
-    //       },
-    //     }))
-    //   ),
-    // ]);
-    await db.batch([
-      db.insert(objFieldsTable).values(newFields),
-      ...existingFieldsToUpdate.map(({ id, obj }) =>
-        db.update(objFieldsTable).set(obj).where(eq(objFieldsTable.id, id))
-      ),
-    ]);
+
+    // @ts-expect-error
+    const batchParams: Parameters<typeof db.batch> = [];
+
+    if (newFields.length > 0) {
+      // @ts-expect-error
+      batchParams.push(db.insert(objFieldsTable).values(newFields));
+    }
+    if (existingFieldsToUpdate.length > 0) {
+      batchParams.push(
+        // @ts-expect-error
+        ...existingFieldsToUpdate.map(({ id, obj }) =>
+          db.update(objFieldsTable).set(obj).where(eq(objFieldsTable.id, id))
+        )
+      );
+    }
+
+    if (batchParams.length > 0) {
+      // @ts-expect-error
+      await db.batch(batchParams);
+    }
     batchIndex += batchSize;
   }
 }
@@ -196,7 +202,8 @@ async function indexObjParts(params: {
           inArray(
             objPartsTable.field,
             batch.map((part) => part.field)
-          )
+          ),
+          eq(objPartsTable.appId, batch[0].appId)
         )
       );
     const existingPartsMap = new Map<string, IObjPart>(
@@ -224,19 +231,34 @@ async function indexObjParts(params: {
         newParts.push(part);
       }
     });
-    await db.batch([
-      db.insert(objPartsTable).values(newParts),
-      ...existingPartsToUpdate.map(({ id, obj }) =>
-        db.update(objPartsTable).set(obj).where(eq(objPartsTable.id, id))
-      ),
-    ]);
+
+    // @ts-expect-error
+    const batchParams: Parameters<typeof db.batch> = [];
+
+    if (newParts.length > 0) {
+      // @ts-expect-error
+      batchParams.push(db.insert(objPartsTable).values(newParts));
+    }
+    if (existingPartsToUpdate.length > 0) {
+      batchParams.push(
+        // @ts-expect-error
+        ...existingPartsToUpdate.map(({ id, obj }) =>
+          db.update(objPartsTable).set(obj).where(eq(objPartsTable.id, id))
+        )
+      );
+    }
+
+    if (batchParams.length > 0) {
+      // @ts-expect-error
+      await db.batch(batchParams);
+    }
     batchIndex += batchSize;
   }
 }
 
 function initAppGetter() {
   const cache = new LRUCache<string, IApp>({
-    max: 1000,
+    max: batchSize * 2,
   });
 
   const prefetchApps = async (objs: IObj[]) => {
@@ -249,7 +271,6 @@ function initAppGetter() {
     const fetchedApps = await getApps({
       args: {
         query: {
-          groupId: kId0,
           id: {
             in: appsToFetch,
           },
@@ -273,6 +294,38 @@ function initAppGetter() {
   };
 }
 
+async function indexObjsBatch(params: {
+  objs: IObj[];
+  getApp: (obj: IObj) => IApp | null;
+}) {
+  const { objs, getApp } = params;
+
+  // TODO: eventually move to or make a background job service to avoid
+  // blocking the server
+  const indexList = objs.map((obj) => {
+    const app = getApp(obj);
+    const fieldsToIndex = obj.fieldsToIndex ?? app?.objFieldsToIndex ?? null;
+
+    const rawIndex = indexJson(obj.objRecord, { flattenNumericKeys: false });
+
+    let index: ReturnType<typeof indexJson> = rawIndex;
+    if (fieldsToIndex) {
+      index = {};
+      fieldsToIndex.reduce((acc, field) => {
+        if (rawIndex[field]) {
+          acc[field] = rawIndex[field];
+        }
+        return acc;
+      }, index);
+    }
+
+    return index;
+  });
+
+  await indexObjFields({ objs, indexList });
+  await indexObjParts({ objs, indexList });
+}
+
 export async function indexObjs(params: {
   lastSuccessAt: Date | null;
   storage?: IObjStorage;
@@ -280,25 +333,23 @@ export async function indexObjs(params: {
 }) {
   const {
     lastSuccessAt,
-    storageType = "mongo",
+    storageType = getDefaultStorageType(),
     storage = createStorage({ type: storageType }),
   } = params;
 
   const { getApp, prefetchApps } = initAppGetter();
 
-  const batchSize = 1000;
   let page = 0;
   let batch: IObj[] = [];
 
   do {
+    const cutoffDate = lastSuccessAt ?? new Date("1970-01-01T00:00:00.000Z");
+
     const readResult = await storage.read({
       query: {
-        appId: "", // This will be filtered by the query transformer
         metaQuery: {
           updatedAt: {
-            gte: (
-              lastSuccessAt ?? new Date("1970-01-01T00:00:00.000Z")
-            ).getTime(),
+            gte: cutoffDate.getTime(),
           },
         },
         topLevelFields: {
@@ -306,7 +357,7 @@ export async function indexObjs(params: {
         },
       },
       // tag is optional - not provided means no tag filtering
-      page: page + 1, // IObjStorage uses 1-based pagination
+      page,
       limit: batchSize,
     });
 
@@ -314,27 +365,13 @@ export async function indexObjs(params: {
 
     await prefetchApps(batch);
 
-    // TODO: eventually move to or make a background job service to avoid
-    // blocking the server
-    const indexList = batch.map((obj) => {
-      const app = getApp(obj);
-      const fieldsToIndex = obj.fieldsToIndex ?? app?.objFieldsToIndex ?? null;
+    const batchGroupedByApp = groupBy(batch, (obj) => obj.appId);
 
-      const rawIndex = indexJson(obj.objRecord, { flattenNumericKeys: false });
-      let index: ReturnType<typeof indexJson> = rawIndex;
-      if (fieldsToIndex) {
-        index = {};
-        fieldsToIndex.reduce((acc, field) => {
-          acc[field] = rawIndex[field];
-          return acc;
-        }, index);
-      }
-
-      return index;
-    });
-
-    await indexObjFields({ objs: batch, indexList });
-    await indexObjParts({ objs: batch, indexList });
+    await Promise.all(
+      Object.values(batchGroupedByApp).map((batch) =>
+        indexObjsBatch({ objs: batch, getApp })
+      )
+    );
 
     page++;
   } while (batch.length > 0);

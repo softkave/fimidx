@@ -5,6 +5,7 @@ import { v7 as uuidv7 } from "uuid";
 import { fmdxPostgresDb, objs } from "../../db/fmdx.postgres.js";
 import type { IInputObjRecord, IObj } from "../../definitions/obj.js";
 import { PostgresQueryTransformer } from "../query/PostgresQueryTransformer.js";
+import { mapFieldToDbColumn } from "../query/fieldMapping.js";
 import type {
   BulkDeleteParams,
   BulkDeleteResult,
@@ -121,8 +122,8 @@ export class PostgresObjStorage implements IObjStorage {
     // Build the complete query
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
     const orderByClause = params.sort
-      ? sql`${this.queryTransformer.transformSort(params.sort)}`
-      : sql`created_at DESC`;
+      ? this.queryTransformer.transformSort(params.sort, params.fields)
+      : sql`${sql.identifier(mapFieldToDbColumn("createdAt"))} DESC`;
 
     const result = await this.db
       .select()
@@ -204,9 +205,10 @@ export class PostgresObjStorage implements IObjStorage {
         updatedBy: params.by,
         updatedByType: params.byType,
         shouldIndex: params.shouldIndex ?? obj.shouldIndex,
-        fieldsToIndex: params.fieldsToIndex
-          ? Array.from(new Set(params.fieldsToIndex))
-          : obj.fieldsToIndex,
+        fieldsToIndex:
+          params.fieldsToIndex !== undefined
+            ? Array.from(new Set(params.fieldsToIndex || []))
+            : obj.fieldsToIndex,
       };
       const result = await this.db
         .update(objs)
@@ -447,7 +449,7 @@ export class PostgresObjStorage implements IObjStorage {
         .from(objs)
         .where(whereClause)
         .limit(currentBatchSize)
-        .orderBy(sql`created_at DESC`);
+        .orderBy(sql`${sql.identifier(mapFieldToDbColumn("createdAt"))} DESC`);
       if (objsToUpdate.length === 0) {
         isDone = true;
         break;
@@ -458,21 +460,24 @@ export class PostgresObjStorage implements IObjStorage {
           update,
           updateWay
         );
+
         const updateData = {
           objRecord: updatedObjRecord,
           updatedAt: date,
           updatedBy: by,
           updatedByType: byType,
           shouldIndex: shouldIndex ?? obj.shouldIndex,
-          fieldsToIndex: fieldsToIndex
-            ? Array.from(new Set(fieldsToIndex))
-            : obj.fieldsToIndex,
+          fieldsToIndex:
+            fieldsToIndex !== undefined
+              ? Array.from(new Set(fieldsToIndex || []))
+              : obj.fieldsToIndex,
         };
         const result = await this.db
           .update(objs)
           .set(updateData)
           .where(eq(objs.id, obj.id))
           .returning();
+
         if (result.length > 0) {
           const updatedObj = result[0];
           updatedObjs.push({
@@ -540,14 +545,18 @@ export class PostgresObjStorage implements IObjStorage {
     const whereClause = and(...conditions);
     let totalProcessed = 0;
     let isDone = false;
+
+    // If deleteMany is false, we only want to delete one object
+    const effectiveBatchSize = deleteMany ? batchSize : 1;
+
     while (!isDone) {
       // Always fetch from the start, don't use offset
       const objsToDelete = await this.db
         .select()
         .from(objs)
         .where(whereClause)
-        .limit(batchSize)
-        .orderBy(sql`created_at DESC`);
+        .limit(effectiveBatchSize)
+        .orderBy(sql`${sql.identifier(mapFieldToDbColumn("createdAt"))} DESC`);
       if (objsToDelete.length === 0) {
         isDone = true;
         break;
@@ -566,7 +575,13 @@ export class PostgresObjStorage implements IObjStorage {
           .where(inArray(objs.id, objIds));
       }
       totalProcessed += objsToDelete.length;
-      isDone = objsToDelete.length < batchSize;
+
+      // If deleteMany is false, we're done after processing one batch
+      if (!deleteMany) {
+        isDone = true;
+      } else {
+        isDone = objsToDelete.length < effectiveBatchSize;
+      }
     }
     return {
       deletedCount: totalProcessed,

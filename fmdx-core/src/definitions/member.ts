@@ -8,6 +8,7 @@ import {
   stringMetaQuerySchema,
 } from "./obj.js";
 import {
+  checkPermissionItemSchema,
   permissionAtomSchema,
   type IPermissionAtom,
   type IPermissionMeta,
@@ -159,6 +160,13 @@ export const getMemberRequestsSchema = z.object({
   limit: z.number().min(1).optional(),
 });
 
+export const checkMemberPermissionsSchema = z.object({
+  appId: z.string(),
+  memberId: z.string(),
+  groupId: z.string(),
+  items: z.array(checkPermissionItemSchema),
+});
+
 export type AddMemberEndpointArgs = z.infer<typeof addMemberSchema>;
 export type GetMembersEndpointArgs = z.infer<typeof getMembersSchema>;
 export type GetMemberByMemberIdEndpointArgs = z.infer<
@@ -174,6 +182,9 @@ export type GetMemberRequestsEndpointArgs = z.infer<
 >;
 export type UpdateMemberPermissionsEndpointArgs = z.infer<
   typeof updateMemberPermissionsSchema
+>;
+export type CheckMemberPermissionsEndpointArgs = z.infer<
+  typeof checkMemberPermissionsSchema
 >;
 
 export interface IGetMembersEndpointResponse {
@@ -200,6 +211,12 @@ export interface IAddMemberEndpointResponse {
 
 export interface IRespondToMemberRequestEndpointResponse {
   member: IMemberRequest;
+}
+
+export interface CheckMemberPermissionsEndpointResponse {
+  results: {
+    hasPermission: boolean;
+  }[];
 }
 
 export const kMemberStatusLabels: Record<MemberStatus, string> = {

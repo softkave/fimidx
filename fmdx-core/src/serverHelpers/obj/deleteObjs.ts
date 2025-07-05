@@ -1,5 +1,5 @@
 import type { IObjQuery } from "../../definitions/obj.js";
-import { createStorage } from "../../storage/config.js";
+import { createStorage, getDefaultStorageType } from "../../storage/config.js";
 import type { IObjStorage } from "../../storage/types.js";
 
 export async function deleteManyObjs(params: {
@@ -19,7 +19,7 @@ export async function deleteManyObjs(params: {
     deletedBy,
     deletedByType,
     deleteMany = false,
-    storageType = "mongo",
+    storageType = getDefaultStorageType(),
     storage = createStorage({ type: storageType }),
   } = params;
 
@@ -43,7 +43,7 @@ export async function cleanupDeletedObjs(params?: {
   storage?: IObjStorage;
 }) {
   const {
-    storageType = "mongo",
+    storageType = getDefaultStorageType(),
     storage = createStorage({ type: storageType }),
   } = params ?? {};
 

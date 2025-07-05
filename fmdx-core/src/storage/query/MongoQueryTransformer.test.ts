@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import type { IObjQuery, IObjSortList } from "../../definitions/obj.js";
+import type {
+  IObjField,
+  IObjQuery,
+  IObjSortList,
+} from "../../definitions/obj.js";
 import { MongoQueryTransformer } from "./MongoQueryTransformer.js";
 
 describe("MongoQueryTransformer", () => {
@@ -57,6 +61,181 @@ describe("MongoQueryTransformer", () => {
         { field: "bar", direction: "desc" },
       ];
       expect(transformer.transformSort(sort)).toEqual({ foo: 1, bar: -1 });
+    });
+
+    it("should filter by fields", () => {
+      const sort: IObjSortList = [
+        { field: "objRecord.price", direction: "asc" },
+        { field: "objRecord.name", direction: "desc" },
+        { field: "objRecord.quantity", direction: "asc" },
+      ];
+
+      const fields: IObjField[] = [
+        {
+          id: "1",
+          field: "price",
+          fieldKeys: ["price"],
+          fieldKeyTypes: ["string"],
+          valueTypes: ["number"],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          appId: "app1",
+          groupId: "group1",
+          tag: "tag1",
+        },
+        {
+          id: "2",
+          field: "name",
+          fieldKeys: ["name"],
+          fieldKeyTypes: ["string"],
+          valueTypes: ["string"],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          appId: "app1",
+          groupId: "group1",
+          tag: "tag1",
+        },
+        {
+          id: "3",
+          field: "quantity",
+          fieldKeys: ["quantity"],
+          fieldKeyTypes: ["string"],
+          valueTypes: ["number"],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          appId: "app1",
+          groupId: "group1",
+          tag: "tag1",
+        },
+      ];
+
+      const result = transformer.transformSort(sort, fields);
+      // Should include all fields that are present in the fields array
+      expect(result).toEqual({
+        "objRecord.price": 1,
+        "objRecord.name": -1,
+        "objRecord.quantity": 1,
+      });
+    });
+
+    it("should skip fields not found in fields array", () => {
+      const sort: IObjSortList = [
+        { field: "objRecord.price", direction: "asc" },
+        { field: "objRecord.unknown", direction: "desc" },
+      ];
+
+      const fields: IObjField[] = [
+        {
+          id: "1",
+          field: "price",
+          fieldKeys: ["price"],
+          fieldKeyTypes: ["string"],
+          valueTypes: ["number"],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          appId: "app1",
+          groupId: "group1",
+          tag: "tag1",
+        },
+      ];
+
+      const result = transformer.transformSort(sort, fields);
+      // Should only include price, skip unknown field
+      expect(result).toEqual({
+        "objRecord.price": 1,
+      });
+    });
+
+    it("should return empty object when no fields found in fields array", () => {
+      const sort: IObjSortList = [
+        { field: "objRecord.name", direction: "asc" },
+        { field: "objRecord.description", direction: "desc" },
+      ];
+
+      const fields: IObjField[] = [
+        {
+          id: "1",
+          field: "price",
+          fieldKeys: ["price"],
+          fieldKeyTypes: ["string"],
+          valueTypes: ["number"],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          appId: "app1",
+          groupId: "group1",
+          tag: "tag1",
+        },
+      ];
+
+      const result = transformer.transformSort(sort, fields);
+      // Should return default sort since name and description are not in fields array
+      expect(result).toEqual({ createdAt: -1 });
+    });
+
+    it("should handle nested fields correctly", () => {
+      const sort: IObjSortList = [
+        { field: "objRecord.product.price", direction: "asc" },
+      ];
+
+      const fields: IObjField[] = [
+        {
+          id: "1",
+          field: "product.price",
+          fieldKeys: ["product", "price"],
+          fieldKeyTypes: ["string", "string"],
+          valueTypes: ["number"],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          appId: "app1",
+          groupId: "group1",
+          tag: "tag1",
+        },
+      ];
+
+      const result = transformer.transformSort(sort, fields);
+      expect(result).toEqual({
+        "objRecord.product.price": 1,
+      });
+    });
+
+    it("should include string fields when present in fields array", () => {
+      const sort: IObjSortList = [
+        { field: "objRecord.name", direction: "asc" },
+        { field: "objRecord.category", direction: "desc" },
+      ];
+
+      const fields: IObjField[] = [
+        {
+          id: "1",
+          field: "name",
+          fieldKeys: ["name"],
+          fieldKeyTypes: ["string"],
+          valueTypes: ["string"],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          appId: "app1",
+          groupId: "group1",
+          tag: "tag1",
+        },
+        {
+          id: "2",
+          field: "category",
+          fieldKeys: ["category"],
+          fieldKeyTypes: ["string"],
+          valueTypes: ["string"],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          appId: "app1",
+          groupId: "group1",
+          tag: "tag1",
+        },
+      ];
+
+      const result = transformer.transformSort(sort, fields);
+      expect(result).toEqual({
+        "objRecord.name": 1,
+        "objRecord.category": -1,
+      });
     });
   });
 

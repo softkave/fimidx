@@ -5,7 +5,7 @@ import type {
   IObjQuery,
   OnConflict,
 } from "../../definitions/obj.js";
-import { createStorage } from "../../storage/config.js";
+import { createStorage, getDefaultStorageType } from "../../storage/config.js";
 import type { IObjStorage } from "../../storage/types.js";
 
 export function getUpdateObj(params: {
@@ -69,7 +69,7 @@ export async function updateManyObjs(params: {
     updateWay = "mergeButReplaceArrays",
     shouldIndex = true,
     fieldsToIndex,
-    storageType = "mongo",
+    storageType = getDefaultStorageType(),
     storage = createStorage({ type: storageType }),
   } = params;
 

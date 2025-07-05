@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { v7 as uuidv7 } from "uuid";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
-import { getObjModel } from "../../../db/mongo.js";
+import { getObjModel } from "../../../db/fmdx.mongo.js";
 import type { IInputObjRecord, IObj } from "../../../definitions/obj.js";
 import { createStorage } from "../../../storage/config.js";
 import { getManyObjs } from "../getObjs.js";

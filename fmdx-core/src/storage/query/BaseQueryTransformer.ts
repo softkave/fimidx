@@ -1,4 +1,5 @@
 import type {
+  IObjField,
   IObjQuery,
   IObjSortList,
   ITopLevelFieldQuery,
@@ -7,7 +8,7 @@ import type { IQueryTransformer } from "../types.js";
 
 export abstract class BaseQueryTransformer<T> implements IQueryTransformer<T> {
   abstract transformFilter(query: IObjQuery, date: Date): T;
-  abstract transformSort(sort: IObjSortList): T;
+  abstract transformSort(sort: IObjSortList, fields?: IObjField[]): T;
   abstract transformPagination(page: number, limit: number): T;
 
   protected transformPartQuery(partQuery: any, date: Date): T {

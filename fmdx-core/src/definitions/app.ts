@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { numberMetaQuerySchema, stringMetaQuerySchema } from "./obj.js";
+import {
+  numberMetaQuerySchema,
+  objSortListSchema,
+  stringMetaQuerySchema,
+} from "./obj.js";
 
 export interface IApp {
   id: string;
@@ -29,8 +33,9 @@ export const addAppSchema = z.object({
   objFieldsToIndex: z.array(z.string()).optional(),
 });
 
+// TODO: appId shouldn't be optional for external use
 export const appQuerySchema = z.object({
-  groupId: z.string(),
+  groupId: z.string().optional(),
   id: stringMetaQuerySchema.optional(),
   name: stringMetaQuerySchema.optional(),
   createdAt: numberMetaQuerySchema.optional(),
@@ -44,7 +49,7 @@ export const updateAppsSchema = z.object({
   update: z.object({
     name: z.string().optional(),
     description: z.string().optional(),
-    objFieldsToIndex: z.array(z.string()).optional(),
+    objFieldsToIndex: z.array(z.string()).optional().nullable(),
   }),
   updateMany: z.boolean().optional(),
 });
@@ -58,6 +63,7 @@ export const getAppsSchema = z.object({
   query: appQuerySchema,
   page: z.number().optional(),
   limit: z.number().optional(),
+  sort: objSortListSchema.optional(),
 });
 
 export type AddAppEndpointArgs = z.infer<typeof addAppSchema>;
