@@ -1,3 +1,5 @@
+import { and, eq } from "drizzle-orm";
+import { v7 as uuidv7 } from "uuid";
 import {
   afterAll,
   afterEach,
@@ -7,7 +9,9 @@ import {
   expect,
   it,
 } from "vitest";
+import { db, objFields as objFieldsTable } from "../../../db/fmdx.sqlite.js";
 import type { GetLogsEndpointArgs } from "../../../definitions/log.js";
+import type { IObjField } from "../../../definitions/obj.js";
 import { kObjTags } from "../../../definitions/obj.js";
 import { createDefaultStorage } from "../../../storage/config.js";
 import type { IObjStorage } from "../../../storage/types.js";
@@ -21,6 +25,43 @@ const defaultByType = "user";
 
 // Test counter to ensure unique names
 let testCounter = 0;
+
+function makeObjField(overrides: Partial<IObjField> = {}): IObjField {
+  const now = new Date();
+  return {
+    id: uuidv7(),
+    createdAt: now,
+    updatedAt: now,
+    appId: defaultAppId,
+    groupId: defaultGroupId,
+    field: "objRecord.timestamp",
+    fieldKeys: ["timestamp"],
+    fieldKeyTypes: ["string"],
+    valueTypes: ["number"],
+    tag: kObjTags.log,
+    ...overrides,
+  };
+}
+
+async function setupObjFields(fields: IObjField[]) {
+  // Clean up existing fields first
+  if (fields.length > 0) {
+    await db
+      .delete(objFieldsTable)
+      .where(
+        and(
+          eq(objFieldsTable.appId, fields[0].appId),
+          eq(objFieldsTable.tag, fields[0].tag)
+        )
+      )
+      .execute();
+  }
+
+  // Insert new fields
+  if (fields.length > 0) {
+    await db.insert(objFieldsTable).values(fields);
+  }
+}
 
 function makeGetLogsArgs(
   overrides: Partial<GetLogsEndpointArgs> = {}
@@ -91,6 +132,17 @@ describe("getLogs integration", () => {
     } catch (error) {
       // Ignore errors in cleanup
     }
+
+    // Clean up obj fields for all backends
+    await db
+      .delete(objFieldsTable)
+      .where(
+        and(
+          eq(objFieldsTable.appId, defaultAppId),
+          eq(objFieldsTable.tag, kObjTags.log)
+        )
+      )
+      .execute();
   });
 
   afterEach(async () => {
@@ -107,6 +159,17 @@ describe("getLogs integration", () => {
     } catch (error) {
       // Ignore errors in cleanup
     }
+
+    // Clean up obj fields for all backends
+    await db
+      .delete(objFieldsTable)
+      .where(
+        and(
+          eq(objFieldsTable.appId, defaultAppId),
+          eq(objFieldsTable.tag, kObjTags.log)
+        )
+      )
+      .execute();
   });
 
   it("returns empty result when no logs exist", async () => {
@@ -325,6 +388,15 @@ describe("getLogs integration", () => {
   });
 
   it("sorts logs by timestamp", async () => {
+    // Set up obj fields for sorting
+    const timestampField = makeObjField({
+      field: "timestamp",
+      fieldKeys: ["timestamp"],
+      fieldKeyTypes: ["string"],
+      valueTypes: ["number"],
+    });
+    await setupObjFields([timestampField]);
+
     // Create logs with different timestamps
     const now = Date.now();
     const logs = [
@@ -366,6 +438,15 @@ describe("getLogs integration", () => {
   });
 
   it("sorts logs by level", async () => {
+    // Set up obj fields for sorting
+    const levelField = makeObjField({
+      field: "level",
+      fieldKeys: ["level"],
+      fieldKeyTypes: ["string"],
+      valueTypes: ["string"],
+    });
+    await setupObjFields([levelField]);
+
     // Create logs with different levels
     const logs = [
       makeTestLog({ level: "debug", message: "Debug log" }),

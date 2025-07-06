@@ -1,3 +1,4 @@
+import { and, eq } from "drizzle-orm";
 import {
   afterAll,
   afterEach,
@@ -7,10 +8,16 @@ import {
   expect,
   it,
 } from "vitest";
+import {
+  db,
+  objFields as objFieldsTable,
+  objParts as objPartsTable,
+} from "../../../db/fmdx.sqlite.js";
 import type { GetLogFieldValuesEndpointArgs } from "../../../definitions/log.js";
 import { kObjTags } from "../../../definitions/obj.js";
 import { createDefaultStorage } from "../../../storage/config.js";
 import type { IObjStorage } from "../../../storage/types.js";
+import { indexObjs } from "../../obj/indexObjs.js";
 import { getLogFieldValues } from "../getLogFieldValues.js";
 import { ingestLogs } from "../ingestLogs.js";
 
@@ -87,6 +94,31 @@ describe("getLogFieldValues integration", () => {
     } catch (error) {
       // Ignore errors in cleanup
     }
+
+    // Clean up indexed data (objFields and objParts)
+    try {
+      await db
+        .delete(objFieldsTable)
+        .where(
+          and(
+            eq(objFieldsTable.appId, defaultAppId),
+            eq(objFieldsTable.tag, kObjTags.log)
+          )
+        )
+        .execute();
+
+      await db
+        .delete(objPartsTable)
+        .where(
+          and(
+            eq(objPartsTable.appId, defaultAppId),
+            eq(objPartsTable.tag, kObjTags.log)
+          )
+        )
+        .execute();
+    } catch (error) {
+      // Ignore errors in cleanup
+    }
   });
 
   afterEach(async () => {
@@ -103,7 +135,40 @@ describe("getLogFieldValues integration", () => {
     } catch (error) {
       // Ignore errors in cleanup
     }
+
+    // Clean up indexed data (objFields and objParts)
+    try {
+      await db
+        .delete(objFieldsTable)
+        .where(
+          and(
+            eq(objFieldsTable.appId, defaultAppId),
+            eq(objFieldsTable.tag, kObjTags.log)
+          )
+        )
+        .execute();
+
+      await db
+        .delete(objPartsTable)
+        .where(
+          and(
+            eq(objPartsTable.appId, defaultAppId),
+            eq(objPartsTable.tag, kObjTags.log)
+          )
+        )
+        .execute();
+    } catch (error) {
+      // Ignore errors in cleanup
+    }
   });
+
+  // Helper function to index objects created after a specific timestamp
+  async function indexObjectsAfter(timestamp: Date) {
+    await indexObjs({
+      lastSuccessAt: timestamp,
+      storage,
+    });
+  }
 
   it("returns empty result when no field values exist", async () => {
     const args = makeGetLogFieldValuesArgs();
@@ -119,6 +184,8 @@ describe("getLogFieldValues integration", () => {
   });
 
   it("returns field values after ingesting logs", async () => {
+    const beforeIngest = new Date();
+
     // Create logs with different level values
     const logs = [
       makeTestLog({ level: "info", message: "Info log" }),
@@ -137,6 +204,9 @@ describe("getLogFieldValues integration", () => {
       groupId: defaultGroupId,
       storage,
     });
+
+    // Index only the objects created in this test
+    await indexObjectsAfter(beforeIngest);
 
     const args = makeGetLogFieldValuesArgs({
       field: "level",
@@ -160,6 +230,8 @@ describe("getLogFieldValues integration", () => {
   });
 
   it("supports pagination", async () => {
+    const beforeIngest = new Date();
+
     // Create many logs with different level values
     const logs = [];
     const levels = ["info", "warn", "error", "debug", "fatal"];
@@ -182,6 +254,9 @@ describe("getLogFieldValues integration", () => {
       groupId: defaultGroupId,
       storage,
     });
+
+    // Index only the objects created in this test
+    await indexObjectsAfter(beforeIngest);
 
     // Test first page with limit 2
     const args1 = makeGetLogFieldValuesArgs({
@@ -217,6 +292,8 @@ describe("getLogFieldValues integration", () => {
   });
 
   it("returns only values for the specified field", async () => {
+    const beforeIngest = new Date();
+
     // Create logs with different fields
     const logs = [
       makeTestLog({ level: "info", source: "api", userId: "user1" }),
@@ -234,6 +311,9 @@ describe("getLogFieldValues integration", () => {
       groupId: defaultGroupId,
       storage,
     });
+
+    // Index only the objects created in this test
+    await indexObjectsAfter(beforeIngest);
 
     // Query for level field values
     const levelArgs = makeGetLogFieldValuesArgs({
@@ -267,6 +347,8 @@ describe("getLogFieldValues integration", () => {
   });
 
   it("returns only values for the specified appId", async () => {
+    const beforeIngest = new Date();
+
     // Create logs for different apps
     const logs1 = [
       makeTestLog({ level: "info", message: "App 1 log" }),
@@ -299,6 +381,9 @@ describe("getLogFieldValues integration", () => {
       storage,
     });
 
+    // Index only the objects created in this test
+    await indexObjectsAfter(beforeIngest);
+
     // Query for app-1 level values
     const args = makeGetLogFieldValuesArgs({
       appId: "app-1",
@@ -318,6 +403,8 @@ describe("getLogFieldValues integration", () => {
   });
 
   it("handles nested field values", async () => {
+    const beforeIngest = new Date();
+
     // Create logs with nested objects
     const logs = [
       makeTestLog({
@@ -349,6 +436,9 @@ describe("getLogFieldValues integration", () => {
       storage,
     });
 
+    // Index only the objects created in this test
+    await indexObjectsAfter(beforeIngest);
+
     // Query for nested field values
     const args = makeGetLogFieldValuesArgs({
       field: "metadata.user.role",
@@ -365,6 +455,8 @@ describe("getLogFieldValues integration", () => {
   });
 
   it("handles different value types", async () => {
+    const beforeIngest = new Date();
+
     // Create logs with different value types
     const logs = [
       makeTestLog({
@@ -393,6 +485,9 @@ describe("getLogFieldValues integration", () => {
       groupId: defaultGroupId,
       storage,
     });
+
+    // Index only the objects created in this test
+    await indexObjectsAfter(beforeIngest);
 
     // Query for string field
     const stringArgs = makeGetLogFieldValuesArgs({

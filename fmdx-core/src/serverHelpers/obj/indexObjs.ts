@@ -306,7 +306,7 @@ async function indexObjsBatch(params: {
     const app = getApp(obj);
     const fieldsToIndex = obj.fieldsToIndex ?? app?.objFieldsToIndex ?? null;
 
-    const rawIndex = indexJson(obj.objRecord, { flattenNumericKeys: false });
+    const rawIndex = indexJson(obj.objRecord, { flattenNumericKeys: true });
 
     let index: ReturnType<typeof indexJson> = rawIndex;
     if (fieldsToIndex) {
