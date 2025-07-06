@@ -33,11 +33,9 @@ export async function updateMemberSendEmailStatus(params: {
     objQuery: {
       appId,
       partQuery: {
-        and: [
-          { value: id, op: "eq", field: "memberId" },
-          { value: groupId, op: "eq", field: "groupId" },
-        ],
+        and: [{ value: id, op: "eq", field: "memberId" }],
       },
+      topLevelFields: { groupId: { eq: groupId } },
     },
     tag: kObjTags.member,
     update,

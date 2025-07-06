@@ -7,138 +7,69 @@ import {
   expect,
   it,
 } from "vitest";
-import { kObjTags } from "../../../definitions/obj.js";
-import { createDefaultStorage } from "../../../storage/config.js";
-import type { IObjStorage } from "../../../storage/types.js";
 import { addMember } from "../addMember.js";
 import { updateMemberPermissions } from "../updateMemberPermissions.js";
-
-const defaultAppId = "test-app-updateMemberPermissions";
-const defaultGroupId = "test-group";
-const defaultBy = "tester";
-const defaultByType = "user";
-
-// Test counter to ensure unique names
-let testCounter = 0;
-
-function makeAddMemberArgs(overrides: any = {}) {
-  testCounter++;
-  const uniqueId = `${testCounter}_${Date.now()}_${Math.random()
-    .toString(36)
-    .substr(2, 9)}`;
-  return {
-    name: `Test Member ${uniqueId}`,
-    description: "Test description",
-    appId: defaultAppId,
-    groupId: defaultGroupId,
-    email: `test${uniqueId}@example.com`,
-    memberId: `member-${uniqueId}`,
-    permissions: [],
-    ...overrides,
-  };
-}
-
-function makeUpdateMemberPermissionsArgs(overrides: any = {}) {
-  return {
-    query: {
-      memberId: "test-member-id",
-      groupId: defaultGroupId,
-      appId: defaultAppId,
-      ...overrides.query,
-    },
-    update: {
-      permissions: [
-        {
-          entity: "user",
-          action: "read",
-          target: "document",
-        },
-      ],
-      ...overrides.update,
-    },
-    ...overrides,
-  };
-}
+import { createTestSetup, makeTestData } from "./testUtils.js";
 
 describe("updateMemberPermissions integration", () => {
-  let storage: IObjStorage;
-  let cleanup: (() => Promise<void>) | undefined;
+  const { storage, cleanup, testData } = createTestSetup({
+    testName: "updateMemberPermissions",
+  });
+
+  const { appId, groupId, by, byType } = testData;
+
+  function makeAddMemberArgs(overrides: any = {}) {
+    const testData = makeTestData({ testName: "member" });
+    return {
+      name: testData.name,
+      description: "Test description",
+      appId,
+      groupId,
+      email: testData.email,
+      memberId: testData.memberId,
+      permissions: [],
+      ...overrides,
+    };
+  }
+
+  function makeUpdateMemberPermissionsArgs(overrides: any = {}) {
+    return {
+      query: {
+        memberId: "test-member-id",
+        groupId,
+        appId,
+        ...overrides.query,
+      },
+      update: {
+        permissions: [
+          {
+            entity: "user",
+            action: "read",
+            target: "document",
+          },
+        ],
+        ...overrides.update,
+      },
+      ...overrides,
+    };
+  }
 
   beforeAll(async () => {
-    storage = createDefaultStorage();
-
-    if (
-      process.env.FMDX_STORAGE_TYPE === "mongo" ||
-      !process.env.FMDX_STORAGE_TYPE
-    ) {
-      cleanup = async () => {
-        // Cleanup will be handled by the storage interface
-      };
-    }
+    // Storage is already created by createTestSetup
   });
 
   afterAll(async () => {
-    if (cleanup) await cleanup();
+    await cleanup();
   });
 
   beforeEach(async () => {
-    try {
-      const testAppIds = [
-        defaultAppId,
-        "test-app-updateMemberPermissions-1",
-        "test-app-updateMemberPermissions-2",
-      ];
-      for (const appId of testAppIds) {
-        await storage.bulkDelete({
-          query: { appId },
-          tag: kObjTags.member,
-          deletedBy: defaultBy,
-          deletedByType: defaultByType,
-          deleteMany: true,
-          hardDelete: true,
-        });
-        await storage.bulkDelete({
-          query: { appId },
-          tag: kObjTags.permission,
-          deletedBy: defaultBy,
-          deletedByType: defaultByType,
-          deleteMany: true,
-          hardDelete: true,
-        });
-      }
-    } catch (error) {
-      // Ignore errors in cleanup
-    }
+    // Clean up before each test
+    await cleanup();
   });
 
   afterEach(async () => {
-    try {
-      const testAppIds = [
-        defaultAppId,
-        "test-app-updateMemberPermissions-1",
-        "test-app-updateMemberPermissions-2",
-      ];
-      for (const appId of testAppIds) {
-        await storage.bulkDelete({
-          query: { appId },
-          tag: kObjTags.member,
-          deletedBy: defaultBy,
-          deletedByType: defaultByType,
-          deleteMany: true,
-          hardDelete: true,
-        });
-        await storage.bulkDelete({
-          query: { appId },
-          tag: kObjTags.permission,
-          deletedBy: defaultBy,
-          deletedByType: defaultByType,
-          deleteMany: true,
-          hardDelete: true,
-        });
-      }
-    } catch (error) {
-      // Ignore errors in cleanup
-    }
+    // Clean up after each test
+    await cleanup();
   });
 
   it("updates member permissions successfully", async () => {
@@ -146,8 +77,8 @@ describe("updateMemberPermissions integration", () => {
     const memberArgs = makeAddMemberArgs({ memberId: "test-member" });
     const member = await addMember({
       args: memberArgs,
-      by: defaultBy,
-      byType: defaultByType,
+      by: by,
+      byType: byType,
       memberId: memberArgs.memberId,
       storage,
     });
@@ -174,8 +105,8 @@ describe("updateMemberPermissions integration", () => {
 
     const result = await updateMemberPermissions({
       args,
-      by: defaultBy,
-      byType: defaultByType,
+      by: by,
+      byType: byType,
       storage,
     });
 
@@ -201,8 +132,8 @@ describe("updateMemberPermissions integration", () => {
     const memberArgs = makeAddMemberArgs({ memberId: "test-member" });
     const member = await addMember({
       args: memberArgs,
-      by: defaultBy,
-      byType: defaultByType,
+      by: by,
+      byType: byType,
       memberId: memberArgs.memberId,
       storage,
     });
@@ -224,8 +155,8 @@ describe("updateMemberPermissions integration", () => {
 
     const result = await updateMemberPermissions({
       args,
-      by: defaultBy,
-      byType: defaultByType,
+      by: by,
+      byType: byType,
       storage,
     });
 
@@ -244,8 +175,8 @@ describe("updateMemberPermissions integration", () => {
     const memberArgs = makeAddMemberArgs({ memberId: "test-member" });
     const member = await addMember({
       args: memberArgs,
-      by: defaultBy,
-      byType: defaultByType,
+      by: by,
+      byType: byType,
       memberId: memberArgs.memberId,
       storage,
     });
@@ -261,8 +192,8 @@ describe("updateMemberPermissions integration", () => {
 
     const result = await updateMemberPermissions({
       args,
-      by: defaultBy,
-      byType: defaultByType,
+      by: by,
+      byType: byType,
       storage,
     });
 
@@ -281,8 +212,8 @@ describe("updateMemberPermissions integration", () => {
     await expect(
       updateMemberPermissions({
         args,
-        by: defaultBy,
-        byType: defaultByType,
+        by: by,
+        byType: byType,
         storage,
       })
     ).rejects.toThrow("Member not found");
@@ -291,13 +222,13 @@ describe("updateMemberPermissions integration", () => {
   it("handles different app IDs", async () => {
     // Create a member in a different app
     const memberArgs = makeAddMemberArgs({
-      memberId: "test-member",
+      memberId: "test-member-updateMemberPermissions",
       appId: "different-app",
     });
     const member = await addMember({
       args: memberArgs,
-      by: defaultBy,
-      byType: defaultByType,
+      by: by,
+      byType: byType,
       memberId: memberArgs.memberId,
       storage,
     });
@@ -320,8 +251,8 @@ describe("updateMemberPermissions integration", () => {
 
     const result = await updateMemberPermissions({
       args,
-      by: defaultBy,
-      byType: defaultByType,
+      by: by,
+      byType: byType,
       storage,
     });
 
@@ -338,8 +269,8 @@ describe("updateMemberPermissions integration", () => {
     });
     const member = await addMember({
       args: memberArgs,
-      by: defaultBy,
-      byType: defaultByType,
+      by: by,
+      byType: byType,
       memberId: memberArgs.memberId,
       storage,
     });
@@ -362,8 +293,8 @@ describe("updateMemberPermissions integration", () => {
 
     const result = await updateMemberPermissions({
       args,
-      by: defaultBy,
-      byType: defaultByType,
+      by: by,
+      byType: byType,
       storage,
     });
 
@@ -377,8 +308,8 @@ describe("updateMemberPermissions integration", () => {
     const memberArgs = makeAddMemberArgs({ memberId: "test-member" });
     const member = await addMember({
       args: memberArgs,
-      by: defaultBy,
-      byType: defaultByType,
+      by: by,
+      byType: byType,
       memberId: memberArgs.memberId,
       storage,
     });
@@ -416,16 +347,16 @@ describe("updateMemberPermissions integration", () => {
 
     const member1 = await addMember({
       args: member1Args,
-      by: defaultBy,
-      byType: defaultByType,
+      by: by,
+      byType: byType,
       memberId: member1Args.memberId,
       storage,
     });
 
     const member2 = await addMember({
       args: member2Args,
-      by: defaultBy,
-      byType: defaultByType,
+      by: by,
+      byType: byType,
       memberId: member2Args.memberId,
       storage,
     });
@@ -448,8 +379,8 @@ describe("updateMemberPermissions integration", () => {
 
     const result1 = await updateMemberPermissions({
       args: args1,
-      by: defaultBy,
-      byType: defaultByType,
+      by: by,
+      byType: byType,
       storage,
     });
 
@@ -471,8 +402,8 @@ describe("updateMemberPermissions integration", () => {
 
     const result2 = await updateMemberPermissions({
       args: args2,
-      by: defaultBy,
-      byType: defaultByType,
+      by: by,
+      byType: byType,
       storage,
     });
 
@@ -494,8 +425,8 @@ describe("updateMemberPermissions integration", () => {
     });
     const member = await addMember({
       args: memberArgs,
-      by: defaultBy,
-      byType: defaultByType,
+      by: by,
+      byType: byType,
       memberId: memberArgs.memberId,
       storage,
     });
@@ -517,8 +448,8 @@ describe("updateMemberPermissions integration", () => {
 
     const result = await updateMemberPermissions({
       args,
-      by: defaultBy,
-      byType: defaultByType,
+      by: by,
+      byType: byType,
       storage,
     });
 

@@ -24,7 +24,7 @@ export async function respondToMemberRequest(params: {
       query: {
         appId,
         groupId,
-        memberId: { eq: requestId },
+        id: { eq: requestId },
       },
       limit: 1,
     },

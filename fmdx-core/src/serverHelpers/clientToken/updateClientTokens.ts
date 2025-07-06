@@ -2,6 +2,7 @@ import type { UpdateClientTokensEndpointArgs } from "../../definitions/clientTok
 import { kObjTags } from "../../definitions/obj.js";
 import type { IObjStorage } from "../../storage/types.js";
 import { updateManyObjs } from "../obj/updateObjs.js";
+import { deletePermissions } from "../permission/deletePermissions.js";
 import { addClientTokenPermissions } from "./addClientTokenPermissions.js";
 import { getClientTokens, getClientTokensObjQuery } from "./getClientTokens.js";
 
@@ -16,6 +17,19 @@ export async function updateClientTokens(params: {
 
   // Extract permissions from update to handle separately
   const { permissions, ...otherUpdates } = update;
+
+  // Get the tokens to update BEFORE updating the object (so we have the right IDs)
+  let tokensToUpdate: any[] = [];
+  if (permissions !== undefined) {
+    const result = await getClientTokens({
+      args: {
+        query: args.query,
+      },
+      includePermissions: false,
+      storage,
+    });
+    tokensToUpdate = result.clientTokens;
+  }
 
   const objQuery = getClientTokensObjQuery({ args });
 
@@ -33,26 +47,56 @@ export async function updateClientTokens(params: {
   });
 
   // Handle permissions separately if provided
-  if (permissions) {
-    const { clientTokens } = await getClientTokens({
-      args: {
-        query: args.query,
-      },
-      includePermissions: false,
-      storage,
-    });
+  if (permissions !== undefined) {
+    for (const clientToken of tokensToUpdate) {
+      if (permissions.length === 0) {
+        // Clear all existing permissions for this client token
+        await deletePermissions({
+          query: {
+            appId: clientToken.appId,
+            meta: [
+              {
+                op: "eq",
+                field: "__fmdx_managed_clientTokenId",
+                value: clientToken.id,
+              },
+            ],
+          },
+          deleteMany: true,
+          by,
+          byType,
+          storage,
+        });
+      } else {
+        // Clear existing permissions first, then add new ones
+        await deletePermissions({
+          query: {
+            appId: clientToken.appId,
+            meta: [
+              {
+                op: "eq",
+                field: "__fmdx_managed_clientTokenId",
+                value: clientToken.id,
+              },
+            ],
+          },
+          deleteMany: true,
+          by,
+          byType,
+          storage,
+        });
 
-    // Add permissions for each client token
-    for (const clientToken of clientTokens) {
-      await addClientTokenPermissions({
-        by,
-        byType,
-        groupId: clientToken.groupId,
-        appId: clientToken.appId,
-        permissions,
-        clientTokenId: clientToken.id,
-        storage,
-      });
+        // Add new permissions
+        await addClientTokenPermissions({
+          by,
+          byType,
+          groupId: clientToken.groupId,
+          appId: clientToken.appId,
+          permissions,
+          clientTokenId: clientToken.id,
+          storage,
+        });
+      }
     }
   }
 }

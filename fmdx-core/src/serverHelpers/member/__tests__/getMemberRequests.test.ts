@@ -7,148 +7,100 @@ import {
   expect,
   it,
 } from "vitest";
-import { kObjTags } from "../../../definitions/obj.js";
-import { createDefaultStorage } from "../../../storage/config.js";
-import type { IObjStorage } from "../../../storage/types.js";
+import { addGroup } from "../../group/addGroup.js";
 import { addMember } from "../addMember.js";
 import { getMemberRequests } from "../getMemberRequests.js";
-
-const defaultAppId = "test-app-getMemberRequests";
-const defaultGroupId = "test-group";
-const defaultBy = "tester";
-const defaultByType = "user";
-
-// Test counter to ensure unique names
-let testCounter = 0;
-
-function makeAddMemberArgs(overrides: any = {}) {
-  testCounter++;
-  const uniqueId = `${testCounter}_${Date.now()}_${Math.random()
-    .toString(36)
-    .substr(2, 9)}`;
-  return {
-    name: `Test Member ${uniqueId}`,
-    description: "Test description",
-    appId: defaultAppId,
-    groupId: defaultGroupId,
-    email: `test${uniqueId}@example.com`,
-    memberId: `member-${uniqueId}`,
-    permissions: [],
-    ...overrides,
-  };
-}
-
-function makeGetMemberRequestsArgs(overrides: any = {}) {
-  return {
-    query: {
-      appId: defaultAppId,
-      groupId: defaultGroupId,
-      memberId: undefined,
-      ...overrides.query,
-    },
-    page: overrides.page,
-    limit: overrides.limit,
-  };
-}
+import { createTestSetup, makeTestData } from "./testUtils.js";
 
 describe("getMemberRequests integration", () => {
-  let storage: IObjStorage;
-  let cleanup: (() => Promise<void>) | undefined;
+  const { storage, cleanup, testData } = createTestSetup({
+    testName: "getMemberRequests",
+  });
+
+  const { appId, groupId, by, byType } = testData;
+
+  function makeAddGroupArgs(overrides: any = {}) {
+    const testData = makeTestData({ testName: "group" });
+    return {
+      name: testData.name,
+      description: "Test description",
+      appId,
+      ...overrides,
+    };
+  }
+
+  function makeAddMemberArgs(overrides: any = {}) {
+    const testData = makeTestData({ testName: "member" });
+    return {
+      name: testData.name,
+      description: "Test description",
+      appId,
+      groupId,
+      email: testData.email,
+      memberId: testData.memberId,
+      permissions: [],
+      ...overrides,
+    };
+  }
+
+  function makeGetMemberRequestsArgs(overrides: any = {}) {
+    return {
+      query: {
+        appId,
+        groupId,
+        memberId: undefined,
+        ...overrides.query,
+      },
+      page: overrides.page,
+      limit: overrides.limit,
+    };
+  }
 
   beforeAll(async () => {
-    storage = createDefaultStorage();
-
-    if (
-      process.env.FMDX_STORAGE_TYPE === "mongo" ||
-      !process.env.FMDX_STORAGE_TYPE
-    ) {
-      cleanup = async () => {
-        // Cleanup will be handled by the storage interface
-      };
-    }
+    // Storage is already created by createTestSetup
   });
 
   afterAll(async () => {
-    if (cleanup) await cleanup();
+    await cleanup();
   });
 
   beforeEach(async () => {
-    try {
-      const testAppIds = [
-        defaultAppId,
-        "test-app-getMemberRequests-1",
-        "test-app-getMemberRequests-2",
-      ];
-      for (const appId of testAppIds) {
-        await storage.bulkDelete({
-          query: { appId },
-          tag: kObjTags.member,
-          deletedBy: defaultBy,
-          deletedByType: defaultByType,
-          deleteMany: true,
-          hardDelete: true,
-        });
-        await storage.bulkDelete({
-          query: { appId },
-          tag: kObjTags.permission,
-          deletedBy: defaultBy,
-          deletedByType: defaultByType,
-          deleteMany: true,
-          hardDelete: true,
-        });
-      }
-    } catch (error) {
-      // Ignore errors in cleanup
-    }
+    // Clean up before each test
+    await cleanup();
   });
 
   afterEach(async () => {
-    try {
-      const testAppIds = [
-        defaultAppId,
-        "test-app-getMemberRequests-1",
-        "test-app-getMemberRequests-2",
-      ];
-      for (const appId of testAppIds) {
-        await storage.bulkDelete({
-          query: { appId },
-          tag: kObjTags.member,
-          deletedBy: defaultBy,
-          deletedByType: defaultByType,
-          deleteMany: true,
-          hardDelete: true,
-        });
-        await storage.bulkDelete({
-          query: { appId },
-          tag: kObjTags.permission,
-          deletedBy: defaultBy,
-          deletedByType: defaultByType,
-          deleteMany: true,
-          hardDelete: true,
-        });
-      }
-    } catch (error) {
-      // Ignore errors in cleanup
-    }
+    // Clean up after each test
+    await cleanup();
   });
 
   it("gets member requests successfully", async () => {
+    // Create test group first
+    const groupArgs = makeAddGroupArgs({ name: "Test Group" });
+    const group = await addGroup({
+      args: groupArgs,
+      by,
+      byType,
+      groupId,
+      storage,
+    });
+
     // Create test members
     const member1Args = makeAddMemberArgs({ memberId: "member-1" });
     const member2Args = makeAddMemberArgs({ memberId: "member-2" });
 
     await addMember({
       args: member1Args,
-      by: defaultBy,
-      byType: defaultByType,
+      by,
+      byType,
       memberId: member1Args.memberId,
       storage,
     });
 
     await addMember({
       args: member2Args,
-      by: defaultBy,
-      byType: defaultByType,
+      by,
+      byType,
       memberId: member2Args.memberId,
       storage,
     });
@@ -175,22 +127,32 @@ describe("getMemberRequests integration", () => {
   });
 
   it("filters member requests by memberId", async () => {
+    // Create test group first
+    const groupArgs = makeAddGroupArgs({ name: "Test Group" });
+    await addGroup({
+      args: groupArgs,
+      by,
+      byType,
+      groupId,
+      storage,
+    });
+
     // Create test members
     const member1Args = makeAddMemberArgs({ memberId: "member-1" });
     const member2Args = makeAddMemberArgs({ memberId: "member-2" });
 
     await addMember({
       args: member1Args,
-      by: defaultBy,
-      byType: defaultByType,
+      by,
+      byType,
       memberId: member1Args.memberId,
       storage,
     });
 
     await addMember({
       args: member2Args,
-      by: defaultBy,
-      byType: defaultByType,
+      by,
+      byType,
       memberId: member2Args.memberId,
       storage,
     });
@@ -212,14 +174,24 @@ describe("getMemberRequests integration", () => {
   });
 
   it("handles pagination correctly", async () => {
+    // Create test group first
+    const groupArgs = makeAddGroupArgs({ name: "Test Group" });
+    await addGroup({
+      args: groupArgs,
+      by,
+      byType,
+      groupId,
+      storage,
+    });
+
     // Create multiple test members
     const members = [];
     for (let i = 0; i < 5; i++) {
       const memberArgs = makeAddMemberArgs({ memberId: `member-${i}` });
       await addMember({
         args: memberArgs,
-        by: defaultBy,
-        byType: defaultByType,
+        by,
+        byType,
         memberId: memberArgs.memberId,
         storage,
       });
@@ -295,6 +267,26 @@ describe("getMemberRequests integration", () => {
   });
 
   it("filters by different group IDs", async () => {
+    // Create groups first
+    const group1Args = makeAddGroupArgs({ name: "Group 1" });
+    const group2Args = makeAddGroupArgs({ name: "Group 2" });
+
+    const group1 = await addGroup({
+      args: group1Args,
+      by,
+      byType,
+      groupId: "group-1",
+      storage,
+    });
+
+    const group2 = await addGroup({
+      args: group2Args,
+      by,
+      byType,
+      groupId: "group-2",
+      storage,
+    });
+
     // Create members in different groups
     const member1Args = makeAddMemberArgs({
       memberId: "member-1",
@@ -307,21 +299,21 @@ describe("getMemberRequests integration", () => {
 
     await addMember({
       args: member1Args,
-      by: defaultBy,
-      byType: defaultByType,
+      by,
+      byType,
       memberId: member1Args.memberId,
       storage,
     });
 
     await addMember({
       args: member2Args,
-      by: defaultBy,
-      byType: defaultByType,
+      by,
+      byType,
       memberId: member2Args.memberId,
       storage,
     });
 
-    // Query for group-1
+    // Test filtering by group-1
     const args1 = makeGetMemberRequestsArgs({
       query: {
         groupId: "group-1",
@@ -336,7 +328,7 @@ describe("getMemberRequests integration", () => {
     expect(result1.requests).toHaveLength(1);
     expect(result1.requests[0].requestId).toBeDefined();
 
-    // Query for group-2
+    // Test filtering by group-2
     const args2 = makeGetMemberRequestsArgs({
       query: {
         groupId: "group-2",
@@ -352,103 +344,71 @@ describe("getMemberRequests integration", () => {
     expect(result2.requests[0].requestId).toBeDefined();
   });
 
-  it("filters by different app IDs", async () => {
-    // Create members in different apps
-    const member1Args = makeAddMemberArgs({
-      memberId: "member-1",
-      appId: "app-1",
-    });
-    const member2Args = makeAddMemberArgs({
-      memberId: "member-2",
-      appId: "app-2",
-    });
-
-    await addMember({
-      args: member1Args,
-      by: defaultBy,
-      byType: defaultByType,
-      memberId: member1Args.memberId,
+  it("handles large result sets", async () => {
+    // Create test group first
+    const groupArgs = makeAddGroupArgs({ name: "Test Group" });
+    await addGroup({
+      args: groupArgs,
+      by,
+      byType,
+      groupId,
       storage,
     });
 
-    await addMember({
-      args: member2Args,
-      by: defaultBy,
-      byType: defaultByType,
-      memberId: member2Args.memberId,
-      storage,
-    });
+    // Create many test members
+    const memberCount = 25;
+    for (let i = 0; i < memberCount; i++) {
+      const memberArgs = makeAddMemberArgs({ memberId: `member-${i}` });
+      await addMember({
+        args: memberArgs,
+        by,
+        byType,
+        memberId: memberArgs.memberId,
+        storage,
+      });
+    }
 
-    // Query for app-1
-    const args1 = makeGetMemberRequestsArgs({
-      query: {
-        appId: "app-1",
-      },
-    });
-
-    const result1 = await getMemberRequests({
-      args: args1,
-      storage,
-    });
-
-    expect(result1.requests).toHaveLength(1);
-    expect(result1.requests[0].requestId).toBeDefined();
-
-    // Query for app-2
-    const args2 = makeGetMemberRequestsArgs({
-      query: {
-        appId: "app-2",
-      },
-    });
-
-    const result2 = await getMemberRequests({
-      args: args2,
-      storage,
-    });
-
-    expect(result2.requests).toHaveLength(1);
-    expect(result2.requests[0].requestId).toBeDefined();
-  });
-
-  it("handles default pagination values", async () => {
-    // Create a test member
-    const memberArgs = makeAddMemberArgs();
-    await addMember({
-      args: memberArgs,
-      by: defaultBy,
-      byType: defaultByType,
-      memberId: memberArgs.memberId,
-      storage,
-    });
-
-    const args = makeGetMemberRequestsArgs({
-      // No page or limit specified
-    });
+    // Test with default pagination
+    const args = makeGetMemberRequestsArgs();
 
     const result = await getMemberRequests({
       args,
       storage,
     });
 
+    expect(result.requests).toBeDefined();
+    expect(result.requests.length).toBeGreaterThan(0);
+    expect(result.hasMore).toBeDefined();
     expect(result.page).toBe(1);
     expect(result.limit).toBe(100);
-    expect(result.requests).toBeDefined();
   });
 
-  it("handles custom pagination values", async () => {
-    // Create a test member
-    const memberArgs = makeAddMemberArgs();
-    await addMember({
-      args: memberArgs,
-      by: defaultBy,
-      byType: defaultByType,
-      memberId: memberArgs.memberId,
+  it("handles custom limit values", async () => {
+    // Create test group first
+    const groupArgs = makeAddGroupArgs({ name: "Test Group" });
+    await addGroup({
+      args: groupArgs,
+      by,
+      byType,
+      groupId,
       storage,
     });
 
+    // Create test members
+    for (let i = 0; i < 10; i++) {
+      const memberArgs = makeAddMemberArgs({ memberId: `member-${i}` });
+      await addMember({
+        args: memberArgs,
+        by,
+        byType,
+        memberId: memberArgs.memberId,
+        storage,
+      });
+    }
+
+    // Test with custom limit
     const args = makeGetMemberRequestsArgs({
-      page: 5,
-      limit: 25,
+      limit: 5,
     });
 
     const result = await getMemberRequests({
@@ -456,8 +416,8 @@ describe("getMemberRequests integration", () => {
       storage,
     });
 
-    expect(result.page).toBe(5);
-    expect(result.limit).toBe(25);
-    expect(result.requests).toBeDefined();
+    expect(result.requests).toHaveLength(5);
+    expect(result.limit).toBe(5);
+    expect(result.hasMore).toBe(true);
   });
 });

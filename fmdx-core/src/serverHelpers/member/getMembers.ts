@@ -119,22 +119,37 @@ export async function getMembersPermissions(params: {
   storage?: IObjStorage;
 }) {
   const { appId, memberIds, groupId, storage } = params;
+
+  // If memberIds is empty, return empty permissions to avoid SQL syntax error
+  if (memberIds.length === 0) {
+    return {
+      permissions: [],
+    };
+  }
+
+  // Build meta query conditions
+  const metaConditions: IObjPartQueryItem[] = [
+    {
+      op: "in",
+      field: "__fmdx_managed_memberId",
+      value: memberIds,
+    },
+  ];
+
+  // Only add groupId condition if it's a valid non-empty string
+  if (groupId && typeof groupId === "string" && groupId.trim() !== "") {
+    metaConditions.push({
+      op: "eq",
+      field: "__fmdx_managed_groupId",
+      value: groupId,
+    });
+  }
+
   const { permissions } = await getPermissions({
     args: {
       query: {
         appId,
-        meta: [
-          {
-            op: "in",
-            field: "__fmdx_managed_memberId",
-            value: memberIds,
-          },
-          {
-            op: "eq",
-            field: "__fmdx_managed_groupId",
-            value: groupId,
-          },
-        ],
+        meta: metaConditions,
       },
     },
     storage,

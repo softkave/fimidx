@@ -67,6 +67,17 @@ export async function getMemberRequests(params: {
   });
 
   const memberIds = uniq(objs.map((obj) => obj.objRecord.memberId));
+
+  // Return early if no memberIds found (schema requires at least one member)
+  if (!memberIds.length) {
+    return {
+      requests: [],
+      hasMore: false,
+      page: pageNumber,
+      limit: limitNumber,
+    };
+  }
+
   const { permissions: memberPermissions } = await getMembersPermissions({
     appId: args.query.appId,
     memberIds,

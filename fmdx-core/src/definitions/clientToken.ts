@@ -6,8 +6,11 @@ import {
   stringMetaQuerySchema,
 } from "./obj.js";
 import {
+  actionQuerySchema,
   checkPermissionItemSchema,
+  entityQuerySchema,
   permissionAtomSchema,
+  targetQuerySchema,
 } from "./permission.js";
 
 export interface IClientToken {
@@ -54,7 +57,9 @@ export const clientTokenQuerySchema = z.object({
   id: stringMetaQuerySchema.optional(),
   name: stringMetaQuerySchema.optional(),
   meta: objPartQueryListSchema.optional(),
-  permissions: stringMetaQuerySchema.optional(),
+  permissionEntity: entityQuerySchema.optional(),
+  permissionAction: actionQuerySchema.optional(),
+  permissionTarget: targetQuerySchema.optional(),
   createdAt: numberMetaQuerySchema.optional(),
   updatedAt: numberMetaQuerySchema.optional(),
   createdBy: stringMetaQuerySchema.optional(),

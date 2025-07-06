@@ -8,50 +8,40 @@ import {
   it,
 } from "vitest";
 import type { UpdateClientTokensEndpointArgs } from "../../../definitions/clientToken.js";
-import { kObjTags } from "../../../definitions/obj.js";
-import { createDefaultStorage } from "../../../storage/config.js";
-import type { IObjStorage } from "../../../storage/types.js";
 import { addClientToken } from "../addClientToken.js";
 import { getClientTokens } from "../getClientTokens.js";
 import { updateClientTokens } from "../updateClientTokens.js";
-
-const defaultGroupId = "test-group";
-const defaultBy = "tester";
-const defaultByType = "user";
-const defaultAppId = "test-app";
-
-// Test counter to ensure unique names
-let testCounter = 0;
-
-function makeAddClientTokenArgs(overrides: any = {}) {
-  testCounter++;
-  const uniqueId = `${testCounter}_${Date.now()}_${Math.random()
-    .toString(36)
-    .substr(2, 9)}`;
-  return {
-    name: `Test Token ${uniqueId}`,
-    description: "Test description",
-    appId: defaultAppId,
-    meta: { key: "value" },
-    permissions: [
-      {
-        entity: "user",
-        action: "read",
-        target: "document",
-      },
-      {
-        entity: "admin",
-        action: "write",
-        target: "settings",
-      },
-    ],
-    ...overrides,
-  };
-}
+import { createTestSetup, makeTestData } from "./testUtils.js";
 
 describe("updateClientTokens integration", () => {
-  let storage: IObjStorage;
-  let cleanup: (() => Promise<void>) | undefined;
+  const { storage, cleanup, testData } = createTestSetup({
+    testName: "updateClientTokens",
+  });
+
+  const { appId, groupId, by, byType } = testData;
+
+  function makeAddClientTokenArgs(overrides: any = {}) {
+    const testData = makeTestData({ testName: "token" });
+    return {
+      name: testData.tokenName,
+      description: "Test description",
+      meta: { key: "value" },
+      permissions: [
+        {
+          entity: "user",
+          action: "read",
+          target: "document",
+        },
+        {
+          entity: "admin",
+          action: "write",
+          target: "settings",
+        },
+      ],
+      appId: overrides.appId || appId,
+      ...overrides,
+    };
+  }
 
   async function createTestToken(name: string, overrides: any = {}) {
     const args = makeAddClientTokenArgs({
@@ -61,9 +51,9 @@ describe("updateClientTokens integration", () => {
 
     const result = await addClientToken({
       args,
-      by: defaultBy,
-      byType: defaultByType,
-      groupId: defaultGroupId,
+      by,
+      byType,
+      groupId,
       storage,
     });
 
@@ -71,52 +61,21 @@ describe("updateClientTokens integration", () => {
   }
 
   beforeAll(async () => {
-    storage = createDefaultStorage();
-
-    if (
-      process.env.FMDX_STORAGE_TYPE === "mongo" ||
-      !process.env.FMDX_STORAGE_TYPE
-    ) {
-      cleanup = async () => {
-        // Cleanup will be handled by the storage interface
-      };
-    }
+    // Storage is already created by createTestSetup
   });
 
   afterAll(async () => {
-    if (cleanup) await cleanup();
+    await cleanup();
   });
 
   beforeEach(async () => {
-    // Clean up test data before each test
-    try {
-      await storage.bulkDelete({
-        query: { appId: defaultAppId },
-        tag: kObjTags.clientToken,
-        deletedBy: defaultBy,
-        deletedByType: defaultByType,
-        deleteMany: true,
-        hardDelete: true,
-      });
-    } catch (error) {
-      // Ignore errors in cleanup
-    }
+    // Clean up before each test
+    await cleanup();
   });
 
   afterEach(async () => {
     // Clean up after each test
-    try {
-      await storage.bulkDelete({
-        query: { appId: defaultAppId },
-        tag: kObjTags.clientToken,
-        deletedBy: defaultBy,
-        deletedByType: defaultByType,
-        deleteMany: true,
-        hardDelete: true,
-      });
-    } catch (error) {
-      // Ignore errors in cleanup
-    }
+    await cleanup();
   });
 
   it("updates a single token by name", async () => {
@@ -133,9 +92,23 @@ describe("updateClientTokens integration", () => {
       ],
     });
 
+    // First, let's verify the token was created with 1 permission
+    const beforeUpdate = await getClientTokens({
+      args: {
+        query: {
+          appId: appId,
+          name: {
+            eq: "Original Token",
+          },
+        },
+      },
+      includePermissions: true,
+      storage,
+    });
+
     const args: UpdateClientTokensEndpointArgs = {
       query: {
-        appId: defaultAppId,
+        appId: appId,
         name: {
           eq: "Original Token",
         },
@@ -167,8 +140,8 @@ describe("updateClientTokens integration", () => {
 
     await updateClientTokens({
       args,
-      by: defaultBy,
-      byType: defaultByType,
+      by: by,
+      byType: byType,
       storage,
     });
 
@@ -176,12 +149,13 @@ describe("updateClientTokens integration", () => {
     const result = await getClientTokens({
       args: {
         query: {
-          appId: defaultAppId,
+          appId: appId,
           name: {
             eq: "Updated Token",
           },
         },
       },
+      includePermissions: true,
       storage,
     });
 
@@ -194,8 +168,8 @@ describe("updateClientTokens integration", () => {
     expect(updatedToken.permissions![0].entity).toBe("user");
     expect(updatedToken.permissions![0].action).toBe("read");
     expect(updatedToken.permissions![0].target).toBe("document");
-    expect(updatedToken.updatedBy).toBe(defaultBy);
-    expect(updatedToken.updatedByType).toBe(defaultByType);
+    expect(updatedToken.updatedBy).toBe(by);
+    expect(updatedToken.updatedByType).toBe(byType);
   });
 
   it("updates multiple tokens when updateMany is true", async () => {
@@ -206,7 +180,7 @@ describe("updateClientTokens integration", () => {
 
     const args: UpdateClientTokensEndpointArgs = {
       query: {
-        appId: defaultAppId,
+        appId: appId,
         meta: [
           {
             op: "eq",
@@ -235,8 +209,8 @@ describe("updateClientTokens integration", () => {
 
     await updateClientTokens({
       args,
-      by: defaultBy,
-      byType: defaultByType,
+      by: by,
+      byType: byType,
       storage,
     });
 
@@ -244,7 +218,7 @@ describe("updateClientTokens integration", () => {
     const result = await getClientTokens({
       args: {
         query: {
-          appId: defaultAppId,
+          appId: appId,
           meta: [
             {
               op: "eq",
@@ -254,6 +228,7 @@ describe("updateClientTokens integration", () => {
           ],
         },
       },
+      includePermissions: true,
       storage,
     });
 
@@ -283,7 +258,7 @@ describe("updateClientTokens integration", () => {
 
     const args: UpdateClientTokensEndpointArgs = {
       query: {
-        appId: defaultAppId,
+        appId: appId,
         meta: [
           {
             op: "eq",
@@ -300,8 +275,8 @@ describe("updateClientTokens integration", () => {
 
     await updateClientTokens({
       args,
-      by: defaultBy,
-      byType: defaultByType,
+      by: by,
+      byType: byType,
       storage,
     });
 
@@ -309,7 +284,7 @@ describe("updateClientTokens integration", () => {
     const result = await getClientTokens({
       args: {
         query: {
-          appId: defaultAppId,
+          appId: appId,
           meta: [
             {
               op: "eq",
@@ -331,7 +306,7 @@ describe("updateClientTokens integration", () => {
 
     const args: UpdateClientTokensEndpointArgs = {
       query: {
-        appId: defaultAppId,
+        appId: appId,
         id: {
           eq: token.id,
         },
@@ -345,8 +320,8 @@ describe("updateClientTokens integration", () => {
 
     await updateClientTokens({
       args,
-      by: defaultBy,
-      byType: defaultByType,
+      by: by,
+      byType: byType,
       storage,
     });
 
@@ -354,7 +329,7 @@ describe("updateClientTokens integration", () => {
     const result = await getClientTokens({
       args: {
         query: {
-          appId: defaultAppId,
+          appId: appId,
           id: {
             eq: token.id,
           },
@@ -374,9 +349,9 @@ describe("updateClientTokens integration", () => {
 
     const args: UpdateClientTokensEndpointArgs = {
       query: {
-        appId: defaultAppId,
+        appId: appId,
         createdBy: {
-          eq: defaultBy,
+          eq: by,
         },
       },
       update: {
@@ -387,8 +362,8 @@ describe("updateClientTokens integration", () => {
 
     await updateClientTokens({
       args,
-      by: defaultBy,
-      byType: defaultByType,
+      by: by,
+      byType: byType,
       storage,
     });
 
@@ -396,7 +371,7 @@ describe("updateClientTokens integration", () => {
     const result = await getClientTokens({
       args: {
         query: {
-          appId: defaultAppId,
+          appId: appId,
           meta: [
             {
               op: "eq",
@@ -406,6 +381,7 @@ describe("updateClientTokens integration", () => {
           ],
         },
       },
+      includePermissions: true,
       storage,
     });
 
@@ -420,12 +396,18 @@ describe("updateClientTokens integration", () => {
     const token = await createTestToken("Test Token", {
       description: "Original description",
       meta: { type: "user" },
-      permissions: ["read"],
+      permissions: [
+        {
+          entity: "user",
+          action: "read",
+          target: "document",
+        },
+      ],
     });
 
     const args: UpdateClientTokensEndpointArgs = {
       query: {
-        appId: defaultAppId,
+        appId: appId,
         name: {
           eq: "Test Token",
         },
@@ -438,8 +420,8 @@ describe("updateClientTokens integration", () => {
 
     await updateClientTokens({
       args,
-      by: defaultBy,
-      byType: defaultByType,
+      by: by,
+      byType: byType,
       storage,
     });
 
@@ -447,12 +429,13 @@ describe("updateClientTokens integration", () => {
     const result = await getClientTokens({
       args: {
         query: {
-          appId: defaultAppId,
+          appId: appId,
           name: {
             eq: "Test Token",
           },
         },
       },
+      includePermissions: true,
       storage,
     });
 
@@ -475,7 +458,7 @@ describe("updateClientTokens integration", () => {
 
     const args: UpdateClientTokensEndpointArgs = {
       query: {
-        appId: defaultAppId,
+        appId: appId,
         name: {
           eq: "Test Token",
         },
@@ -488,8 +471,8 @@ describe("updateClientTokens integration", () => {
 
     await updateClientTokens({
       args,
-      by: defaultBy,
-      byType: defaultByType,
+      by: by,
+      byType: byType,
       storage,
     });
 
@@ -497,7 +480,7 @@ describe("updateClientTokens integration", () => {
     const result = await getClientTokens({
       args: {
         query: {
-          appId: defaultAppId,
+          appId: appId,
           name: {
             eq: "Test Token",
           },
@@ -527,7 +510,7 @@ describe("updateClientTokens integration", () => {
 
     const args: UpdateClientTokensEndpointArgs = {
       query: {
-        appId: defaultAppId,
+        appId: appId,
         name: {
           eq: "Test Token",
         },
@@ -556,8 +539,8 @@ describe("updateClientTokens integration", () => {
 
     await updateClientTokens({
       args,
-      by: defaultBy,
-      byType: defaultByType,
+      by: by,
+      byType: byType,
       storage,
     });
 
@@ -565,12 +548,13 @@ describe("updateClientTokens integration", () => {
     const result = await getClientTokens({
       args: {
         query: {
-          appId: defaultAppId,
+          appId: appId,
           name: {
             eq: "Test Token",
           },
         },
       },
+      includePermissions: true,
       storage,
     });
 
@@ -600,7 +584,7 @@ describe("updateClientTokens integration", () => {
 
     const args: UpdateClientTokensEndpointArgs = {
       query: {
-        appId: defaultAppId,
+        appId: appId,
         name: {
           eq: "Test Token",
         },
@@ -613,8 +597,8 @@ describe("updateClientTokens integration", () => {
 
     await updateClientTokens({
       args,
-      by: defaultBy,
-      byType: defaultByType,
+      by: by,
+      byType: byType,
       storage,
     });
 
@@ -622,7 +606,7 @@ describe("updateClientTokens integration", () => {
     const result = await getClientTokens({
       args: {
         query: {
-          appId: defaultAppId,
+          appId: appId,
           name: {
             eq: "Test Token",
           },
@@ -637,14 +621,14 @@ describe("updateClientTokens integration", () => {
 
   it("updates tokens across different apps", async () => {
     // Create tokens in different apps
-    await createTestToken("Token 1", { appId: "app1" });
-    await createTestToken("Token 2", { appId: "app2" });
+    await createTestToken("Token 1 - updateClientTokens", { appId: "app1" });
+    await createTestToken("Token 2 - updateClientTokens", { appId: "app2" });
 
     const args: UpdateClientTokensEndpointArgs = {
       query: {
         appId: "app1",
         name: {
-          eq: "Token 1",
+          eq: "Token 1 - updateClientTokens",
         },
       },
       update: {
@@ -655,8 +639,8 @@ describe("updateClientTokens integration", () => {
 
     await updateClientTokens({
       args,
-      by: defaultBy,
-      byType: defaultByType,
+      by: by,
+      byType: byType,
       storage,
     });
 

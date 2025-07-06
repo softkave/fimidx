@@ -7,152 +7,80 @@ import {
   expect,
   it,
 } from "vitest";
-import { kObjTags } from "../../../definitions/obj.js";
-import { createDefaultStorage } from "../../../storage/config.js";
-import type { IObjStorage } from "../../../storage/types.js";
 import { addClientToken } from "../addClientToken.js";
 import { addClientTokenPermissions } from "../addClientTokenPermissions.js";
 import { checkClientTokenPermissions } from "../checkClientTokenPermissions.js";
-
-const defaultAppId = "test-app-checkClientTokenPermissions";
-const defaultGroupId = "test-group";
-const defaultBy = "tester";
-const defaultByType = "user";
-
-// Test counter to ensure unique names
-let testCounter = 0;
-
-function makeAddClientTokenArgs(overrides: any = {}) {
-  testCounter++;
-  const uniqueId = `${testCounter}_${Date.now()}_${Math.random()
-    .toString(36)
-    .substr(2, 9)}`;
-  return {
-    name: `Test Token ${uniqueId}`,
-    description: "Test description",
-    appId: defaultAppId,
-    permissions: [],
-    ...overrides,
-  };
-}
-
-function makeAddClientTokenPermissionsArgs(overrides: any = {}) {
-  testCounter++;
-  const uniqueId = `${testCounter}_${Date.now()}_${Math.random()
-    .toString(36)
-    .substr(2, 9)}`;
-  return {
-    by: defaultBy,
-    byType: defaultByType,
-    groupId: defaultGroupId,
-    appId: defaultAppId,
-    permissions: [
-      {
-        entity: "user",
-        action: "read",
-        target: "document",
-      },
-    ],
-    clientTokenId: `token-${uniqueId}`,
-    ...overrides,
-  };
-}
-
-function makeCheckClientTokenPermissionsArgs(overrides: any = {}) {
-  return {
-    appId: defaultAppId,
-    clientTokenId: "test-token-id",
-    groupId: defaultGroupId,
-    items: [
-      {
-        entity: "user",
-        action: "read",
-        target: "document",
-      },
-    ],
-    ...overrides,
-  };
-}
+import { createTestSetup, makeTestData } from "./testUtils.js";
 
 describe("checkClientTokenPermissions integration", () => {
-  let storage: IObjStorage;
-  let cleanup: (() => Promise<void>) | undefined;
+  const { storage, cleanup, testData } = createTestSetup({
+    testName: "checkClientTokenPermissions",
+  });
+
+  const { appId, groupId, by, byType } = testData;
+
+  function makeAddClientTokenArgs(overrides: any = {}) {
+    const testData = makeTestData({ testName: "token" });
+    return {
+      name: testData.tokenName,
+      description: "Test description",
+      appId,
+      permissions: [],
+      ...overrides,
+    };
+  }
+
+  function makeAddClientTokenPermissionsArgs(overrides: any = {}) {
+    const testData = makeTestData({ testName: "permissions" });
+    return {
+      by,
+      byType,
+      groupId,
+      appId,
+      permissions: [
+        {
+          entity: "user",
+          action: "read",
+          target: "document",
+        },
+      ],
+      clientTokenId: `token-${testData.tokenName}`,
+      ...overrides,
+    };
+  }
+
+  function makeCheckClientTokenPermissionsArgs(overrides: any = {}) {
+    return {
+      appId,
+      clientTokenId: "test-token-id",
+      groupId,
+      items: [
+        {
+          entity: "user",
+          action: "read",
+          target: "document",
+        },
+      ],
+      ...overrides,
+    };
+  }
 
   beforeAll(async () => {
-    storage = createDefaultStorage();
-
-    if (
-      process.env.FMDX_STORAGE_TYPE === "mongo" ||
-      !process.env.FMDX_STORAGE_TYPE
-    ) {
-      cleanup = async () => {
-        // Cleanup will be handled by the storage interface
-      };
-    }
+    // Storage is already created by createTestSetup
   });
 
   afterAll(async () => {
-    if (cleanup) await cleanup();
+    await cleanup();
   });
 
   beforeEach(async () => {
-    try {
-      const testAppIds = [
-        defaultAppId,
-        "test-app-checkClientTokenPermissions-1",
-        "test-app-checkClientTokenPermissions-2",
-      ];
-      for (const appId of testAppIds) {
-        await storage.bulkDelete({
-          query: { appId },
-          tag: kObjTags.clientToken,
-          deletedBy: defaultBy,
-          deletedByType: defaultByType,
-          deleteMany: true,
-          hardDelete: true,
-        });
-        await storage.bulkDelete({
-          query: { appId },
-          tag: kObjTags.permission,
-          deletedBy: defaultBy,
-          deletedByType: defaultByType,
-          deleteMany: true,
-          hardDelete: true,
-        });
-      }
-    } catch (error) {
-      // Ignore errors in cleanup
-    }
+    // Clean up before each test
+    await cleanup();
   });
 
   afterEach(async () => {
-    try {
-      const testAppIds = [
-        defaultAppId,
-        "test-app-checkClientTokenPermissions-1",
-        "test-app-checkClientTokenPermissions-2",
-      ];
-      for (const appId of testAppIds) {
-        await storage.bulkDelete({
-          query: { appId },
-          tag: kObjTags.clientToken,
-          deletedBy: defaultBy,
-          deletedByType: defaultByType,
-          deleteMany: true,
-          hardDelete: true,
-        });
-        await storage.bulkDelete({
-          query: { appId },
-          tag: kObjTags.permission,
-          deletedBy: defaultBy,
-          deletedByType: defaultByType,
-          deleteMany: true,
-          hardDelete: true,
-        });
-      }
-    } catch (error) {
-      // Ignore errors in cleanup
-    }
+    // Clean up after each test
+    await cleanup();
   });
 
   it("returns true for permissions that exist", async () => {
@@ -160,9 +88,9 @@ describe("checkClientTokenPermissions integration", () => {
     const tokenArgs = makeAddClientTokenArgs();
     const token = await addClientToken({
       args: tokenArgs,
-      by: defaultBy,
-      byType: defaultByType,
-      groupId: defaultGroupId,
+      by: by,
+      byType: byType,
+      groupId: groupId,
       storage,
     });
 
@@ -217,9 +145,9 @@ describe("checkClientTokenPermissions integration", () => {
     const tokenArgs = makeAddClientTokenArgs();
     const token = await addClientToken({
       args: tokenArgs,
-      by: defaultBy,
-      byType: defaultByType,
-      groupId: defaultGroupId,
+      by: by,
+      byType: byType,
+      groupId: groupId,
       storage,
     });
 
@@ -269,9 +197,9 @@ describe("checkClientTokenPermissions integration", () => {
     const tokenArgs = makeAddClientTokenArgs();
     const token = await addClientToken({
       args: tokenArgs,
-      by: defaultBy,
-      byType: defaultByType,
-      groupId: defaultGroupId,
+      by: by,
+      byType: byType,
+      groupId: groupId,
       storage,
     });
 
@@ -351,9 +279,9 @@ describe("checkClientTokenPermissions integration", () => {
     const tokenArgs = makeAddClientTokenArgs();
     const token = await addClientToken({
       args: tokenArgs,
-      by: defaultBy,
-      byType: defaultByType,
-      groupId: defaultGroupId,
+      by: by,
+      byType: byType,
+      groupId: groupId,
       storage,
     });
 
@@ -403,9 +331,9 @@ describe("checkClientTokenPermissions integration", () => {
     const tokenArgs = makeAddClientTokenArgs();
     const token = await addClientToken({
       args: tokenArgs,
-      by: defaultBy,
-      byType: defaultByType,
-      groupId: defaultGroupId,
+      by: by,
+      byType: byType,
+      groupId: groupId,
       storage,
     });
 

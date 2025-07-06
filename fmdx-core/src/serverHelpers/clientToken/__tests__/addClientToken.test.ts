@@ -8,128 +8,81 @@ import {
   it,
 } from "vitest";
 import type { AddClientTokenEndpointArgs } from "../../../definitions/clientToken.js";
-import { kObjTags } from "../../../definitions/obj.js";
-import { createDefaultStorage } from "../../../storage/config.js";
-import type { IObjStorage } from "../../../storage/types.js";
 import { addClientToken } from "../addClientToken.js";
-
-const defaultGroupId = "test-group";
-const defaultBy = "tester";
-const defaultByType = "user";
-const defaultAppId = "test-app";
-
-// Test counter to ensure unique names
-let testCounter = 0;
-
-function makeAddClientTokenArgs(
-  overrides: Partial<AddClientTokenEndpointArgs> = {}
-): AddClientTokenEndpointArgs {
-  testCounter++;
-  const uniqueId = `${testCounter}_${Date.now()}_${Math.random()
-    .toString(36)
-    .substr(2, 9)}`;
-  return {
-    name: `Test Token ${uniqueId}`,
-    description: "Test description",
-    appId: defaultAppId,
-    meta: { key: "value" },
-    permissions: [
-      {
-        entity: "user",
-        action: "read",
-        target: "document",
-      },
-      {
-        entity: "admin",
-        action: "write",
-        target: "settings",
-      },
-    ],
-    ...overrides,
-  };
-}
-
-// Helper function to create tokens with specific names for testing
-function makeTestTokenArgs(name: string, overrides: any = {}) {
-  testCounter++;
-  const uniqueId = `${testCounter}_${Date.now()}_${Math.random()
-    .toString(36)
-    .substr(2, 9)}`;
-  return {
-    name: `${name}_${uniqueId}`,
-    description: "Test description",
-    appId: defaultAppId,
-    meta: { key: "value" },
-    permissions: [
-      {
-        entity: "user",
-        action: "read",
-        target: "document",
-      },
-      {
-        entity: "admin",
-        action: "write",
-        target: "settings",
-      },
-    ],
-    ...overrides,
-  };
-}
+import { createTestSetup, makeTestData } from "./testUtils.js";
 
 describe("addClientToken integration", () => {
-  let storage: IObjStorage;
-  let cleanup: (() => Promise<void>) | undefined;
+  const { storage, cleanup, testData } = createTestSetup({
+    testName: "addClientToken",
+  });
+
+  const { appId, groupId, by, byType } = testData;
+
+  function makeAddClientTokenArgs(
+    overrides: Partial<AddClientTokenEndpointArgs> = {}
+  ): AddClientTokenEndpointArgs {
+    const testData = makeTestData({ testName: "token" });
+    return {
+      name: testData.tokenName,
+      description: "Test description",
+      appId,
+      meta: { key: "value" },
+      permissions: [
+        {
+          entity: "user",
+          action: "read",
+          target: "document",
+        },
+        {
+          entity: "admin",
+          action: "write",
+          target: "settings",
+        },
+      ],
+      ...overrides,
+    };
+  }
+
+  // Helper function to create tokens with specific names for testing
+  function makeTestTokenArgs(name: string, overrides: any = {}) {
+    const testData = makeTestData({ testName: "token" });
+    return {
+      name: `${name}_${testData.tokenName}`,
+      description: "Test description",
+      appId,
+      meta: { key: "value" },
+      permissions: [
+        {
+          entity: "user",
+          action: "read",
+          target: "document",
+        },
+        {
+          entity: "admin",
+          action: "write",
+          target: "settings",
+        },
+      ],
+      ...overrides,
+    };
+  }
 
   beforeAll(async () => {
-    // Test will use the default storage type from createDefaultStorage()
-    storage = createDefaultStorage();
-
-    // For MongoDB, we need to ensure the connection is ready
-    if (
-      process.env.FMDX_STORAGE_TYPE === "mongo" ||
-      !process.env.FMDX_STORAGE_TYPE
-    ) {
-      // MongoDB specific setup - we'll handle this through the storage interface
-      cleanup = async () => {
-        // Cleanup will be handled by the storage interface
-      };
-    }
+    // Storage is already created by createTestSetup
   });
 
   afterAll(async () => {
-    if (cleanup) await cleanup();
+    await cleanup();
   });
 
   beforeEach(async () => {
-    // Clean up test data before each test using hard deletes for complete isolation
-    try {
-      await storage.bulkDelete({
-        query: { appId: defaultAppId },
-        tag: kObjTags.clientToken,
-        deletedBy: defaultBy,
-        deletedByType: defaultByType,
-        deleteMany: true,
-        hardDelete: true, // Use hard delete for test cleanup
-      });
-    } catch (error) {
-      // Ignore errors in cleanup
-    }
+    // Clean up before each test
+    await cleanup();
   });
 
   afterEach(async () => {
-    // Clean up after each test using hard deletes for complete isolation
-    try {
-      await storage.bulkDelete({
-        query: { appId: defaultAppId },
-        tag: kObjTags.clientToken,
-        deletedBy: defaultBy,
-        deletedByType: defaultByType,
-        deleteMany: true,
-        hardDelete: true, // Use hard delete for test cleanup
-      });
-    } catch (error) {
-      // Ignore errors in cleanup
-    }
+    // Clean up after each test
+    await cleanup();
   });
 
   it("verifies test isolation by checking empty state", async () => {
@@ -143,9 +96,9 @@ describe("addClientToken integration", () => {
     // First token creation should succeed
     const result1 = await addClientToken({
       args,
-      by: defaultBy,
-      byType: defaultByType,
-      groupId: defaultGroupId,
+      by,
+      byType,
+      groupId,
       storage,
     });
 
@@ -156,9 +109,9 @@ describe("addClientToken integration", () => {
     await expect(
       addClientToken({
         args,
-        by: defaultBy,
-        byType: defaultByType,
-        groupId: defaultGroupId,
+        by,
+        byType,
+        groupId,
         storage,
       })
     ).rejects.toThrow("Failed to add client token");
@@ -189,9 +142,9 @@ describe("addClientToken integration", () => {
 
     const result = await addClientToken({
       args,
-      by: defaultBy,
-      byType: defaultByType,
-      groupId: defaultGroupId,
+      by,
+      byType,
+      groupId,
       storage,
     });
 
@@ -202,9 +155,9 @@ describe("addClientToken integration", () => {
     expect(result.clientToken.permissions![0].entity).toBe("user");
     expect(result.clientToken.permissions![0].action).toBe("read");
     expect(result.clientToken.permissions![0].target).toBe("document");
-    expect(result.clientToken.appId).toBe(defaultAppId);
-    expect(result.clientToken.createdBy).toBe(defaultBy);
-    expect(result.clientToken.createdByType).toBe(defaultByType);
+    expect(result.clientToken.appId).toBe(appId);
+    expect(result.clientToken.createdBy).toBe(by);
+    expect(result.clientToken.createdByType).toBe(byType);
     expect(result.clientToken.id).toBeDefined();
     expect(result.clientToken.createdAt).toBeInstanceOf(Date);
     expect(result.clientToken.updatedAt).toBeInstanceOf(Date);
@@ -220,9 +173,9 @@ describe("addClientToken integration", () => {
 
     const result = await addClientToken({
       args,
-      by: defaultBy,
-      byType: defaultByType,
-      groupId: defaultGroupId,
+      by,
+      byType,
+      groupId,
       storage,
     });
 
@@ -241,9 +194,9 @@ describe("addClientToken integration", () => {
     // First token creation should succeed
     const result1 = await addClientToken({
       args,
-      by: defaultBy,
-      byType: defaultByType,
-      groupId: defaultGroupId,
+      by: by,
+      byType: byType,
+      groupId: groupId,
       storage,
     });
 
@@ -254,9 +207,9 @@ describe("addClientToken integration", () => {
     await expect(
       addClientToken({
         args,
-        by: defaultBy,
-        byType: defaultByType,
-        groupId: defaultGroupId,
+        by: by,
+        byType: byType,
+        groupId: groupId,
         storage,
       })
     ).rejects.toThrow("Failed to add client token");
@@ -276,17 +229,17 @@ describe("addClientToken integration", () => {
     // Both tokens should succeed since they're in different apps
     const result1 = await addClientToken({
       args: args1,
-      by: defaultBy,
-      byType: defaultByType,
-      groupId: defaultGroupId,
+      by: by,
+      byType: byType,
+      groupId: groupId,
       storage,
     });
 
     const result2 = await addClientToken({
       args: args2,
-      by: defaultBy,
-      byType: defaultByType,
-      groupId: defaultGroupId,
+      by: by,
+      byType: byType,
+      groupId: groupId,
       storage,
     });
 
@@ -303,9 +256,9 @@ describe("addClientToken integration", () => {
 
     const result = await addClientToken({
       args,
-      by: defaultBy,
-      byType: defaultByType,
-      groupId: defaultGroupId,
+      by: by,
+      byType: byType,
+      groupId: groupId,
       storage,
     });
 
@@ -325,9 +278,9 @@ describe("addClientToken integration", () => {
 
     const result = await addClientToken({
       args,
-      by: defaultBy,
-      byType: defaultByType,
-      groupId: defaultGroupId,
+      by: by,
+      byType: byType,
+      groupId: groupId,
       storage,
     });
 
@@ -359,9 +312,9 @@ describe("addClientToken integration", () => {
 
     const result = await addClientToken({
       args,
-      by: defaultBy,
-      byType: defaultByType,
-      groupId: defaultGroupId,
+      by: by,
+      byType: byType,
+      groupId: groupId,
       storage,
     });
 
@@ -378,9 +331,9 @@ describe("addClientToken integration", () => {
 
     const result = await addClientToken({
       args,
-      by: defaultBy,
-      byType: defaultByType,
-      groupId: defaultGroupId,
+      by: by,
+      byType: byType,
+      groupId: groupId,
       storage,
     });
 

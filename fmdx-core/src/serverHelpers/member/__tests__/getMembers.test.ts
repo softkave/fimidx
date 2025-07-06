@@ -710,14 +710,6 @@ describe("getMembers integration", () => {
       includePermissions: false,
       storage,
     });
-    console.log(
-      "All members before filtering:",
-      allMembers.members.map((m) => ({
-        name: m.name,
-        status: m.status,
-        groupId: m.groupId,
-      }))
-    );
 
     const args = makeGetMembersArgs({
       query: {
@@ -732,15 +724,6 @@ describe("getMembers integration", () => {
       includePermissions: false,
       storage,
     });
-
-    console.log(
-      "Filtered members:",
-      result.members.map((m) => ({
-        name: m.name,
-        status: m.status,
-        groupId: m.groupId,
-      }))
-    );
 
     expect(result.members).toHaveLength(1);
     expect(result.members[0].name).toBe("Alice");

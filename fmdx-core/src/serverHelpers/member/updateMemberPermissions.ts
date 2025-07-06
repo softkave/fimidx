@@ -3,7 +3,10 @@ import { first } from "lodash-es";
 import { kOwnServerErrorCodes, OwnServerError } from "../../common/error.js";
 import type { UpdateMemberPermissionsEndpointArgs } from "../../definitions/member.js";
 import type { IObjStorage } from "../../storage/types.js";
-import { addMemberPermissions } from "./addMemberPermissions.js";
+import {
+  addMemberPermissions,
+  getOriginalMemberPermission,
+} from "./addMemberPermissions.js";
 import { getMembers } from "./getMembers.js";
 
 export async function updateMemberPermissions(params: {
@@ -38,7 +41,7 @@ export async function updateMemberPermissions(params: {
     )
   );
 
-  const { permissions: newPermissions } = await addMemberPermissions({
+  const { permissions: managedPermissions } = await addMemberPermissions({
     by,
     byType,
     groupId: member.groupId,
@@ -48,7 +51,15 @@ export async function updateMemberPermissions(params: {
     storage,
   });
 
-  member.permissions = newPermissions;
+  // Transform managed permissions back to original format
+  const originalPermissions = managedPermissions.map((permission) =>
+    getOriginalMemberPermission({
+      permission,
+      memberId: member.memberId,
+    })
+  );
+
+  member.permissions = originalPermissions;
 
   return {
     member,

@@ -5,9 +5,13 @@ import type {
   IClientTokenObjRecord,
 } from "../../definitions/clientToken.js";
 import { kObjTags } from "../../definitions/obj.js";
+import type { IPermissionAtom } from "../../definitions/permission.js";
 import type { IObjStorage } from "../../storage/types.js";
 import { setManyObjs } from "../obj/setObjs.js";
-import { addClientTokenPermissions } from "./addClientTokenPermissions.js";
+import {
+  addClientTokenPermissions,
+  getOriginalClientTokenPermission,
+} from "./addClientTokenPermissions.js";
 import { objToClientToken } from "./objToClientToken.js";
 
 export async function addClientToken(params: {
@@ -63,15 +67,26 @@ export async function addClientToken(params: {
 
   // Add permissions if provided
   if (permissions && permissions.length > 0) {
-    const { permissions: newPermissions } = await addClientTokenPermissions({
-      by,
-      byType,
-      groupId,
-      appId,
-      permissions,
-      clientTokenId: clientToken.id,
-      storage,
-    });
+    const { permissions: managedPermissions } = await addClientTokenPermissions(
+      {
+        by,
+        byType,
+        groupId,
+        appId,
+        permissions,
+        clientTokenId: clientToken.id,
+        storage,
+      }
+    );
+
+    // Transform managed permissions back to original format
+    const newPermissions: IPermissionAtom[] = managedPermissions.map(
+      (permission) =>
+        getOriginalClientTokenPermission({
+          permission,
+          clientTokenId: clientToken.id,
+        })
+    );
     clientToken.permissions = newPermissions;
   }
 

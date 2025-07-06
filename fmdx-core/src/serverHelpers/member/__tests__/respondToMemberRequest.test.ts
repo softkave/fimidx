@@ -8,111 +8,58 @@ import {
   it,
 } from "vitest";
 import { kMemberStatus } from "../../../definitions/member.js";
-import { kObjTags } from "../../../definitions/obj.js";
-import { createDefaultStorage } from "../../../storage/config.js";
-import type { IObjStorage } from "../../../storage/types.js";
 import { addMember } from "../addMember.js";
 import { getMembers } from "../getMembers.js";
 import { respondToMemberRequest } from "../respondToMemberRequest.js";
-
-const defaultAppId = "test-app-respondToMemberRequest";
-const defaultGroupId = "test-group";
-const defaultBy = "tester";
-const defaultByType = "user";
-
-// Test counter to ensure unique names
-let testCounter = 0;
-
-function makeAddMemberArgs(overrides: any = {}) {
-  testCounter++;
-  const uniqueId = `${testCounter}_${Date.now()}_${Math.random()
-    .toString(36)
-    .substr(2, 9)}`;
-  return {
-    name: `Test Member ${uniqueId}`,
-    description: "Test description",
-    appId: defaultAppId,
-    groupId: defaultGroupId,
-    email: `test${uniqueId}@example.com`,
-    memberId: `member-${uniqueId}`,
-    permissions: [],
-    ...overrides,
-  };
-}
-
-function makeRespondToMemberRequestArgs(overrides: any = {}) {
-  return {
-    appId: defaultAppId,
-    groupId: defaultGroupId,
-    requestId: "test-request-id",
-    status: kMemberStatus.accepted,
-    ...overrides,
-  };
-}
+import { createTestSetup, makeTestData } from "./testUtils.js";
 
 describe("respondToMemberRequest integration", () => {
-  let storage: IObjStorage;
-  let cleanup: (() => Promise<void>) | undefined;
+  const { storage, cleanup, testData } = createTestSetup({
+    testName: "respondToMemberRequest",
+  });
+
+  const { appId, groupId, by, byType } = testData;
+
+  function makeAddMemberArgs(overrides: any = {}) {
+    const testData = makeTestData({ testName: "member" });
+    return {
+      name: testData.name,
+      description: "Test description",
+      appId,
+      groupId,
+      email: testData.email,
+      memberId: testData.memberId,
+      permissions: [],
+      ...overrides,
+    };
+  }
+
+  function makeRespondToMemberRequestArgs(overrides: any = {}) {
+    return {
+      appId,
+      groupId,
+      requestId: "test-request-id",
+      status: kMemberStatus.accepted,
+      ...overrides,
+    };
+  }
 
   beforeAll(async () => {
-    storage = createDefaultStorage();
-
-    if (
-      process.env.FMDX_STORAGE_TYPE === "mongo" ||
-      !process.env.FMDX_STORAGE_TYPE
-    ) {
-      cleanup = async () => {
-        // Cleanup will be handled by the storage interface
-      };
-    }
+    // Storage is already created by createTestSetup
   });
 
   afterAll(async () => {
-    if (cleanup) await cleanup();
+    await cleanup();
   });
 
   beforeEach(async () => {
-    try {
-      const testAppIds = [
-        defaultAppId,
-        "test-app-respondToMemberRequest-1",
-        "test-app-respondToMemberRequest-2",
-      ];
-      for (const appId of testAppIds) {
-        await storage.bulkDelete({
-          query: { appId },
-          tag: kObjTags.member,
-          deletedBy: defaultBy,
-          deletedByType: defaultByType,
-          deleteMany: true,
-          hardDelete: true,
-        });
-      }
-    } catch (error) {
-      // Ignore errors in cleanup
-    }
+    // Clean up before each test
+    await cleanup();
   });
 
   afterEach(async () => {
-    try {
-      const testAppIds = [
-        defaultAppId,
-        "test-app-respondToMemberRequest-1",
-        "test-app-respondToMemberRequest-2",
-      ];
-      for (const appId of testAppIds) {
-        await storage.bulkDelete({
-          query: { appId },
-          tag: kObjTags.member,
-          deletedBy: defaultBy,
-          deletedByType: defaultByType,
-          deleteMany: true,
-          hardDelete: true,
-        });
-      }
-    } catch (error) {
-      // Ignore errors in cleanup
-    }
+    // Clean up after each test
+    await cleanup();
   });
 
   it("accepts a pending member request successfully", async () => {
@@ -126,8 +73,8 @@ describe("respondToMemberRequest integration", () => {
 
     const member = await addMember({
       args: memberArgs,
-      by: defaultBy,
-      byType: defaultByType,
+      by: by,
+      byType: byType,
       memberId: memberArgs.memberId,
       seed: { status: kMemberStatus.pending },
       storage,
@@ -148,8 +95,8 @@ describe("respondToMemberRequest integration", () => {
     const { members } = await getMembers({
       args: {
         query: {
-          appId: defaultAppId,
-          groupId: defaultGroupId,
+          appId,
+          groupId,
           memberId: { eq: member.member.memberId },
         },
       },
@@ -173,8 +120,8 @@ describe("respondToMemberRequest integration", () => {
 
     const member = await addMember({
       args: memberArgs,
-      by: defaultBy,
-      byType: defaultByType,
+      by: by,
+      byType: byType,
       memberId: memberArgs.memberId,
       seed: { status: kMemberStatus.pending },
       storage,
@@ -195,8 +142,8 @@ describe("respondToMemberRequest integration", () => {
     const { members } = await getMembers({
       args: {
         query: {
-          appId: defaultAppId,
-          groupId: defaultGroupId,
+          appId,
+          groupId,
           memberId: { eq: member.member.memberId },
         },
       },
@@ -233,8 +180,8 @@ describe("respondToMemberRequest integration", () => {
 
     const member = await addMember({
       args: memberArgs,
-      by: defaultBy,
-      byType: defaultByType,
+      by: by,
+      byType: byType,
       memberId: memberArgs.memberId,
       seed: { status: kMemberStatus.accepted },
       storage,
@@ -256,7 +203,7 @@ describe("respondToMemberRequest integration", () => {
   it("handles different app IDs", async () => {
     // Create a pending member in a different app
     const memberArgs = makeAddMemberArgs({
-      memberId: "test-member",
+      memberId: "test-member-respondToMemberRequest",
       appId: "different-app",
       seed: {
         status: kMemberStatus.pending,
@@ -265,8 +212,8 @@ describe("respondToMemberRequest integration", () => {
 
     const member = await addMember({
       args: memberArgs,
-      by: defaultBy,
-      byType: defaultByType,
+      by: by,
+      byType: byType,
       memberId: memberArgs.memberId,
       seed: { status: kMemberStatus.pending },
       storage,
@@ -288,7 +235,7 @@ describe("respondToMemberRequest integration", () => {
       args: {
         query: {
           appId: "different-app",
-          groupId: defaultGroupId,
+          groupId,
           memberId: { eq: member.member.memberId },
         },
       },
@@ -312,8 +259,8 @@ describe("respondToMemberRequest integration", () => {
 
     const member = await addMember({
       args: memberArgs,
-      by: defaultBy,
-      byType: defaultByType,
+      by: by,
+      byType: byType,
       memberId: memberArgs.memberId,
       seed: { status: kMemberStatus.pending },
       storage,
@@ -334,7 +281,7 @@ describe("respondToMemberRequest integration", () => {
     const { members } = await getMembers({
       args: {
         query: {
-          appId: defaultAppId,
+          appId,
           groupId: "different-group",
           memberId: { eq: member.member.memberId },
         },
@@ -358,8 +305,8 @@ describe("respondToMemberRequest integration", () => {
 
     const member = await addMember({
       args: memberArgs,
-      by: defaultBy,
-      byType: defaultByType,
+      by: by,
+      byType: byType,
       memberId: memberArgs.memberId,
       seed: { status: kMemberStatus.pending },
       storage,
@@ -383,8 +330,8 @@ describe("respondToMemberRequest integration", () => {
     const { members } = await getMembers({
       args: {
         query: {
-          appId: defaultAppId,
-          groupId: defaultGroupId,
+          appId,
+          groupId,
           memberId: { eq: member.member.memberId },
         },
       },
@@ -413,8 +360,8 @@ describe("respondToMemberRequest integration", () => {
 
     const member = await addMember({
       args: memberArgs,
-      by: defaultBy,
-      byType: defaultByType,
+      by: by,
+      byType: byType,
       memberId: memberArgs.memberId,
       seed: { status: kMemberStatus.pending },
       storage,
@@ -435,8 +382,8 @@ describe("respondToMemberRequest integration", () => {
     let { members } = await getMembers({
       args: {
         query: {
-          appId: defaultAppId,
-          groupId: defaultGroupId,
+          appId,
+          groupId,
           memberId: { eq: member.member.memberId },
         },
       },

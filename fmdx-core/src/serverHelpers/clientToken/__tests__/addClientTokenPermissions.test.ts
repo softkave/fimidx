@@ -7,135 +7,63 @@ import {
   expect,
   it,
 } from "vitest";
-import { kObjTags } from "../../../definitions/obj.js";
-import { createDefaultStorage } from "../../../storage/config.js";
-import type { IObjStorage } from "../../../storage/types.js";
 import { addClientToken } from "../addClientToken.js";
 import { addClientTokenPermissions } from "../addClientTokenPermissions.js";
-
-const defaultAppId = "test-app-addClientTokenPermissions";
-const defaultGroupId = "test-group";
-const defaultBy = "tester";
-const defaultByType = "user";
-
-// Test counter to ensure unique names
-let testCounter = 0;
-
-function makeAddClientTokenArgs(overrides: any = {}) {
-  testCounter++;
-  const uniqueId = `${testCounter}_${Date.now()}_${Math.random()
-    .toString(36)
-    .substr(2, 9)}`;
-  return {
-    name: `Test Token ${uniqueId}`,
-    description: "Test description",
-    appId: defaultAppId,
-    permissions: [],
-    ...overrides,
-  };
-}
-
-function makeAddClientTokenPermissionsArgs(overrides: any = {}) {
-  testCounter++;
-  const uniqueId = `${testCounter}_${Date.now()}_${Math.random()
-    .toString(36)
-    .substr(2, 9)}`;
-  return {
-    by: defaultBy,
-    byType: defaultByType,
-    groupId: defaultGroupId,
-    appId: defaultAppId,
-    permissions: [
-      {
-        entity: "user",
-        action: "read",
-        target: "document",
-      },
-    ],
-    clientTokenId: `token-${uniqueId}`,
-    ...overrides,
-  };
-}
+import { createTestSetup, makeTestData } from "./testUtils.js";
 
 describe("addClientTokenPermissions integration", () => {
-  let storage: IObjStorage;
-  let cleanup: (() => Promise<void>) | undefined;
+  const { storage, cleanup, testData } = createTestSetup({
+    testName: "addClientTokenPermissions",
+  });
+
+  const { appId, groupId, by, byType } = testData;
+
+  function makeAddClientTokenArgs(overrides: any = {}) {
+    const testData = makeTestData({ testName: "token" });
+    return {
+      name: testData.tokenName,
+      description: "Test description",
+      appId,
+      permissions: [],
+      ...overrides,
+    };
+  }
+
+  function makeAddClientTokenPermissionsArgs(overrides: any = {}) {
+    const testData = makeTestData({ testName: "permissions" });
+    return {
+      by,
+      byType,
+      groupId,
+      appId,
+      permissions: [
+        {
+          entity: "user",
+          action: "read",
+          target: "document",
+        },
+      ],
+      clientTokenId: `token-${testData.tokenName}`,
+      ...overrides,
+    };
+  }
 
   beforeAll(async () => {
-    storage = createDefaultStorage();
-
-    if (
-      process.env.FMDX_STORAGE_TYPE === "mongo" ||
-      !process.env.FMDX_STORAGE_TYPE
-    ) {
-      cleanup = async () => {
-        // Cleanup will be handled by the storage interface
-      };
-    }
+    // Storage is already created by createTestSetup
   });
 
   afterAll(async () => {
-    if (cleanup) await cleanup();
+    await cleanup();
   });
 
   beforeEach(async () => {
-    try {
-      const testAppIds = [
-        defaultAppId,
-        "test-app-addClientTokenPermissions-1",
-        "test-app-addClientTokenPermissions-2",
-      ];
-      for (const appId of testAppIds) {
-        await storage.bulkDelete({
-          query: { appId },
-          tag: kObjTags.clientToken,
-          deletedBy: defaultBy,
-          deletedByType: defaultByType,
-          deleteMany: true,
-          hardDelete: true,
-        });
-        await storage.bulkDelete({
-          query: { appId },
-          tag: kObjTags.permission,
-          deletedBy: defaultBy,
-          deletedByType: defaultByType,
-          deleteMany: true,
-          hardDelete: true,
-        });
-      }
-    } catch (error) {
-      // Ignore errors in cleanup
-    }
+    // Clean up before each test
+    await cleanup();
   });
 
   afterEach(async () => {
-    try {
-      const testAppIds = [
-        defaultAppId,
-        "test-app-addClientTokenPermissions-1",
-        "test-app-addClientTokenPermissions-2",
-      ];
-      for (const appId of testAppIds) {
-        await storage.bulkDelete({
-          query: { appId },
-          tag: kObjTags.clientToken,
-          deletedBy: defaultBy,
-          deletedByType: defaultByType,
-          deleteMany: true,
-          hardDelete: true,
-        });
-        await storage.bulkDelete({
-          query: { appId },
-          tag: kObjTags.permission,
-          deletedBy: defaultBy,
-          deletedByType: defaultByType,
-          deleteMany: true,
-          hardDelete: true,
-        });
-      }
-    } catch (error) {
-      // Ignore errors in cleanup
-    }
+    // Clean up after each test
+    await cleanup();
   });
 
   it("adds permissions to a client token successfully", async () => {
@@ -143,9 +71,9 @@ describe("addClientTokenPermissions integration", () => {
     const tokenArgs = makeAddClientTokenArgs();
     const token = await addClientToken({
       args: tokenArgs,
-      by: defaultBy,
-      byType: defaultByType,
-      groupId: defaultGroupId,
+      by: by,
+      byType: byType,
+      groupId: groupId,
       storage,
     });
 
@@ -179,13 +107,13 @@ describe("addClientTokenPermissions integration", () => {
     expect(permission1.meta?.__fmdx_managed_clientTokenId).toBe(
       token.clientToken.id
     );
-    expect(permission1.meta?.__fmdx_managed_groupId).toBe(defaultGroupId);
+    expect(permission1.meta?.__fmdx_managed_groupId).toBe(groupId);
 
     expect(permission2.meta).toBeDefined();
     expect(permission2.meta?.__fmdx_managed_clientTokenId).toBe(
       token.clientToken.id
     );
-    expect(permission2.meta?.__fmdx_managed_groupId).toBe(defaultGroupId);
+    expect(permission2.meta?.__fmdx_managed_groupId).toBe(groupId);
 
     // Verify the entity, action, and target are properly managed
     expect(permission1.entity).toContain("__fmdx_managed_permission_entity_");
@@ -202,9 +130,9 @@ describe("addClientTokenPermissions integration", () => {
     const tokenArgs = makeAddClientTokenArgs();
     const token = await addClientToken({
       args: tokenArgs,
-      by: defaultBy,
-      byType: defaultByType,
-      groupId: defaultGroupId,
+      by: by,
+      byType: byType,
+      groupId: groupId,
       storage,
     });
 
@@ -225,9 +153,9 @@ describe("addClientTokenPermissions integration", () => {
     const tokenArgs = makeAddClientTokenArgs();
     const token = await addClientToken({
       args: tokenArgs,
-      by: defaultBy,
-      byType: defaultByType,
-      groupId: defaultGroupId,
+      by: by,
+      byType: byType,
+      groupId: groupId,
       storage,
     });
 
@@ -253,7 +181,7 @@ describe("addClientTokenPermissions integration", () => {
     expect(permission.meta?.__fmdx_managed_clientTokenId).toBe(
       token.clientToken.id
     );
-    expect(permission.meta?.__fmdx_managed_groupId).toBe(defaultGroupId);
+    expect(permission.meta?.__fmdx_managed_groupId).toBe(groupId);
 
     // Verify the complex objects are properly managed
     expect(permission.entity).toHaveProperty(
@@ -272,18 +200,18 @@ describe("addClientTokenPermissions integration", () => {
     const token1Args = makeAddClientTokenArgs({ name: "Token 1" });
     const token1 = await addClientToken({
       args: token1Args,
-      by: defaultBy,
-      byType: defaultByType,
-      groupId: defaultGroupId,
+      by: by,
+      byType: byType,
+      groupId: groupId,
       storage,
     });
 
     const token2Args = makeAddClientTokenArgs({ name: "Token 2" });
     const token2 = await addClientToken({
       args: token2Args,
-      by: defaultBy,
-      byType: defaultByType,
-      groupId: defaultGroupId,
+      by: by,
+      byType: byType,
+      groupId: groupId,
       storage,
     });
 

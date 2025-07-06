@@ -8,50 +8,40 @@ import {
   it,
 } from "vitest";
 import type { DeleteClientTokensEndpointArgs } from "../../../definitions/clientToken.js";
-import { kObjTags } from "../../../definitions/obj.js";
-import { createDefaultStorage } from "../../../storage/config.js";
-import type { IObjStorage } from "../../../storage/types.js";
 import { addClientToken } from "../addClientToken.js";
 import { deleteClientTokens } from "../deleteClientTokens.js";
 import { getClientTokens } from "../getClientTokens.js";
-
-const defaultGroupId = "test-group";
-const defaultBy = "tester";
-const defaultByType = "user";
-const defaultAppId = "test-app";
-
-// Test counter to ensure unique names
-let testCounter = 0;
-
-function makeAddClientTokenArgs(overrides: any = {}) {
-  testCounter++;
-  const uniqueId = `${testCounter}_${Date.now()}_${Math.random()
-    .toString(36)
-    .substr(2, 9)}`;
-  return {
-    name: `Test Token ${uniqueId}`,
-    description: "Test description",
-    appId: defaultAppId,
-    meta: { key: "value" },
-    permissions: [
-      {
-        entity: "user",
-        action: "read",
-        target: "document",
-      },
-      {
-        entity: "admin",
-        action: "write",
-        target: "settings",
-      },
-    ],
-    ...overrides,
-  };
-}
+import { createTestSetup, makeTestData } from "./testUtils.js";
 
 describe("deleteClientTokens integration", () => {
-  let storage: IObjStorage;
-  let cleanup: (() => Promise<void>) | undefined;
+  const { storage, cleanup, testData } = createTestSetup({
+    testName: "deleteClientTokens",
+  });
+
+  const { appId, groupId, by, byType } = testData;
+
+  function makeAddClientTokenArgs(overrides: any = {}) {
+    const testData = makeTestData({ testName: "token" });
+    return {
+      name: testData.tokenName,
+      description: "Test description",
+      meta: { key: "value" },
+      permissions: [
+        {
+          entity: "user",
+          action: "read",
+          target: "document",
+        },
+        {
+          entity: "admin",
+          action: "write",
+          target: "settings",
+        },
+      ],
+      appId: overrides.appId || appId,
+      ...overrides,
+    };
+  }
 
   async function createTestToken(name: string, overrides: any = {}) {
     const args = makeAddClientTokenArgs({
@@ -61,9 +51,9 @@ describe("deleteClientTokens integration", () => {
 
     const result = await addClientToken({
       args,
-      by: defaultBy,
-      byType: defaultByType,
-      groupId: defaultGroupId,
+      by,
+      byType,
+      groupId,
       storage,
     });
 
@@ -71,52 +61,21 @@ describe("deleteClientTokens integration", () => {
   }
 
   beforeAll(async () => {
-    storage = createDefaultStorage();
-
-    if (
-      process.env.FMDX_STORAGE_TYPE === "mongo" ||
-      !process.env.FMDX_STORAGE_TYPE
-    ) {
-      cleanup = async () => {
-        // Cleanup will be handled by the storage interface
-      };
-    }
+    // Storage is already created by createTestSetup
   });
 
   afterAll(async () => {
-    if (cleanup) await cleanup();
+    await cleanup();
   });
 
   beforeEach(async () => {
-    // Clean up test data before each test
-    try {
-      await storage.bulkDelete({
-        query: { appId: defaultAppId },
-        tag: kObjTags.clientToken,
-        deletedBy: defaultBy,
-        deletedByType: defaultByType,
-        deleteMany: true,
-        hardDelete: true,
-      });
-    } catch (error) {
-      // Ignore errors in cleanup
-    }
+    // Clean up before each test
+    await cleanup();
   });
 
   afterEach(async () => {
     // Clean up after each test
-    try {
-      await storage.bulkDelete({
-        query: { appId: defaultAppId },
-        tag: kObjTags.clientToken,
-        deletedBy: defaultBy,
-        deletedByType: defaultByType,
-        deleteMany: true,
-        hardDelete: true,
-      });
-    } catch (error) {
-      // Ignore errors in cleanup
-    }
+    await cleanup();
   });
 
   it("deletes a single token by name", async () => {
@@ -125,7 +84,7 @@ describe("deleteClientTokens integration", () => {
 
     const args: DeleteClientTokensEndpointArgs = {
       query: {
-        appId: defaultAppId,
+        appId: appId,
         name: {
           eq: "Token to Delete",
         },
@@ -135,8 +94,8 @@ describe("deleteClientTokens integration", () => {
 
     await deleteClientTokens({
       ...args,
-      by: defaultBy,
-      byType: defaultByType,
+      by: by,
+      byType: byType,
       storage,
     });
 
@@ -144,7 +103,7 @@ describe("deleteClientTokens integration", () => {
     const result = await getClientTokens({
       args: {
         query: {
-          appId: defaultAppId,
+          appId: appId,
         },
       },
       storage,
@@ -161,7 +120,7 @@ describe("deleteClientTokens integration", () => {
 
     const args: DeleteClientTokensEndpointArgs = {
       query: {
-        appId: defaultAppId,
+        appId: appId,
         meta: [
           {
             op: "eq",
@@ -175,8 +134,8 @@ describe("deleteClientTokens integration", () => {
 
     await deleteClientTokens({
       ...args,
-      by: defaultBy,
-      byType: defaultByType,
+      by: by,
+      byType: byType,
       storage,
     });
 
@@ -184,7 +143,7 @@ describe("deleteClientTokens integration", () => {
     const result = await getClientTokens({
       args: {
         query: {
-          appId: defaultAppId,
+          appId: appId,
         },
       },
       storage,
@@ -201,7 +160,7 @@ describe("deleteClientTokens integration", () => {
 
     const args: DeleteClientTokensEndpointArgs = {
       query: {
-        appId: defaultAppId,
+        appId: appId,
         meta: [
           {
             op: "eq",
@@ -215,8 +174,8 @@ describe("deleteClientTokens integration", () => {
 
     await deleteClientTokens({
       ...args,
-      by: defaultBy,
-      byType: defaultByType,
+      by: by,
+      byType: byType,
       storage,
     });
 
@@ -224,7 +183,7 @@ describe("deleteClientTokens integration", () => {
     const result = await getClientTokens({
       args: {
         query: {
-          appId: defaultAppId,
+          appId: appId,
         },
       },
       storage,
@@ -239,7 +198,7 @@ describe("deleteClientTokens integration", () => {
 
     const args: DeleteClientTokensEndpointArgs = {
       query: {
-        appId: defaultAppId,
+        appId: appId,
         id: {
           eq: token.id,
         },
@@ -249,8 +208,8 @@ describe("deleteClientTokens integration", () => {
 
     await deleteClientTokens({
       ...args,
-      by: defaultBy,
-      byType: defaultByType,
+      by: by,
+      byType: byType,
       storage,
     });
 
@@ -258,7 +217,7 @@ describe("deleteClientTokens integration", () => {
     const result = await getClientTokens({
       args: {
         query: {
-          appId: defaultAppId,
+          appId: appId,
         },
       },
       storage,
@@ -274,9 +233,9 @@ describe("deleteClientTokens integration", () => {
 
     const args: DeleteClientTokensEndpointArgs = {
       query: {
-        appId: defaultAppId,
+        appId: appId,
         createdBy: {
-          eq: defaultBy,
+          eq: by,
         },
       },
       deleteMany: true,
@@ -284,8 +243,8 @@ describe("deleteClientTokens integration", () => {
 
     await deleteClientTokens({
       ...args,
-      by: defaultBy,
-      byType: defaultByType,
+      by: by,
+      byType: byType,
       storage,
     });
 
@@ -293,7 +252,7 @@ describe("deleteClientTokens integration", () => {
     const result = await getClientTokens({
       args: {
         query: {
-          appId: defaultAppId,
+          appId: appId,
         },
       },
       storage,
@@ -316,7 +275,7 @@ describe("deleteClientTokens integration", () => {
 
     const args: DeleteClientTokensEndpointArgs = {
       query: {
-        appId: defaultAppId,
+        appId: appId,
         meta: [
           {
             op: "eq",
@@ -335,8 +294,8 @@ describe("deleteClientTokens integration", () => {
 
     await deleteClientTokens({
       ...args,
-      by: defaultBy,
-      byType: defaultByType,
+      by: by,
+      byType: byType,
       storage,
     });
 
@@ -344,7 +303,7 @@ describe("deleteClientTokens integration", () => {
     const result = await getClientTokens({
       args: {
         query: {
-          appId: defaultAppId,
+          appId: appId,
         },
       },
       storage,
@@ -360,14 +319,18 @@ describe("deleteClientTokens integration", () => {
 
   it("deletes tokens across different apps", async () => {
     // Create tokens in different apps
-    await createTestToken("Token 1", { appId: "app1" });
-    await createTestToken("Token 2", { appId: "app2" });
+    await createTestToken("Token 1 - deleteClientTokens - across apps", {
+      appId: "app1 - deleteClientTokens - across apps",
+    });
+    await createTestToken("Token 2 - deleteClientTokens - across apps", {
+      appId: "app2 - deleteClientTokens - across apps",
+    });
 
     const args: DeleteClientTokensEndpointArgs = {
       query: {
-        appId: "app1",
+        appId: "app1 - deleteClientTokens - across apps",
         name: {
-          eq: "Token 1",
+          eq: "Token 1 - deleteClientTokens - across apps",
         },
       },
       deleteMany: false,
@@ -375,8 +338,8 @@ describe("deleteClientTokens integration", () => {
 
     await deleteClientTokens({
       ...args,
-      by: defaultBy,
-      byType: defaultByType,
+      by: by,
+      byType: byType,
       storage,
     });
 
@@ -384,7 +347,7 @@ describe("deleteClientTokens integration", () => {
     const result1 = await getClientTokens({
       args: {
         query: {
-          appId: "app1",
+          appId: "app1 - deleteClientTokens - across apps",
         },
       },
       storage,
@@ -393,7 +356,7 @@ describe("deleteClientTokens integration", () => {
     const result2 = await getClientTokens({
       args: {
         query: {
-          appId: "app2",
+          appId: "app2 - deleteClientTokens - across apps",
         },
       },
       storage,
@@ -411,7 +374,7 @@ describe("deleteClientTokens integration", () => {
 
     const args: DeleteClientTokensEndpointArgs = {
       query: {
-        appId: defaultAppId,
+        appId: appId,
         name: {
           in: ["Admin Token 1", "Admin Token 2"],
         },
@@ -421,8 +384,8 @@ describe("deleteClientTokens integration", () => {
 
     await deleteClientTokens({
       ...args,
-      by: defaultBy,
-      byType: defaultByType,
+      by: by,
+      byType: byType,
       storage,
     });
 
@@ -430,7 +393,7 @@ describe("deleteClientTokens integration", () => {
     const result = await getClientTokens({
       args: {
         query: {
-          appId: defaultAppId,
+          appId: appId,
         },
       },
       storage,
@@ -468,16 +431,6 @@ describe("deleteClientTokens integration", () => {
     await createTestToken("Token 3", {
       permissions: [
         {
-          entity: "user",
-          action: "read",
-          target: "document",
-        },
-        {
-          entity: "admin",
-          action: "write",
-          target: "settings",
-        },
-        {
           entity: "admin",
           action: "delete",
           target: "document",
@@ -487,8 +440,8 @@ describe("deleteClientTokens integration", () => {
 
     const args: DeleteClientTokensEndpointArgs = {
       query: {
-        appId: defaultAppId,
-        permissions: {
+        appId: appId,
+        permissionAction: {
           in: ["read", "write"],
         },
       },
@@ -497,8 +450,8 @@ describe("deleteClientTokens integration", () => {
 
     await deleteClientTokens({
       ...args,
-      by: defaultBy,
-      byType: defaultByType,
+      by: by,
+      byType: byType,
       storage,
     });
 
@@ -506,17 +459,21 @@ describe("deleteClientTokens integration", () => {
     const result = await getClientTokens({
       args: {
         query: {
-          appId: defaultAppId,
+          appId: appId,
         },
       },
+      includePermissions: true,
       storage,
     });
 
     expect(result.clientTokens).toHaveLength(1);
+    // Check that the remaining token has only the delete permission
     expect(result.clientTokens[0].permissions).toEqual([
-      "read",
-      "write",
-      "delete",
+      {
+        entity: "admin",
+        action: "delete",
+        target: "document",
+      },
     ]);
   });
 
@@ -531,9 +488,9 @@ describe("deleteClientTokens integration", () => {
 
     const args: DeleteClientTokensEndpointArgs = {
       query: {
-        appId: defaultAppId,
+        appId: appId,
         createdAt: {
-          eq: targetTime.getTime(),
+          eq: targetTime.toISOString(),
         },
       },
       deleteMany: true,
@@ -541,8 +498,8 @@ describe("deleteClientTokens integration", () => {
 
     await deleteClientTokens({
       ...args,
-      by: defaultBy,
-      byType: defaultByType,
+      by: by,
+      byType: byType,
       storage,
     });
 
@@ -550,7 +507,7 @@ describe("deleteClientTokens integration", () => {
     const result = await getClientTokens({
       args: {
         query: {
-          appId: defaultAppId,
+          appId: appId,
         },
       },
       storage,
@@ -563,7 +520,7 @@ describe("deleteClientTokens integration", () => {
   it("handles deletion of non-existent tokens gracefully", async () => {
     const args: DeleteClientTokensEndpointArgs = {
       query: {
-        appId: defaultAppId,
+        appId: appId,
         name: {
           eq: "Non-existent Token",
         },
@@ -575,8 +532,8 @@ describe("deleteClientTokens integration", () => {
     await expect(
       deleteClientTokens({
         ...args,
-        by: defaultBy,
-        byType: defaultByType,
+        by: by,
+        byType: byType,
         storage,
       })
     ).resolves.not.toThrow();

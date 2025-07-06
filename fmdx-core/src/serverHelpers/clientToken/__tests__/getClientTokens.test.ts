@@ -12,48 +12,39 @@ import {
 import { db, objFields as objFieldsTable } from "../../../db/fmdx.sqlite.js";
 import type { GetClientTokensEndpointArgs } from "../../../definitions/clientToken.js";
 import { kObjTags } from "../../../definitions/obj.js";
-import { createDefaultStorage } from "../../../storage/config.js";
-import type { IObjStorage } from "../../../storage/types.js";
 import { addClientToken } from "../addClientToken.js";
 import { getClientTokens } from "../getClientTokens.js";
-
-const defaultGroupId = "test-group";
-const defaultBy = "tester";
-const defaultByType = "user";
-const defaultAppId = "test-app";
-
-// Test counter to ensure unique names
-let testCounter = 0;
-
-function makeAddClientTokenArgs(overrides: any = {}) {
-  testCounter++;
-  const uniqueId = `${testCounter}_${Date.now()}_${Math.random()
-    .toString(36)
-    .substr(2, 9)}`;
-  return {
-    name: `Test Token ${uniqueId}`,
-    description: "Test description",
-    appId: defaultAppId,
-    meta: { key: "value" },
-    permissions: [
-      {
-        entity: "user",
-        action: "read",
-        target: "document",
-      },
-      {
-        entity: "admin",
-        action: "write",
-        target: "settings",
-      },
-    ],
-    ...overrides,
-  };
-}
+import { createTestSetup, makeTestData } from "./testUtils.js";
 
 describe("getClientTokens integration", () => {
-  let storage: IObjStorage;
-  let cleanup: (() => Promise<void>) | undefined;
+  const { storage, cleanup, testData } = createTestSetup({
+    testName: "getClientTokens",
+  });
+
+  const { appId, groupId, by, byType } = testData;
+
+  function makeAddClientTokenArgs(overrides: any = {}) {
+    const testData = makeTestData({ testName: "token" });
+    return {
+      name: testData.tokenName,
+      description: "Test description",
+      meta: { key: "value" },
+      permissions: [
+        {
+          entity: "user",
+          action: "read",
+          target: "document",
+        },
+        {
+          entity: "admin",
+          action: "write",
+          target: "settings",
+        },
+      ],
+      appId: overrides.appId || appId,
+      ...overrides,
+    };
+  }
 
   async function createTestToken(name: string, overrides: any = {}) {
     const args = makeAddClientTokenArgs({
@@ -63,9 +54,9 @@ describe("getClientTokens integration", () => {
 
     const result = await addClientToken({
       args,
-      by: defaultBy,
-      byType: defaultByType,
-      groupId: defaultGroupId,
+      by,
+      byType,
+      groupId,
       storage,
     });
 
@@ -73,40 +64,24 @@ describe("getClientTokens integration", () => {
   }
 
   beforeAll(async () => {
-    storage = createDefaultStorage();
-
-    if (
-      process.env.FMDX_STORAGE_TYPE === "mongo" ||
-      !process.env.FMDX_STORAGE_TYPE
-    ) {
-      cleanup = async () => {
-        // Cleanup will be handled by the storage interface
-      };
-    }
+    // Storage is already created by createTestSetup
   });
 
   afterAll(async () => {
-    if (cleanup) await cleanup();
+    await cleanup();
   });
 
   beforeEach(async () => {
-    // Clean up test data before each test
-    try {
-      await storage.bulkDelete({
-        query: { appId: defaultAppId },
-        tag: kObjTags.clientToken,
-        deletedBy: defaultBy,
-        deletedByType: defaultByType,
-        deleteMany: true,
-        hardDelete: true,
-      });
+    // Clean up before each test
+    await cleanup();
 
-      // Clean up objFields for test app
+    // Clean up objFields for test app
+    try {
       await db
         .delete(objFieldsTable)
         .where(
           and(
-            eq(objFieldsTable.appId, defaultAppId),
+            eq(objFieldsTable.appId, appId),
             eq(objFieldsTable.tag, kObjTags.clientToken)
           )
         );
@@ -117,22 +92,15 @@ describe("getClientTokens integration", () => {
 
   afterEach(async () => {
     // Clean up after each test
-    try {
-      await storage.bulkDelete({
-        query: { appId: defaultAppId },
-        tag: kObjTags.clientToken,
-        deletedBy: defaultBy,
-        deletedByType: defaultByType,
-        deleteMany: true,
-        hardDelete: true,
-      });
+    await cleanup();
 
-      // Clean up objFields for test app
+    // Clean up objFields for test app
+    try {
       await db
         .delete(objFieldsTable)
         .where(
           and(
-            eq(objFieldsTable.appId, defaultAppId),
+            eq(objFieldsTable.appId, appId),
             eq(objFieldsTable.tag, kObjTags.clientToken)
           )
         );
@@ -144,7 +112,7 @@ describe("getClientTokens integration", () => {
   it("returns empty array when no tokens exist", async () => {
     const args: GetClientTokensEndpointArgs = {
       query: {
-        appId: defaultAppId,
+        appId: appId,
       },
     };
 
@@ -167,7 +135,7 @@ describe("getClientTokens integration", () => {
 
     const args: GetClientTokensEndpointArgs = {
       query: {
-        appId: defaultAppId,
+        appId: appId,
       },
     };
 
@@ -194,7 +162,7 @@ describe("getClientTokens integration", () => {
 
     const args: GetClientTokensEndpointArgs = {
       query: {
-        appId: defaultAppId,
+        appId: appId,
         name: {
           eq: "Apple Token",
         },
@@ -218,7 +186,7 @@ describe("getClientTokens integration", () => {
 
     const args: GetClientTokensEndpointArgs = {
       query: {
-        appId: defaultAppId,
+        appId: appId,
         name: {
           in: ["Apple Token", "Banana Token"],
         },
@@ -246,7 +214,7 @@ describe("getClientTokens integration", () => {
 
     const args: GetClientTokensEndpointArgs = {
       query: {
-        appId: defaultAppId,
+        appId: appId,
         meta: [
           {
             op: "eq",
@@ -268,6 +236,221 @@ describe("getClientTokens integration", () => {
     );
   });
 
+  it("filters tokens by permission action", async () => {
+    // Create test tokens with different permissions
+    await createTestToken("Token 1", {
+      permissions: [
+        {
+          entity: "user",
+          action: "read",
+          target: "document",
+        },
+        {
+          entity: "admin",
+          action: "write",
+          target: "settings",
+        },
+      ],
+    });
+    await createTestToken("Token 2", {
+      permissions: [
+        {
+          entity: "user",
+          action: "read",
+          target: "document",
+        },
+      ],
+    });
+    await createTestToken("Token 3", {
+      permissions: [
+        {
+          entity: "admin",
+          action: "delete",
+          target: "document",
+        },
+      ],
+    });
+
+    const args: GetClientTokensEndpointArgs = {
+      query: {
+        appId: appId,
+        permissionAction: {
+          in: ["read", "write"],
+        },
+      },
+    };
+
+    const result = await getClientTokens({
+      args,
+      storage,
+    });
+
+    expect(result.clientTokens).toHaveLength(2);
+    // Verify that the returned tokens have read or write permissions
+    expect(
+      result.clientTokens.every((token) =>
+        token.permissions?.some((permission) =>
+          ["read", "write"].includes(permission.action as string)
+        )
+      )
+    ).toBe(true);
+  });
+
+  it("filters tokens by permission entity", async () => {
+    // Create test tokens with different permissions
+    await createTestToken("Token 1", {
+      permissions: [
+        {
+          entity: "user",
+          action: "read",
+          target: "document",
+        },
+      ],
+    });
+    await createTestToken("Token 2", {
+      permissions: [
+        {
+          entity: "admin",
+          action: "write",
+          target: "settings",
+        },
+      ],
+    });
+    await createTestToken("Token 3", {
+      permissions: [
+        {
+          entity: "guest",
+          action: "read",
+          target: "public",
+        },
+      ],
+    });
+
+    const args: GetClientTokensEndpointArgs = {
+      query: {
+        appId: appId,
+        permissionEntity: {
+          eq: "user",
+        },
+      },
+    };
+
+    const result = await getClientTokens({
+      args,
+      storage,
+    });
+
+    expect(result.clientTokens).toHaveLength(1);
+    expect(result.clientTokens[0].permissions?.[0].entity).toBe("user");
+  });
+
+  it("filters tokens by permission target", async () => {
+    // Create test tokens with different permissions
+    await createTestToken("Token 1", {
+      permissions: [
+        {
+          entity: "user",
+          action: "read",
+          target: "document",
+        },
+      ],
+    });
+    await createTestToken("Token 2", {
+      permissions: [
+        {
+          entity: "admin",
+          action: "write",
+          target: "settings",
+        },
+      ],
+    });
+    await createTestToken("Token 3", {
+      permissions: [
+        {
+          entity: "guest",
+          action: "read",
+          target: "public",
+        },
+      ],
+    });
+
+    const args: GetClientTokensEndpointArgs = {
+      query: {
+        appId: appId,
+        permissionTarget: {
+          in: ["document", "settings"],
+        },
+      },
+    };
+
+    const result = await getClientTokens({
+      args,
+      storage,
+    });
+
+    expect(result.clientTokens).toHaveLength(2);
+    // Verify that the returned tokens have document or settings as targets
+    expect(
+      result.clientTokens.every((token) =>
+        token.permissions?.some((permission) =>
+          ["document", "settings"].includes(permission.target as string)
+        )
+      )
+    ).toBe(true);
+  });
+
+  it("filters tokens by multiple permission criteria", async () => {
+    // Create test tokens with different permissions
+    await createTestToken("Token 1", {
+      permissions: [
+        {
+          entity: "user",
+          action: "read",
+          target: "document",
+        },
+      ],
+    });
+    await createTestToken("Token 2", {
+      permissions: [
+        {
+          entity: "admin",
+          action: "write",
+          target: "settings",
+        },
+      ],
+    });
+    await createTestToken("Token 3", {
+      permissions: [
+        {
+          entity: "user",
+          action: "write",
+          target: "document",
+        },
+      ],
+    });
+
+    const args: GetClientTokensEndpointArgs = {
+      query: {
+        appId: appId,
+        permissionEntity: {
+          eq: "user",
+        },
+        permissionAction: {
+          eq: "read",
+        },
+      },
+    };
+
+    const result = await getClientTokens({
+      args,
+      storage,
+    });
+
+    expect(result.clientTokens).toHaveLength(1);
+    expect(result.clientTokens[0].permissions?.[0].entity).toBe("user");
+    expect(result.clientTokens[0].permissions?.[0].action).toBe("read");
+  });
+
   it("handles pagination correctly", async () => {
     // Create 5 test tokens
     for (let i = 1; i <= 5; i++) {
@@ -276,7 +459,7 @@ describe("getClientTokens integration", () => {
 
     const args: GetClientTokensEndpointArgs = {
       query: {
-        appId: defaultAppId,
+        appId: appId,
       },
       page: 1,
       limit: 2,
@@ -301,7 +484,7 @@ describe("getClientTokens integration", () => {
 
     const args: GetClientTokensEndpointArgs = {
       query: {
-        appId: defaultAppId,
+        appId: appId,
       },
       page: 2,
       limit: 2,
@@ -326,7 +509,7 @@ describe("getClientTokens integration", () => {
 
     const args: GetClientTokensEndpointArgs = {
       query: {
-        appId: defaultAppId,
+        appId: appId,
       },
       page: 3,
       limit: 2,
@@ -346,8 +529,8 @@ describe("getClientTokens integration", () => {
   it("sorts tokens by name ascending", async () => {
     // Insert the name field definition for sorting
     await insertNameFieldForSorting({
-      appId: defaultAppId,
-      groupId: defaultGroupId,
+      appId: appId,
+      groupId: groupId,
       tag: kObjTags.clientToken,
     });
 
@@ -358,7 +541,7 @@ describe("getClientTokens integration", () => {
 
     const args: GetClientTokensEndpointArgs = {
       query: {
-        appId: defaultAppId,
+        appId: appId,
       },
       sort: [
         {
@@ -382,8 +565,8 @@ describe("getClientTokens integration", () => {
   it("sorts tokens by name descending", async () => {
     // Insert the name field definition for sorting
     await insertNameFieldForSorting({
-      appId: defaultAppId,
-      groupId: defaultGroupId,
+      appId: appId,
+      groupId: groupId,
       tag: kObjTags.clientToken,
     });
 
@@ -394,7 +577,7 @@ describe("getClientTokens integration", () => {
 
     const args: GetClientTokensEndpointArgs = {
       query: {
-        appId: defaultAppId,
+        appId: appId,
       },
       sort: [
         {
@@ -422,9 +605,9 @@ describe("getClientTokens integration", () => {
 
     const args: GetClientTokensEndpointArgs = {
       query: {
-        appId: defaultAppId,
+        appId: appId,
         createdBy: {
-          eq: defaultBy,
+          eq: by,
         },
       },
     };
@@ -435,9 +618,7 @@ describe("getClientTokens integration", () => {
     });
 
     expect(result.clientTokens).toHaveLength(2);
-    expect(result.clientTokens.every((t) => t.createdBy === defaultBy)).toBe(
-      true
-    );
+    expect(result.clientTokens.every((t) => t.createdBy === by)).toBe(true);
   });
 
   it("filters tokens by multiple criteria", async () => {
@@ -448,7 +629,7 @@ describe("getClientTokens integration", () => {
 
     const args: GetClientTokensEndpointArgs = {
       query: {
-        appId: defaultAppId,
+        appId: appId,
         name: {
           in: ["Admin Token", "Admin Token 2"],
         },
@@ -483,7 +664,7 @@ describe("getClientTokens integration", () => {
 
     const args: GetClientTokensEndpointArgs = {
       query: {
-        appId: defaultAppId,
+        appId: appId,
       },
     };
 
@@ -498,13 +679,19 @@ describe("getClientTokens integration", () => {
 
   it("filters tokens by appId correctly", async () => {
     // Create tokens in different apps
-    await createTestToken("Token 1", { appId: "app1" });
-    await createTestToken("Token 2", { appId: "app2" });
-    await createTestToken("Token 3", { appId: "app1" });
+    await createTestToken("Token 1 - getClientTokens", {
+      appId: "app1 - getClientTokens",
+    });
+    await createTestToken("Token 2 - getClientTokens", {
+      appId: "app2 - getClientTokens",
+    });
+    await createTestToken("Token 3 - getClientTokens", {
+      appId: "app1 - getClientTokens",
+    });
 
     const args: GetClientTokensEndpointArgs = {
       query: {
-        appId: "app1",
+        appId: "app1 - getClientTokens",
       },
     };
 
@@ -514,7 +701,9 @@ describe("getClientTokens integration", () => {
     });
 
     expect(result.clientTokens).toHaveLength(2);
-    expect(result.clientTokens.every((t) => t.appId === "app1")).toBe(true);
+    expect(
+      result.clientTokens.every((t) => t.appId === "app1 - getClientTokens")
+    ).toBe(true);
   });
 });
 

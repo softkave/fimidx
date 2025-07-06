@@ -3,7 +3,10 @@ import { first } from "lodash-es";
 import { kOwnServerErrorCodes, OwnServerError } from "../../common/error.js";
 import type { UpdateClientTokenPermissionsEndpointArgs } from "../../definitions/clientToken.js";
 import type { IObjStorage } from "../../storage/types.js";
-import { addClientTokenPermissions } from "./addClientTokenPermissions.js";
+import {
+  addClientTokenPermissions,
+  getOriginalClientTokenPermission,
+} from "./addClientTokenPermissions.js";
 import { getClientTokens } from "./getClientTokens.js";
 
 export async function updateClientTokenPermissions(params: {
@@ -47,7 +50,15 @@ export async function updateClientTokenPermissions(params: {
     storage,
   });
 
-  clientToken.permissions = newPermissions;
+  // Transform managed permissions back to original format
+  const originalPermissions = newPermissions.map((permission) =>
+    getOriginalClientTokenPermission({
+      permission,
+      clientTokenId: clientToken.id,
+    })
+  );
+
+  clientToken.permissions = originalPermissions;
 
   return {
     clientToken,
