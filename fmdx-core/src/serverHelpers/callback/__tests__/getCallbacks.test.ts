@@ -243,9 +243,15 @@ describe("getCallbacks integration", () => {
   });
 
   it("filters callbacks by name", async () => {
-    // Create test callbacks
+    // Create test callbacks with exact names (no unique suffixes)
     await addCallback({
-      args: makeTestCallbackArgs("Alpha Callback"),
+      args: {
+        appId: defaultAppId,
+        url: "https://example.com/webhook",
+        method: "POST",
+        name: "Alpha Callback",
+        description: "Test description",
+      },
       appId: defaultAppId,
       groupId: defaultGroupId,
       by: defaultBy,
@@ -254,7 +260,13 @@ describe("getCallbacks integration", () => {
     });
 
     await addCallback({
-      args: makeTestCallbackArgs("Beta Callback"),
+      args: {
+        appId: defaultAppId,
+        url: "https://example.com/webhook",
+        method: "POST",
+        name: "Beta Callback",
+        description: "Test description",
+      },
       appId: defaultAppId,
       groupId: defaultGroupId,
       by: defaultBy,

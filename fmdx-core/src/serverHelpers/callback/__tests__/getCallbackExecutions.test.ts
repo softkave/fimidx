@@ -283,7 +283,7 @@ describe("getCallbackExecutions integration", () => {
     expect(result3.hasMore).toBe(false);
   });
 
-  it("sorts executions by executedAt when sort is provided", async () => {
+  it("sorts executions by createdAt when sort is provided", async () => {
     // Create a callback
     const callback = await addCallback({
       args: makeAddCallbackArgs(),
@@ -299,32 +299,7 @@ describe("getCallbackExecutions integration", () => {
     const executedAt2 = new Date(Date.now() - 1000);
     const executedAt3 = new Date();
 
-    await addCallbackExecution({
-      appId: defaultAppId,
-      groupId: defaultGroupId,
-      callbackId: callback.id,
-      error: null,
-      responseHeaders: { "content-type": "application/json" },
-      responseBody: '{"execution": 1}',
-      responseStatusCode: 200,
-      executedAt: executedAt2,
-      clientTokenId: defaultClientTokenId,
-      storage,
-    });
-
-    await addCallbackExecution({
-      appId: defaultAppId,
-      groupId: defaultGroupId,
-      callbackId: callback.id,
-      error: null,
-      responseHeaders: { "content-type": "application/json" },
-      responseBody: '{"execution": 2}',
-      responseStatusCode: 200,
-      executedAt: executedAt1,
-      clientTokenId: defaultClientTokenId,
-      storage,
-    });
-
+    // Create executions in reverse order to test sorting
     await addCallbackExecution({
       appId: defaultAppId,
       groupId: defaultGroupId,
@@ -338,35 +313,69 @@ describe("getCallbackExecutions integration", () => {
       storage,
     });
 
-    // Test ascending sort
+    // Add a small delay to ensure different createdAt timestamps
+    await new Promise((resolve) => setTimeout(resolve, 10));
+
+    await addCallbackExecution({
+      appId: defaultAppId,
+      groupId: defaultGroupId,
+      callbackId: callback.id,
+      error: null,
+      responseHeaders: { "content-type": "application/json" },
+      responseBody: '{"execution": 2}',
+      responseStatusCode: 200,
+      executedAt: executedAt2,
+      clientTokenId: defaultClientTokenId,
+      storage,
+    });
+
+    // Add a small delay to ensure different createdAt timestamps
+    await new Promise((resolve) => setTimeout(resolve, 10));
+
+    await addCallbackExecution({
+      appId: defaultAppId,
+      groupId: defaultGroupId,
+      callbackId: callback.id,
+      error: null,
+      responseHeaders: { "content-type": "application/json" },
+      responseBody: '{"execution": 1}',
+      responseStatusCode: 200,
+      executedAt: executedAt1,
+      clientTokenId: defaultClientTokenId,
+      storage,
+    });
+
+    // Test ascending sort by createdAt (should be oldest first)
     const resultAsc = await getCallbackExecutions({
       args: {
         callbackId: callback.id,
-        sort: [{ field: "executedAt", direction: "asc" }],
+        sort: [{ field: "createdAt", direction: "asc" }],
       },
       appId: defaultAppId,
       storage,
     });
 
     expect(resultAsc.executions).toHaveLength(3);
-    expect(resultAsc.executions[0].executedAt).toEqual(executedAt1);
-    expect(resultAsc.executions[1].executedAt).toEqual(executedAt2);
-    expect(resultAsc.executions[2].executedAt).toEqual(executedAt3);
+    // Should be sorted by createdAt ASC, so execution 3 (created first) should be first
+    expect(resultAsc.executions[0].responseBodyJson).toEqual({ execution: 3 });
+    expect(resultAsc.executions[1].responseBodyJson).toEqual({ execution: 2 });
+    expect(resultAsc.executions[2].responseBodyJson).toEqual({ execution: 1 });
 
-    // Test descending sort
+    // Test descending sort by createdAt (should be newest first)
     const resultDesc = await getCallbackExecutions({
       args: {
         callbackId: callback.id,
-        sort: [{ field: "executedAt", direction: "desc" }],
+        sort: [{ field: "createdAt", direction: "desc" }],
       },
       appId: defaultAppId,
       storage,
     });
 
     expect(resultDesc.executions).toHaveLength(3);
-    expect(resultDesc.executions[0].executedAt).toEqual(executedAt3);
-    expect(resultDesc.executions[1].executedAt).toEqual(executedAt2);
-    expect(resultDesc.executions[2].executedAt).toEqual(executedAt1);
+    // Should be sorted by createdAt DESC, so execution 1 (created last) should be first
+    expect(resultDesc.executions[0].responseBodyJson).toEqual({ execution: 1 });
+    expect(resultDesc.executions[1].responseBodyJson).toEqual({ execution: 2 });
+    expect(resultDesc.executions[2].responseBodyJson).toEqual({ execution: 3 });
   });
 
   it("returns only executions for the specified callback", async () => {

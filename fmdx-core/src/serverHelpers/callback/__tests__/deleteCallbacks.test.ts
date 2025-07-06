@@ -243,7 +243,7 @@ describe("deleteCallbacks integration", () => {
 
   it("deletes callbacks by name filter", async () => {
     // Create test callbacks
-    await addCallback({
+    const alphaCallback = await addCallback({
       args: makeTestCallbackArgs("Alpha Callback"),
       appId: defaultAppId,
       groupId: defaultGroupId,
@@ -252,7 +252,7 @@ describe("deleteCallbacks integration", () => {
       storage,
     });
 
-    await addCallback({
+    const betaCallback = await addCallback({
       args: makeTestCallbackArgs("Beta Callback"),
       appId: defaultAppId,
       groupId: defaultGroupId,
@@ -270,11 +270,11 @@ describe("deleteCallbacks integration", () => {
     });
     expect(beforeResult.callbacks).toHaveLength(2);
 
-    // Delete callback by name
+    // Delete callback by name using the actual name from the created callback
     const deleteArgs = makeDeleteCallbacksArgs({
       query: {
         appId: defaultAppId,
-        name: { eq: "Alpha Callback" },
+        name: { eq: alphaCallback.objRecord.name },
       },
     });
 
@@ -292,7 +292,7 @@ describe("deleteCallbacks integration", () => {
       storage,
     });
     expect(afterResult.callbacks).toHaveLength(1);
-    expect(afterResult.callbacks[0].name).toBe("Beta Callback");
+    expect(afterResult.callbacks[0].name).toBe(betaCallback.objRecord.name);
   });
 
   it("deletes callbacks by url filter", async () => {

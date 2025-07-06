@@ -50,7 +50,7 @@ export async function addCallback(params: {
     description,
   };
 
-  const { failedItems, newObjs } = await setManyObjs({
+  const { failedItems, newObjs, ignoredItems } = await setManyObjs({
     by,
     byType,
     groupId,
@@ -71,6 +71,25 @@ export async function addCallback(params: {
       kOwnServerErrorCodes.InternalServerError
     )
   );
+
+  // When onConflict is "ignore", we need to handle the case where the object already exists
+  if (newObjs.length === 0 && ignoredItems.length === 1) {
+    // The object already exists, we need to fetch it
+    const existingCallback = await storage?.read({
+      query: {
+        appId,
+        partQuery: {
+          and: [{ field: "idempotencyKey", op: "eq", value: idempotencyKey }],
+        },
+      },
+      tag: kObjTags.callback,
+    });
+
+    if (existingCallback && existingCallback.objs.length > 0) {
+      return existingCallback.objs[0];
+    }
+  }
+
   assert(
     newObjs.length === 1,
     new OwnServerError(
@@ -80,5 +99,20 @@ export async function addCallback(params: {
   );
 
   const callback = newObjs[0];
+
+  // Fix Date serialization issue by ensuring Date objects are properly converted
+  if (
+    callback.objRecord.timeout &&
+    typeof callback.objRecord.timeout === "string"
+  ) {
+    callback.objRecord.timeout = new Date(callback.objRecord.timeout);
+  }
+  if (
+    callback.objRecord.intervalFrom &&
+    typeof callback.objRecord.intervalFrom === "string"
+  ) {
+    callback.objRecord.intervalFrom = new Date(callback.objRecord.intervalFrom);
+  }
+
   return callback;
 }

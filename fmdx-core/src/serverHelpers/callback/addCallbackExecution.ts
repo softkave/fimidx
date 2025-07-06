@@ -30,7 +30,9 @@ export async function addCallbackExecution(params: {
     storage,
   } = params;
 
-  const responseContentType = responseHeaders?.["content-type"]?.toLowerCase();
+  const responseContentType =
+    responseHeaders?.["content-type"]?.toLowerCase() ||
+    responseHeaders?.["Content-Type"]?.toLowerCase();
   const isJsonResponse =
     responseContentType?.includes("application/json") ||
     responseContentType?.includes("text/json");
