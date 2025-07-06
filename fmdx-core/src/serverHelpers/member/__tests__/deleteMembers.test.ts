@@ -481,19 +481,25 @@ describe("deleteMembers integration", () => {
       seed: { status: "accepted" },
     });
 
+    // Extract seed from memberArgs
+    const { seed: seed1, ...args1 } = member1Args;
+    const { seed: seed2, ...args2 } = member2Args;
+
     await addMember({
-      args: member1Args,
+      args: args1,
       by: defaultBy,
       byType: defaultByType,
       memberId: member1Args.memberId,
+      seed: seed1,
       storage,
     });
 
     await addMember({
-      args: member2Args,
+      args: args2,
       by: defaultBy,
       byType: defaultByType,
       memberId: member2Args.memberId,
+      seed: seed2,
       storage,
     });
 

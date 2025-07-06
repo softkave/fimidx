@@ -71,3 +71,23 @@ export function jsRecordToObjPartQueryList(
     };
   });
 }
+
+export function flattenObjToDotNotationPartQuery(
+  record: Record<string, any>,
+  prefix = ""
+): IObjPartQueryList {
+  const result: IObjPartQueryList = [];
+  for (const [key, value] of Object.entries(record)) {
+    const fullKey = prefix ? `${prefix}.${key}` : key;
+    if (typeof value === "object" && value !== null) {
+      result.push(...flattenObjToDotNotationPartQuery(value, fullKey));
+    } else {
+      result.push({
+        op: "eq",
+        field: fullKey,
+        value,
+      });
+    }
+  }
+  return result;
+}

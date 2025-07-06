@@ -20,6 +20,7 @@ export function getPermissionsObjQuery(params: {
       entity,
       action,
       target,
+      meta,
       createdAt,
       updatedAt,
       createdBy,
@@ -76,10 +77,20 @@ export function getPermissionsObjQuery(params: {
       }))
     : undefined;
 
+  const metaPartQuery = meta?.map(
+    (part) =>
+      ({
+        op: part.op,
+        field: `meta.${part.field}`,
+        value: part.value,
+      } as IObjPartQueryItem)
+  );
+
   const filterArr: Array<IObjPartQueryItem> = [
     ...(entityPartQuery ?? []),
     ...(actionPartQuery ?? []),
     ...(targetPartQuery ?? []),
+    ...(metaPartQuery ?? []),
   ];
 
   const objQuery: IObjQuery = {

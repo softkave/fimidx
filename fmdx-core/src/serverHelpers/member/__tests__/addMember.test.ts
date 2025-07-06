@@ -249,7 +249,7 @@ describe("addMember integration", () => {
         memberId: args2.memberId,
         storage,
       })
-    ).rejects.toThrow("Failed to add member");
+    ).rejects.toThrow("Member with memberId 'duplicate-id' already exists");
   });
 
   it("fails when email already exists", async () => {
@@ -278,7 +278,9 @@ describe("addMember integration", () => {
         memberId: args2.memberId,
         storage,
       })
-    ).rejects.toThrow("Failed to add member");
+    ).rejects.toThrow(
+      "Member with email 'duplicate@example.com' already exists"
+    );
   });
 
   it("creates member that can be retrieved by getMembers", async () => {
