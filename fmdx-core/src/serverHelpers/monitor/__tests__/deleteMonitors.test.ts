@@ -516,7 +516,7 @@ describe("deleteMonitors integration", () => {
     const args = makeDeleteMonitorsArgs({
       query: {
         appId: defaultAppId,
-        createdAt: { gt: monitor1.monitor.createdAt },
+        createdAt: { gt: monitor1.monitor.createdAt.getTime() },
       },
       deleteMany: true,
     });
@@ -620,7 +620,7 @@ describe("deleteMonitors integration", () => {
     const args = makeDeleteMonitorsArgs({
       query: {
         appId: defaultAppId,
-        updatedAt: { lt: updatedMonitor1.updatedAt },
+        updatedAt: { lt: updatedMonitor1.updatedAt.getTime() },
       },
       deleteMany: true,
     });

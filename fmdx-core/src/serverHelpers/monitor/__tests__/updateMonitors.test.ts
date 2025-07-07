@@ -320,12 +320,12 @@ describe("updateMonitors integration", () => {
     const newLogsQuery = {
       or: [
         {
-          op: "eq",
+          op: "eq" as const,
           field: "level",
           value: "error",
         },
         {
-          op: "eq",
+          op: "eq" as const,
           field: "level",
           value: "warn",
         },

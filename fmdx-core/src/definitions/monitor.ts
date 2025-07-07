@@ -60,7 +60,7 @@ export const addMonitorSchema = z.object({
 
 export const monitorQuerySchema = z.object({
   appId: z.string(),
-  id: stringMetaQuerySchema,
+  id: stringMetaQuerySchema.optional(),
   createdBy: stringMetaQuerySchema.optional(),
   updatedBy: stringMetaQuerySchema.optional(),
   createdAt: numberMetaQuerySchema.optional(),
