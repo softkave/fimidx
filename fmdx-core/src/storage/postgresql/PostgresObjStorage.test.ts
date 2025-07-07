@@ -192,6 +192,7 @@ describe("PostgresObjStorage (integration)", () => {
       deletedBy: "bulk-deleter",
       deletedByType: "user",
       batchSize: 2,
+      deleteMany: true,
     });
     expect(result.deletedCount).toBe(3);
     const deletedObjs = (await fmdxPostgresDb
