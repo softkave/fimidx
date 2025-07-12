@@ -531,4 +531,764 @@ describe("MongoQueryTransformer", () => {
       });
     });
   });
+
+  describe("array field queries", () => {
+    const arrayFields = new Map([
+      [
+        "logsQuery.and",
+        {
+          id: "1",
+          field: "logsQuery.and",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          appId: "app1",
+          groupId: "group1",
+          tag: "tag1",
+        },
+      ],
+      [
+        "comments",
+        {
+          id: "2",
+          field: "comments",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          appId: "app1",
+          groupId: "group1",
+          tag: "tag1",
+        },
+      ],
+    ]);
+
+    it("should handle array field eq operation", () => {
+      const query: IObjQuery = {
+        appId: "app1",
+        partQuery: {
+          and: [
+            {
+              op: "eq",
+              field: "logsQuery.and.message",
+              value: "error occurred",
+            },
+          ],
+        },
+      };
+      expect(transformer.transformFilter(query, now, arrayFields)).toEqual({
+        $and: [
+          { appId: "app1" },
+          { "objRecord.logsQuery.and.message": { $eq: "error occurred" } },
+        ],
+      });
+    });
+
+    it("should handle array field neq operation", () => {
+      const query: IObjQuery = {
+        appId: "app1",
+        partQuery: {
+          and: [
+            {
+              op: "neq",
+              field: "logsQuery.and.level",
+              value: "debug",
+            },
+          ],
+        },
+      };
+      expect(transformer.transformFilter(query, now, arrayFields)).toEqual({
+        $and: [
+          { appId: "app1" },
+          { "objRecord.logsQuery.and.level": { $ne: "debug" } },
+        ],
+      });
+    });
+
+    it("should handle array field in operation", () => {
+      const query: IObjQuery = {
+        appId: "app1",
+        partQuery: {
+          and: [
+            {
+              op: "in",
+              field: "logsQuery.and.level",
+              value: ["error", "warn"],
+            },
+          ],
+        },
+      };
+      expect(transformer.transformFilter(query, now, arrayFields)).toEqual({
+        $and: [
+          { appId: "app1" },
+          { "objRecord.logsQuery.and.level": { $in: ["error", "warn"] } },
+        ],
+      });
+    });
+
+    it("should handle array field not_in operation", () => {
+      const query: IObjQuery = {
+        appId: "app1",
+        partQuery: {
+          and: [
+            {
+              op: "not_in",
+              field: "logsQuery.and.level",
+              value: ["debug", "info"],
+            },
+          ],
+        },
+      };
+      expect(transformer.transformFilter(query, now, arrayFields)).toEqual({
+        $and: [
+          { appId: "app1" },
+          { "objRecord.logsQuery.and.level": { $nin: ["debug", "info"] } },
+        ],
+      });
+    });
+
+    it("should handle array field like operation", () => {
+      const query: IObjQuery = {
+        appId: "app1",
+        partQuery: {
+          and: [
+            {
+              op: "like",
+              field: "logsQuery.and.message",
+              value: "error.*",
+              caseSensitive: false,
+            },
+          ],
+        },
+      };
+      const filter = transformer.transformFilter(query, now, arrayFields);
+      const messageFilter = Array.isArray(filter.$and)
+        ? filter.$and.find((f) => f["objRecord.logsQuery.and.message"])
+        : filter["objRecord.logsQuery.and.message"];
+      expect(
+        messageFilter["objRecord.logsQuery.and.message"].$regex
+      ).toBeInstanceOf(RegExp);
+      expect(
+        messageFilter["objRecord.logsQuery.and.message"].$regex.flags
+      ).toContain("i");
+    });
+
+    it("should handle array field exists operation", () => {
+      const query: IObjQuery = {
+        appId: "app1",
+        partQuery: {
+          and: [
+            {
+              op: "exists",
+              field: "logsQuery.and.timestamp",
+              value: true,
+            },
+          ],
+        },
+      };
+      expect(transformer.transformFilter(query, now, arrayFields)).toEqual({
+        $and: [
+          { appId: "app1" },
+          { "objRecord.logsQuery.and.timestamp": { $exists: true } },
+        ],
+      });
+    });
+
+    it("should handle array field numeric operations", () => {
+      const query: IObjQuery = {
+        appId: "app1",
+        partQuery: {
+          and: [
+            {
+              op: "gt",
+              field: "logsQuery.and.count",
+              value: 5,
+            },
+            {
+              op: "lte",
+              field: "logsQuery.and.count",
+              value: 100,
+            },
+          ],
+        },
+      };
+      expect(transformer.transformFilter(query, now, arrayFields)).toEqual({
+        $and: [
+          { appId: "app1" },
+          {
+            "objRecord.logsQuery.and.count": { $gt: 5, $lte: 100 },
+          },
+        ],
+      });
+    });
+
+    it("should handle nested array field paths", () => {
+      const query: IObjQuery = {
+        appId: "app1",
+        partQuery: {
+          and: [
+            {
+              op: "eq",
+              field: "logsQuery.and.details.user.id",
+              value: "user123",
+            },
+          ],
+        },
+      };
+      expect(transformer.transformFilter(query, now, arrayFields)).toEqual({
+        $and: [
+          { appId: "app1" },
+          {
+            "objRecord.logsQuery.and.details.user.id": { $eq: "user123" },
+          },
+        ],
+      });
+    });
+
+    it("should fall back to regular query for non-array fields", () => {
+      const query: IObjQuery = {
+        appId: "app1",
+        partQuery: {
+          and: [
+            {
+              op: "eq",
+              field: "regularField",
+              value: "value",
+            },
+          ],
+        },
+      };
+      expect(transformer.transformFilter(query, now, arrayFields)).toEqual({
+        $and: [
+          { appId: "app1" },
+          { "objRecord.regularField": { $eq: "value" } },
+        ],
+      });
+    });
+
+    it("should handle array field between operation", () => {
+      const query: IObjQuery = {
+        appId: "app1",
+        partQuery: {
+          and: [
+            {
+              op: "between",
+              field: "logsQuery.and.count",
+              value: [1, 10],
+            },
+          ],
+        },
+      };
+      expect(transformer.transformFilter(query, now, arrayFields)).toEqual({
+        $and: [
+          { appId: "app1" },
+          { "objRecord.logsQuery.and.count": { $gte: 1, $lte: 10 } },
+        ],
+      });
+    });
+
+    it("should handle complex array field queries with logical operators", () => {
+      const query: IObjQuery = {
+        appId: "app1",
+        partQuery: {
+          and: [
+            {
+              op: "eq",
+              field: "logsQuery.and.level",
+              value: "error",
+            },
+          ],
+          or: [
+            {
+              op: "gt",
+              field: "logsQuery.and.count",
+              value: 5,
+            },
+            {
+              op: "like",
+              field: "logsQuery.and.message",
+              value: "critical",
+            },
+          ],
+        },
+      };
+      const filter = transformer.transformFilter(query, now, arrayFields);
+      expect(filter.$and).toBeDefined();
+      expect(filter.$and?.length).toBe(2);
+      expect(filter.$and?.[0].appId).toBe("app1");
+      expect(filter.$and?.[1].$or).toBeDefined();
+      expect(filter.$and?.[1].$or?.length).toBe(3); // AND condition + 2 OR conditions
+      // The first element should be the AND condition
+      expect(
+        filter.$and?.[1].$or?.[0]["objRecord.logsQuery.and.level"]
+      ).toEqual({
+        $eq: "error",
+      });
+      // The second and third elements should be the OR conditions
+      expect(
+        filter.$and?.[1].$or?.[1]["objRecord.logsQuery.and.count"]
+      ).toEqual({
+        $gt: 5,
+      });
+      expect(
+        filter.$and?.[1].$or?.[2]["objRecord.logsQuery.and.message"]
+      ).toBeDefined();
+    });
+
+    it("should handle mixed array and regular field queries", () => {
+      const query: IObjQuery = {
+        appId: "app1",
+        partQuery: {
+          and: [
+            {
+              op: "eq",
+              field: "title",
+              value: "Test Post",
+            },
+            {
+              op: "gt",
+              field: "comments.rating",
+              value: 4,
+            },
+          ],
+        },
+      };
+      expect(transformer.transformFilter(query, now, arrayFields)).toEqual({
+        $and: [
+          { appId: "app1" },
+          {
+            "objRecord.title": { $eq: "Test Post" },
+            "objRecord.comments.rating": { $gt: 4 },
+          },
+        ],
+      });
+    });
+
+    it("should handle array field with duration values", () => {
+      const query: IObjQuery = {
+        appId: "app1",
+        partQuery: {
+          and: [
+            {
+              op: "gt",
+              field: "logsQuery.and.createdAt",
+              value: "1h",
+            },
+          ],
+        },
+      };
+      const filter = transformer.transformFilter(query, now, arrayFields);
+      const createdAtFilter = Array.isArray(filter.$and)
+        ? filter.$and.find((f) => f["objRecord.logsQuery.and.createdAt"])
+        : filter["objRecord.logsQuery.and.createdAt"];
+      expect(
+        createdAtFilter["objRecord.logsQuery.and.createdAt"].$gt
+      ).toBeInstanceOf(Date);
+    });
+  });
+
+  describe("enhanced sort functionality", () => {
+    it("should handle sort with fields parameter and skip invalid fields", () => {
+      const sort: IObjSortList = [
+        { field: "objRecord.validField", direction: "asc" },
+        { field: "objRecord.invalidField", direction: "desc" },
+        { field: "objRecord.anotherValidField", direction: "asc" },
+      ];
+
+      const fields: IObjField[] = [
+        {
+          id: "1",
+          field: "validField",
+          fieldKeys: ["validField"],
+          fieldKeyTypes: ["string"],
+          valueTypes: ["string"],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          appId: "app1",
+          groupId: "group1",
+          tag: "tag1",
+        },
+        {
+          id: "2",
+          field: "anotherValidField",
+          fieldKeys: ["anotherValidField"],
+          fieldKeyTypes: ["string"],
+          valueTypes: ["number"],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          appId: "app1",
+          groupId: "group1",
+          tag: "tag1",
+        },
+      ];
+
+      const result = transformer.transformSort(sort, fields);
+      expect(result).toEqual({
+        "objRecord.validField": 1,
+        "objRecord.anotherValidField": 1,
+      });
+    });
+
+    it("should handle sort with mixed field types and nested paths", () => {
+      const sort: IObjSortList = [
+        { field: "objRecord.user.profile.age", direction: "desc" },
+        { field: "objRecord.user.profile.name", direction: "asc" },
+        { field: "objRecord.createdAt", direction: "desc" },
+      ];
+
+      const fields: IObjField[] = [
+        {
+          id: "1",
+          field: "user.profile.age",
+          fieldKeys: ["user", "profile", "age"],
+          fieldKeyTypes: ["string", "string", "string"],
+          valueTypes: ["number"],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          appId: "app1",
+          groupId: "group1",
+          tag: "tag1",
+        },
+        {
+          id: "2",
+          field: "user.profile.name",
+          fieldKeys: ["user", "profile", "name"],
+          fieldKeyTypes: ["string", "string", "string"],
+          valueTypes: ["string"],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          appId: "app1",
+          groupId: "group1",
+          tag: "tag1",
+        },
+      ];
+
+      const result = transformer.transformSort(sort, fields);
+      expect(result).toEqual({
+        "objRecord.user.profile.age": -1,
+        "objRecord.user.profile.name": 1,
+      });
+    });
+
+    it("should handle sort with invalid direction values", () => {
+      const sort: IObjSortList = [
+        // @ts-expect-error: invalid direction
+        { field: "objRecord.field1", direction: "invalid" },
+        { field: "objRecord.field2", direction: "asc" },
+      ];
+
+      const fields: IObjField[] = [
+        {
+          id: "1",
+          field: "field1",
+          fieldKeys: ["field1"],
+          fieldKeyTypes: ["string"],
+          valueTypes: ["string"],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          appId: "app1",
+          groupId: "group1",
+          tag: "tag1",
+        },
+        {
+          id: "2",
+          field: "field2",
+          fieldKeys: ["field2"],
+          fieldKeyTypes: ["string"],
+          valueTypes: ["string"],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          appId: "app1",
+          groupId: "group1",
+          tag: "tag1",
+        },
+      ];
+
+      const result = transformer.transformSort(sort, fields);
+      // Should default to -1 (desc) for invalid direction
+      expect(result).toEqual({
+        "objRecord.field1": -1,
+        "objRecord.field2": 1,
+      });
+    });
+
+    it("should handle sort with multiple clauses properly", () => {
+      const sort: IObjSortList = [
+        { field: "objRecord.priority", direction: "desc" },
+        { field: "objRecord.createdAt", direction: "asc" },
+        { field: "objRecord.status", direction: "desc" },
+      ];
+
+      const fields: IObjField[] = [
+        {
+          id: "1",
+          field: "priority",
+          fieldKeys: ["priority"],
+          fieldKeyTypes: ["string"],
+          valueTypes: ["number"],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          appId: "app1",
+          groupId: "group1",
+          tag: "tag1",
+        },
+        {
+          id: "2",
+          field: "createdAt",
+          fieldKeys: ["createdAt"],
+          fieldKeyTypes: ["string"],
+          valueTypes: ["string"],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          appId: "app1",
+          groupId: "group1",
+          tag: "tag1",
+        },
+        {
+          id: "3",
+          field: "status",
+          fieldKeys: ["status"],
+          fieldKeyTypes: ["string"],
+          valueTypes: ["string"],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          appId: "app1",
+          groupId: "group1",
+          tag: "tag1",
+        },
+      ];
+
+      const result = transformer.transformSort(sort, fields);
+      expect(result).toEqual({
+        "objRecord.priority": -1,
+        "objRecord.createdAt": 1,
+        "objRecord.status": -1,
+      });
+    });
+
+    it("should return default sort when no valid fields found", () => {
+      const sort: IObjSortList = [
+        { field: "objRecord.unknown1", direction: "asc" },
+        { field: "objRecord.unknown2", direction: "desc" },
+      ];
+
+      const fields: IObjField[] = [
+        {
+          id: "1",
+          field: "knownField",
+          fieldKeys: ["knownField"],
+          fieldKeyTypes: ["string"],
+          valueTypes: ["string"],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          appId: "app1",
+          groupId: "group1",
+          tag: "tag1",
+        },
+      ];
+
+      const result = transformer.transformSort(sort, fields);
+      expect(result).toEqual({ createdAt: -1 });
+    });
+  });
+
+  describe("enhanced query generation", () => {
+    it("should handle complex nested field queries", () => {
+      const query: IObjQuery = {
+        appId: "app1",
+        partQuery: {
+          and: [
+            {
+              op: "eq",
+              field: "user.profile.email",
+              value: "test@example.com",
+            },
+            {
+              op: "gt",
+              field: "user.profile.age",
+              value: 18,
+            },
+            {
+              op: "in",
+              field: "user.preferences.tags",
+              value: ["tech", "programming"],
+            },
+          ],
+        },
+      };
+      expect(transformer.transformFilter(query, now)).toEqual({
+        $and: [
+          { appId: "app1" },
+          {
+            "objRecord.user.profile.email": { $eq: "test@example.com" },
+            "objRecord.user.profile.age": { $gt: 18 },
+            "objRecord.user.preferences.tags": { $in: ["tech", "programming"] },
+          },
+        ],
+      });
+    });
+
+    it("should handle array field detection correctly", () => {
+      const arrayFields = new Map([
+        [
+          "logs",
+          {
+            id: "1",
+            field: "logs",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            appId: "app1",
+            groupId: "group1",
+            tag: "tag1",
+          },
+        ],
+      ]);
+
+      const query: IObjQuery = {
+        appId: "app1",
+        partQuery: {
+          and: [
+            {
+              op: "eq",
+              field: "logs.entry.message",
+              value: "test message",
+            },
+          ],
+        },
+      };
+      expect(transformer.transformFilter(query, now, arrayFields)).toEqual({
+        $and: [
+          { appId: "app1" },
+          { "objRecord.logs.entry.message": { $eq: "test message" } },
+        ],
+      });
+    });
+
+    it("should handle complex logical queries with array fields", () => {
+      const arrayFields = new Map([
+        [
+          "logsQuery.and",
+          {
+            id: "1",
+            field: "logsQuery.and",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            appId: "app1",
+            groupId: "group1",
+            tag: "tag1",
+          },
+        ],
+      ]);
+
+      const query: IObjQuery = {
+        appId: "app1",
+        partQuery: {
+          and: [
+            {
+              op: "eq",
+              field: "status",
+              value: "active",
+            },
+          ],
+          or: [
+            {
+              op: "eq",
+              field: "logsQuery.and.level",
+              value: "error",
+            },
+            {
+              op: "gt",
+              field: "logsQuery.and.count",
+              value: 10,
+            },
+          ],
+        },
+      };
+      const filter = transformer.transformFilter(query, now, arrayFields);
+      expect(filter.$and).toBeDefined();
+      expect(filter.$and?.length).toBe(2);
+      expect(filter.$and?.[0].appId).toBe("app1");
+      expect(filter.$and?.[1].$or).toBeDefined();
+      expect(filter.$and?.[1].$or?.length).toBe(3); // AND condition + 2 OR conditions
+      // The first element should be the AND condition
+      expect(filter.$and?.[1].$or?.[0]["objRecord.status"]).toEqual({
+        $eq: "active",
+      });
+      // The second and third elements should be the OR conditions
+      expect(
+        filter.$and?.[1].$or?.[1]["objRecord.logsQuery.and.level"]
+      ).toEqual({
+        $eq: "error",
+      });
+      expect(
+        filter.$and?.[1].$or?.[2]["objRecord.logsQuery.and.count"]
+      ).toEqual({
+        $gt: 10,
+      });
+    });
+
+    it("should handle date field conversions in meta queries", () => {
+      const query: IObjQuery = {
+        appId: "app1",
+        metaQuery: {
+          createdAt: {
+            gt: "2024-01-01T00:00:00Z",
+            lt: "2024-12-31T23:59:59Z",
+          },
+        },
+      };
+      const filter = transformer.transformFilter(query, now);
+      const createdAtFilter = Array.isArray(filter.$and)
+        ? filter.$and.find((f) => f.createdAt)
+        : filter.createdAt;
+      expect(createdAtFilter.createdAt.$gt).toBeInstanceOf(Date);
+      expect(createdAtFilter.createdAt.$lt).toBeInstanceOf(Date);
+    });
+
+    it("should handle duration values in queries", () => {
+      const query: IObjQuery = {
+        appId: "app1",
+        partQuery: {
+          and: [
+            {
+              op: "gt",
+              field: "lastActivity",
+              value: "1d",
+            },
+          ],
+        },
+      };
+      const filter = transformer.transformFilter(query, now);
+      const lastActivityFilter = Array.isArray(filter.$and)
+        ? filter.$and.find((f) => f["objRecord.lastActivity"])
+        : filter["objRecord.lastActivity"];
+      expect(lastActivityFilter["objRecord.lastActivity"].$gt).toBeInstanceOf(
+        Date
+      );
+    });
+
+    it("should handle complex top-level field combinations", () => {
+      const query: IObjQuery = {
+        appId: "app1",
+        topLevelFields: {
+          shouldIndex: true,
+          tag: { eq: "test-tag" },
+          groupId: { in: ["group1", "group2"] },
+          deletedAt: null,
+          deletedBy: { eq: "user123" },
+          deletedByType: { eq: "admin" },
+        },
+      };
+      expect(transformer.transformFilter(query, now)).toEqual({
+        $and: [
+          { appId: "app1" },
+          {
+            shouldIndex: true,
+            tag: "test-tag",
+            groupId: { $in: ["group1", "group2"] },
+            deletedAt: null,
+            deletedBy: "user123",
+            deletedByType: "admin",
+          },
+        ],
+      });
+    });
+  });
 });

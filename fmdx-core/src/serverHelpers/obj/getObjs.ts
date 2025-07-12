@@ -2,6 +2,8 @@ import { and, eq, inArray } from "drizzle-orm";
 import { db, objFields as objFieldsTable } from "../../db/fmdx.sqlite.js";
 import type {
   INumberMetaQuery,
+  IObjArrayField,
+  IObjField,
   IObjPartQueryList,
   IObjQuery,
   IObjSortList,
@@ -9,6 +11,8 @@ import type {
 } from "../../definitions/obj.js";
 import { createStorage, getDefaultStorageType } from "../../storage/config.js";
 import type { IObjStorage } from "../../storage/types.js";
+import { getObjArrayFields } from "./getObjArrayFields.js";
+import { getObjFields } from "./getObjFields.js";
 
 export function metaQueryToPartQueryList(params: {
   metaQuery: Record<string, IStringMetaQuery | INumberMetaQuery>;
@@ -139,19 +143,30 @@ export async function getManyObjs(params: {
     storage = createStorage({ type: storageType }),
   } = params;
 
-  const sortFields =
-    objQuery.appId && sort
-      ? await getObjFieldsFromDb({
-          appId: objQuery.appId,
-          tag,
-          fields: sort.map((s) => {
-            // Extract field name from sort field path (e.g., "objRecord.order" -> "order")
-            return s.field.startsWith("objRecord.")
-              ? s.field.replace(/^objRecord\./, "")
-              : s.field;
-          }),
-        })
-      : [];
+  // Fetch both regular fields and array fields for query generation
+  let fields: IObjField[] = [];
+  let arrayFields: IObjArrayField[] = [];
+
+  if (objQuery.appId) {
+    // Fetch regular fields
+    const fieldsResult = await getObjFields({
+      appId: objQuery.appId,
+      tag,
+      limit: 1000, // Fetch all fields for this app/tag combination
+    });
+    fields = fieldsResult.fields;
+
+    // Fetch array fields
+    arrayFields = await getObjArrayFields({
+      appId: objQuery.appId,
+      tag,
+      limit: 1000, // Fetch all array fields for this app/tag combination
+    });
+  }
+
+  // Convert to Maps for O(1) lookup
+  const fieldsMap = new Map(fields.map((f) => [f.field, f]));
+  const arrayFieldsMap = new Map(arrayFields.map((f) => [f.field, f]));
 
   // Use the new read method from the storage abstraction
   const result = await storage.read({
@@ -161,7 +176,8 @@ export async function getManyObjs(params: {
     limit,
     sort,
     date,
-    fields: sortFields,
+    fields: fieldsMap,
+    arrayFields: arrayFieldsMap,
   });
 
   return result;

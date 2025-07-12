@@ -1,4 +1,5 @@
 import type {
+  IObjArrayField,
   IObjField,
   IObjQuery,
   IObjSortList,
@@ -7,7 +8,12 @@ import type {
 import type { IQueryTransformer } from "../types.js";
 
 export abstract class BaseQueryTransformer<T> implements IQueryTransformer<T> {
-  abstract transformFilter(query: IObjQuery, date: Date): T;
+  abstract transformFilter(
+    query: IObjQuery,
+    date: Date,
+    arrayFields?: Map<string, IObjArrayField>,
+    fields?: Map<string, IObjField>
+  ): T;
   abstract transformSort(sort: IObjSortList, fields?: IObjField[]): T;
   abstract transformPagination(page: number, limit: number): T;
 
@@ -106,6 +112,36 @@ export abstract class BaseQueryTransformer<T> implements IQueryTransformer<T> {
 
     if (durationMs) {
       return new Date(date.getTime() - durationMs).getTime();
+    }
+
+    return undefined;
+  }
+
+  protected getGtGteValueAsDate(value: any, date: Date): Date | undefined {
+    const { valueNumber, durationMs } =
+      this.getNumberOrDurationMsFromValue(value);
+
+    if (typeof valueNumber === "number") {
+      return new Date(valueNumber);
+    }
+
+    if (durationMs) {
+      return new Date(date.getTime() + durationMs);
+    }
+
+    return undefined;
+  }
+
+  protected getLtLteValueAsDate(value: any, date: Date): Date | undefined {
+    const { valueNumber, durationMs } =
+      this.getNumberOrDurationMsFromValue(value);
+
+    if (typeof valueNumber === "number") {
+      return new Date(valueNumber);
+    }
+
+    if (durationMs) {
+      return new Date(date.getTime() - durationMs);
     }
 
     return undefined;

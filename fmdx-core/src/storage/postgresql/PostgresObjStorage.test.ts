@@ -839,20 +839,23 @@ describe("PostgresObjStorage (integration)", () => {
         query: { appId: "sort-string-app" },
         tag: "sort-string-tag",
         sort: [{ field: "objRecord.name", direction: "asc" }],
-        fields: [
-          {
-            id: "name-field",
-            field: "name",
-            fieldKeys: ["name"],
-            fieldKeyTypes: ["string"],
-            valueTypes: ["string"],
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            appId: "sort-string-app",
-            groupId: "test-group",
-            tag: "sort-string-tag",
-          },
-        ],
+        fields: new Map([
+          [
+            "name",
+            {
+              id: "name-field",
+              field: "name",
+              fieldKeys: ["name"],
+              fieldKeyTypes: ["string"],
+              valueTypes: ["string"],
+              createdAt: new Date(),
+              updatedAt: new Date(),
+              appId: "sort-string-app",
+              groupId: "test-group",
+              tag: "sort-string-tag",
+            },
+          ],
+        ]),
       });
 
       expect(result.objs).toHaveLength(3);
@@ -883,20 +886,23 @@ describe("PostgresObjStorage (integration)", () => {
         query: { appId: "sort-number-app" },
         tag: "sort-number-tag",
         sort: [{ field: "objRecord.score", direction: "asc" }],
-        fields: [
-          {
-            id: "score-field",
-            field: "score",
-            fieldKeys: ["score"],
-            fieldKeyTypes: ["string"],
-            valueTypes: ["number"],
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            appId: "sort-number-app",
-            groupId: "test-group",
-            tag: "sort-number-tag",
-          },
-        ],
+        fields: new Map([
+          [
+            "score",
+            {
+              id: "score-field",
+              field: "score",
+              fieldKeys: ["score"],
+              fieldKeyTypes: ["string"],
+              valueTypes: ["number"],
+              createdAt: new Date(),
+              updatedAt: new Date(),
+              appId: "sort-number-app",
+              groupId: "test-group",
+              tag: "sort-number-tag",
+            },
+          ],
+        ]),
       });
 
       expect(result.objs).toHaveLength(3);
@@ -927,20 +933,23 @@ describe("PostgresObjStorage (integration)", () => {
         query: { appId: "sort-nested-app" },
         tag: "sort-nested-tag",
         sort: [{ field: "objRecord.user.age", direction: "asc" }],
-        fields: [
-          {
-            id: "user-age-field",
-            field: "user.age",
-            fieldKeys: ["user", "age"],
-            fieldKeyTypes: ["string", "string"],
-            valueTypes: ["number"],
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            appId: "sort-nested-app",
-            groupId: "test-group",
-            tag: "sort-nested-tag",
-          },
-        ],
+        fields: new Map([
+          [
+            "user.age",
+            {
+              id: "user-age-field",
+              field: "user.age",
+              fieldKeys: ["user", "age"],
+              fieldKeyTypes: ["string", "string"],
+              valueTypes: ["number"],
+              createdAt: new Date(),
+              updatedAt: new Date(),
+              appId: "sort-nested-app",
+              groupId: "test-group",
+              tag: "sort-nested-tag",
+            },
+          ],
+        ]),
       });
 
       expect(result.objs).toHaveLength(3);
@@ -971,20 +980,23 @@ describe("PostgresObjStorage (integration)", () => {
         query: { appId: "sort-deep-app" },
         tag: "sort-deep-tag",
         sort: [{ field: "objRecord.stats.views.daily", direction: "asc" }],
-        fields: [
-          {
-            id: "stats-views-daily-field",
-            field: "stats.views.daily",
-            fieldKeys: ["stats", "views", "daily"],
-            fieldKeyTypes: ["string", "string", "string"],
-            valueTypes: ["number"],
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            appId: "sort-deep-app",
-            groupId: "test-group",
-            tag: "sort-deep-tag",
-          },
-        ],
+        fields: new Map([
+          [
+            "stats.views.daily",
+            {
+              id: "stats-views-daily-field",
+              field: "stats.views.daily",
+              fieldKeys: ["stats", "views", "daily"],
+              fieldKeyTypes: ["string", "string", "string"],
+              valueTypes: ["number"],
+              createdAt: new Date(),
+              updatedAt: new Date(),
+              appId: "sort-deep-app",
+              groupId: "test-group",
+              tag: "sort-deep-tag",
+            },
+          ],
+        ]),
       });
 
       expect(result.objs).toHaveLength(3);
@@ -1023,32 +1035,38 @@ describe("PostgresObjStorage (integration)", () => {
           { field: "objRecord.category", direction: "asc" },
           { field: "objRecord.priority", direction: "desc" },
         ],
-        fields: [
-          {
-            id: "category-field",
-            field: "category",
-            fieldKeys: ["category"],
-            fieldKeyTypes: ["string"],
-            valueTypes: ["string"],
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            appId: "sort-multi-app",
-            groupId: "test-group",
-            tag: "sort-multi-tag",
-          },
-          {
-            id: "priority-field",
-            field: "priority",
-            fieldKeys: ["priority"],
-            fieldKeyTypes: ["string"],
-            valueTypes: ["number"],
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            appId: "sort-multi-app",
-            groupId: "test-group",
-            tag: "sort-multi-tag",
-          },
-        ],
+        fields: new Map([
+          [
+            "category",
+            {
+              id: "category-field",
+              field: "category",
+              fieldKeys: ["category"],
+              fieldKeyTypes: ["string"],
+              valueTypes: ["string"],
+              createdAt: new Date(),
+              updatedAt: new Date(),
+              appId: "sort-multi-app",
+              groupId: "test-group",
+              tag: "sort-multi-tag",
+            },
+          ],
+          [
+            "priority",
+            {
+              id: "priority-field",
+              field: "priority",
+              fieldKeys: ["priority"],
+              fieldKeyTypes: ["string"],
+              valueTypes: ["number"],
+              createdAt: new Date(),
+              updatedAt: new Date(),
+              appId: "sort-multi-app",
+              groupId: "test-group",
+              tag: "sort-multi-tag",
+            },
+          ],
+        ]),
       });
 
       expect(result.objs).toHaveLength(4);
@@ -1126,21 +1144,24 @@ describe("PostgresObjStorage (integration)", () => {
           { field: "objRecord.name", direction: "asc" }, // Should be skipped (not in fields)
           { field: "objRecord.score", direction: "asc" }, // Should work (in fields)
         ],
-        fields: [
-          {
-            id: "score-field",
-            field: "score",
-            fieldKeys: ["score"],
-            fieldKeyTypes: ["string"],
-            valueTypes: ["number"],
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            appId: "sort-skip-app",
-            groupId: "test-group",
-            tag: "sort-skip-tag",
-          },
+        fields: new Map([
+          [
+            "score",
+            {
+              id: "score-field",
+              field: "score",
+              fieldKeys: ["score"],
+              fieldKeyTypes: ["string"],
+              valueTypes: ["number"],
+              createdAt: new Date(),
+              updatedAt: new Date(),
+              appId: "sort-skip-app",
+              groupId: "test-group",
+              tag: "sort-skip-tag",
+            },
+          ],
           // Note: name field is not included in fields, so it should be skipped
-        ],
+        ]),
       });
 
       expect(result.objs).toHaveLength(3);
@@ -1197,32 +1218,38 @@ describe("PostgresObjStorage (integration)", () => {
           { field: "objRecord.priority", direction: "desc" },
           { field: "objRecord.metadata.views", direction: "asc" },
         ],
-        fields: [
-          {
-            id: "priority-field",
-            field: "priority",
-            fieldKeys: ["priority"],
-            fieldKeyTypes: ["string"],
-            valueTypes: ["number"],
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            appId: "sort-mixed-app",
-            groupId: "test-group",
-            tag: "sort-mixed-tag",
-          },
-          {
-            id: "metadata-views-field",
-            field: "metadata.views",
-            fieldKeys: ["metadata", "views"],
-            fieldKeyTypes: ["string", "string"],
-            valueTypes: ["number"],
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            appId: "sort-mixed-app",
-            groupId: "test-group",
-            tag: "sort-mixed-tag",
-          },
-        ],
+        fields: new Map([
+          [
+            "priority",
+            {
+              id: "priority-field",
+              field: "priority",
+              fieldKeys: ["priority"],
+              fieldKeyTypes: ["string"],
+              valueTypes: ["number"],
+              createdAt: new Date(),
+              updatedAt: new Date(),
+              appId: "sort-mixed-app",
+              groupId: "test-group",
+              tag: "sort-mixed-tag",
+            },
+          ],
+          [
+            "metadata.views",
+            {
+              id: "metadata-views-field",
+              field: "metadata.views",
+              fieldKeys: ["metadata", "views"],
+              fieldKeyTypes: ["string", "string"],
+              valueTypes: ["number"],
+              createdAt: new Date(),
+              updatedAt: new Date(),
+              appId: "sort-mixed-app",
+              groupId: "test-group",
+              tag: "sort-mixed-tag",
+            },
+          ],
+        ]),
       });
 
       expect(result.objs).toHaveLength(3);
@@ -1268,25 +1295,839 @@ describe("PostgresObjStorage (integration)", () => {
           { field: "objRecord.nonexistent", direction: "asc" }, // Should be skipped (not in fields)
           { field: "objRecord.name", direction: "asc" }, // Should work (in fields)
         ],
-        fields: [
-          {
-            id: "name-field",
-            field: "name",
-            fieldKeys: ["name"],
-            fieldKeyTypes: ["string"],
-            valueTypes: ["string"],
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            appId: "sort-invalid-app",
-            groupId: "test-group",
-            tag: "sort-invalid-tag",
-          },
-        ],
+        fields: new Map([
+          [
+            "name",
+            {
+              id: "name-field",
+              field: "name",
+              fieldKeys: ["name"],
+              fieldKeyTypes: ["string"],
+              valueTypes: ["string"],
+              createdAt: new Date(),
+              updatedAt: new Date(),
+              appId: "sort-invalid-app",
+              groupId: "test-group",
+              tag: "sort-invalid-tag",
+            },
+          ],
+        ]),
       });
 
       expect(result.objs).toHaveLength(1);
       // Should be sorted by name ASC since nonexistent is skipped
       expect(result.objs[0].objRecord.name).toBe("Test");
     });
+  });
+
+  it("should handle array field queries with reportsTo.userId", async () => {
+    const obj = makeObjFields({
+      objRecord: {
+        reportsTo: [
+          { userId: "user1", role: "admin" },
+          { userId: "user2", role: "user" },
+        ],
+      },
+    });
+
+    await fmdxPostgresDb.insert(objs).values(obj);
+
+    // Create array field metadata
+    const arrayFieldsMap = new Map([
+      [
+        "reportsTo",
+        {
+          id: "array-field-1",
+          field: "reportsTo",
+          appId: obj.appId!,
+          groupId: obj.groupId!,
+          tag: obj.tag!,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ],
+    ]);
+
+    const result = await storage.read({
+      query: {
+        appId: obj.appId,
+        partQuery: {
+          and: [{ op: "eq", field: "reportsTo.userId", value: "user1" }],
+        },
+      },
+      tag: obj.tag,
+      arrayFields: arrayFieldsMap,
+    });
+
+    expect(result.objs).toHaveLength(1);
+    expect(result.objs[0].id).toBe(obj.id);
+  });
+
+  it("should handle array field queries with logsQuery.and.op", async () => {
+    const obj = makeObjFields({
+      objRecord: {
+        logsQuery: {
+          and: [
+            { op: "eq", field: "status", value: "active" },
+            { op: "in", field: "type", value: ["error", "warning"] },
+          ],
+        },
+      },
+    });
+
+    await fmdxPostgresDb.insert(objs).values(obj);
+
+    // Create array field metadata
+    const arrayFieldsMap = new Map([
+      [
+        "logsQuery.and",
+        {
+          id: "array-field-2",
+          field: "logsQuery.and",
+          appId: obj.appId!,
+          groupId: obj.groupId!,
+          tag: obj.tag!,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ],
+    ]);
+
+    const result = await storage.read({
+      query: {
+        appId: obj.appId,
+        partQuery: {
+          and: [{ op: "eq", field: "logsQuery.and.op", value: "eq" }],
+        },
+      },
+      tag: obj.tag,
+      arrayFields: arrayFieldsMap,
+    });
+
+    expect(result.objs).toHaveLength(1);
+    expect(result.objs[0].id).toBe(obj.id);
+  });
+
+  it("should handle deeply nested array field queries", async () => {
+    const obj = makeObjFields({
+      objRecord: {
+        logsQuery: {
+          and: [
+            {
+              op: [
+                { subOp: "eq", value: "test" },
+                { subOp: "neq", value: "other" },
+              ],
+            },
+          ],
+        },
+      },
+    });
+
+    await fmdxPostgresDb.insert(objs).values(obj);
+
+    // Create array field metadata for both levels
+    const arrayFieldsMap = new Map([
+      [
+        "logsQuery.and",
+        {
+          id: "array-field-3",
+          field: "logsQuery.and",
+          appId: obj.appId!,
+          groupId: obj.groupId!,
+          tag: obj.tag!,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ],
+      [
+        "logsQuery.and.op",
+        {
+          id: "array-field-4",
+          field: "logsQuery.and.op",
+          appId: obj.appId!,
+          groupId: obj.groupId!,
+          tag: obj.tag!,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ],
+    ]);
+
+    const result = await storage.read({
+      query: {
+        appId: obj.appId,
+        partQuery: {
+          and: [{ op: "eq", field: "logsQuery.and.op.subOp", value: "eq" }],
+        },
+      },
+      tag: obj.tag,
+      arrayFields: arrayFieldsMap,
+    });
+
+    expect(result.objs).toHaveLength(1);
+    expect(result.objs[0].id).toBe(obj.id);
+  });
+
+  it("should handle array field queries with 'in' operation", async () => {
+    const obj = makeObjFields({
+      objRecord: {
+        reportsTo: [
+          { userId: "user1", role: "admin" },
+          { userId: "user2", role: "user" },
+          { userId: "user3", role: "moderator" },
+        ],
+      },
+    });
+
+    await fmdxPostgresDb.insert(objs).values(obj);
+
+    const arrayFieldsMap = new Map([
+      [
+        "reportsTo",
+        {
+          id: "array-field-5",
+          field: "reportsTo",
+          appId: obj.appId!,
+          groupId: obj.groupId!,
+          tag: obj.tag!,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ],
+    ]);
+
+    const result = await storage.read({
+      query: {
+        appId: obj.appId,
+        partQuery: {
+          and: [
+            { op: "in", field: "reportsTo.userId", value: ["user1", "user3"] },
+          ],
+        },
+      },
+      tag: obj.tag,
+      arrayFields: arrayFieldsMap,
+    });
+
+    expect(result.objs).toHaveLength(1);
+    expect(result.objs[0].id).toBe(obj.id);
+  });
+
+  it("should handle array field queries with 'not_in' operation", async () => {
+    const obj = makeObjFields({
+      objRecord: {
+        reportsTo: [
+          { userId: "user1", role: "admin" },
+          { userId: "user2", role: "user" },
+        ],
+      },
+    });
+
+    await fmdxPostgresDb.insert(objs).values(obj);
+
+    const arrayFieldsMap = new Map([
+      [
+        "reportsTo",
+        {
+          id: "array-field-6",
+          field: "reportsTo",
+          appId: obj.appId!,
+          groupId: obj.groupId!,
+          tag: obj.tag!,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ],
+    ]);
+
+    const result = await storage.read({
+      query: {
+        appId: obj.appId,
+        partQuery: {
+          and: [
+            {
+              op: "not_in",
+              field: "reportsTo.userId",
+              value: ["user3", "user4"],
+            },
+          ],
+        },
+      },
+      tag: obj.tag,
+      arrayFields: arrayFieldsMap,
+    });
+
+    expect(result.objs).toHaveLength(1);
+    expect(result.objs[0].id).toBe(obj.id);
+  });
+
+  it("should handle array field queries with numeric comparisons", async () => {
+    const obj = makeObjFields({
+      objRecord: {
+        scores: [
+          { value: 85, category: "math" },
+          { value: 92, category: "science" },
+          { value: 78, category: "history" },
+        ],
+      },
+    });
+
+    await fmdxPostgresDb.insert(objs).values(obj);
+
+    const arrayFieldsMap = new Map([
+      [
+        "scores",
+        {
+          id: "array-field-7",
+          field: "scores",
+          appId: obj.appId!,
+          groupId: obj.groupId!,
+          tag: obj.tag!,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ],
+    ]);
+
+    const result = await storage.read({
+      query: {
+        appId: obj.appId,
+        partQuery: {
+          and: [{ op: "gte", field: "scores.value", value: 90 }],
+        },
+      },
+      tag: obj.tag,
+      arrayFields: arrayFieldsMap,
+    });
+
+    expect(result.objs).toHaveLength(1);
+    expect(result.objs[0].id).toBe(obj.id);
+  });
+
+  it("should handle array field queries with 'exists' operation", async () => {
+    const obj = makeObjFields({
+      objRecord: {
+        reportsTo: [
+          { userId: "user1", role: "admin", permissions: ["read", "write"] },
+          { userId: "user2", role: "user" }, // no permissions field
+        ],
+      },
+    });
+
+    await fmdxPostgresDb.insert(objs).values(obj);
+
+    const arrayFieldsMap = new Map([
+      [
+        "reportsTo",
+        {
+          id: "array-field-8",
+          field: "reportsTo",
+          appId: obj.appId!,
+          groupId: obj.groupId!,
+          tag: obj.tag!,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ],
+    ]);
+
+    const result = await storage.read({
+      query: {
+        appId: obj.appId,
+        partQuery: {
+          and: [{ op: "exists", field: "reportsTo.permissions", value: true }],
+        },
+      },
+      tag: obj.tag,
+      arrayFields: arrayFieldsMap,
+    });
+
+    expect(result.objs).toHaveLength(1);
+    expect(result.objs[0].id).toBe(obj.id);
+  });
+
+  it("should handle array field queries with 'like' operation", async () => {
+    const obj = makeObjFields({
+      objRecord: {
+        reportsTo: [
+          { userId: "user1", email: "admin@example.com" },
+          { userId: "user2", email: "user@test.org" },
+        ],
+      },
+    });
+
+    await fmdxPostgresDb.insert(objs).values(obj);
+
+    const arrayFieldsMap = new Map([
+      [
+        "reportsTo",
+        {
+          id: "array-field-9",
+          field: "reportsTo",
+          appId: obj.appId!,
+          groupId: obj.groupId!,
+          tag: obj.tag!,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ],
+    ]);
+
+    const result = await storage.read({
+      query: {
+        appId: obj.appId,
+        partQuery: {
+          and: [
+            { op: "like", field: "reportsTo.email", value: ".*@example\\.com" },
+          ],
+        },
+      },
+      tag: obj.tag,
+      arrayFields: arrayFieldsMap,
+    });
+
+    expect(result.objs).toHaveLength(1);
+    expect(result.objs[0].id).toBe(obj.id);
+  });
+
+  it("should handle mixed array and regular field queries", async () => {
+    const obj = makeObjFields({
+      objRecord: {
+        name: "Test Object",
+        reportsTo: [
+          { userId: "user1", role: "admin" },
+          { userId: "user2", role: "user" },
+        ],
+      },
+    });
+
+    await fmdxPostgresDb.insert(objs).values(obj);
+
+    const arrayFieldsMap = new Map([
+      [
+        "reportsTo",
+        {
+          id: "array-field-10",
+          field: "reportsTo",
+          appId: obj.appId!,
+          groupId: obj.groupId!,
+          tag: obj.tag!,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ],
+    ]);
+
+    const result = await storage.read({
+      query: {
+        appId: obj.appId,
+        partQuery: {
+          and: [
+            { op: "eq", field: "name", value: "Test Object" },
+            { op: "eq", field: "reportsTo.userId", value: "user1" },
+          ],
+        },
+      },
+      tag: obj.tag,
+      arrayFields: arrayFieldsMap,
+    });
+
+    expect(result.objs).toHaveLength(1);
+    expect(result.objs[0].id).toBe(obj.id);
+  });
+
+  it("should handle empty array field queries gracefully", async () => {
+    const obj = makeObjFields({
+      objRecord: {
+        reportsTo: [],
+      },
+    });
+
+    await fmdxPostgresDb.insert(objs).values(obj);
+
+    const arrayFieldsMap = new Map([
+      [
+        "reportsTo",
+        {
+          id: "array-field-11",
+          field: "reportsTo",
+          appId: obj.appId!,
+          groupId: obj.groupId!,
+          tag: obj.tag!,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ],
+    ]);
+
+    const result = await storage.read({
+      query: {
+        appId: obj.appId,
+        partQuery: {
+          and: [{ op: "eq", field: "reportsTo.userId", value: "user1-empty" }],
+        },
+      },
+      tag: obj.tag,
+      arrayFields: arrayFieldsMap,
+    });
+
+    console.log("result");
+    console.dir(result, { depth: null });
+
+    expect(result.objs).toHaveLength(0);
+  });
+
+  it("should handle array field queries with logical AND operations", async () => {
+    const obj = makeObjFields({
+      objRecord: {
+        reportsTo: [
+          { userId: "user1", role: "admin", active: true },
+          { userId: "user2", role: "user", active: false },
+        ],
+      },
+    });
+
+    await fmdxPostgresDb.insert(objs).values(obj);
+
+    const arrayFieldsMap = new Map([
+      [
+        "reportsTo",
+        {
+          id: "array-field-12",
+          field: "reportsTo",
+          appId: obj.appId!,
+          groupId: obj.groupId!,
+          tag: obj.tag!,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ],
+    ]);
+
+    const result = await storage.read({
+      query: {
+        appId: obj.appId,
+        partQuery: {
+          and: [
+            { op: "eq", field: "reportsTo.userId", value: "user1" },
+            { op: "eq", field: "reportsTo.active", value: true },
+          ],
+        },
+      },
+      tag: obj.tag,
+      arrayFields: arrayFieldsMap,
+    });
+
+    expect(result.objs).toHaveLength(1);
+    expect(result.objs[0].id).toBe(obj.id);
+  });
+
+  it("should handle array field queries with logical OR operations", async () => {
+    const obj = makeObjFields({
+      objRecord: {
+        reportsTo: [
+          { userId: "user1", role: "admin" },
+          { userId: "user2", role: "user" },
+        ],
+      },
+    });
+
+    await fmdxPostgresDb.insert(objs).values(obj);
+
+    const arrayFieldsMap = new Map([
+      [
+        "reportsTo",
+        {
+          id: "array-field-13",
+          field: "reportsTo",
+          appId: obj.appId!,
+          groupId: obj.groupId!,
+          tag: obj.tag!,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ],
+    ]);
+
+    const result = await storage.read({
+      query: {
+        appId: obj.appId,
+        partQuery: {
+          or: [
+            { op: "eq", field: "reportsTo.userId", value: "user1" },
+            { op: "eq", field: "reportsTo.userId", value: "user2" },
+          ],
+        },
+      },
+      tag: obj.tag,
+      arrayFields: arrayFieldsMap,
+    });
+
+    expect(result.objs).toHaveLength(1);
+    expect(result.objs[0].id).toBe(obj.id);
+  });
+
+  it("should handle array field queries with 'between' operation", async () => {
+    const obj = makeObjFields({
+      objRecord: {
+        scores: [
+          { value: 85, category: "math" },
+          { value: 92, category: "science" },
+          { value: 78, category: "history" },
+        ],
+      },
+    });
+
+    await fmdxPostgresDb.insert(objs).values(obj);
+
+    const arrayFieldsMap = new Map([
+      [
+        "scores",
+        {
+          id: "array-field-14",
+          field: "scores",
+          appId: obj.appId!,
+          groupId: obj.groupId!,
+          tag: obj.tag!,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ],
+    ]);
+
+    const result = await storage.read({
+      query: {
+        appId: obj.appId,
+        partQuery: {
+          and: [{ op: "between", field: "scores.value", value: [80, 95] }],
+        },
+      },
+      tag: obj.tag,
+      arrayFields: arrayFieldsMap,
+    });
+
+    expect(result.objs).toHaveLength(1);
+    expect(result.objs[0].id).toBe(obj.id);
+  });
+
+  it.only("should handle array field queries with array of primitives", async () => {
+    const obj = makeObjFields({
+      objRecord: {
+        tags: ["javascript", "typescript", "react"],
+        permissions: ["read", "write", "delete"],
+      },
+    });
+
+    await fmdxPostgresDb.insert(objs).values(obj);
+
+    const arrayFieldsMap = new Map([
+      [
+        "tags",
+        {
+          id: "array-field-15",
+          field: "tags",
+          appId: obj.appId!,
+          groupId: obj.groupId!,
+          tag: obj.tag!,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ],
+    ]);
+
+    const result = await storage.read({
+      query: {
+        appId: obj.appId,
+        partQuery: {
+          and: [{ op: "eq", field: "tags", value: "typescript" }],
+        },
+      },
+      tag: obj.tag,
+      arrayFields: arrayFieldsMap,
+    });
+
+    console.log("result");
+    console.dir(result, { depth: null });
+
+    expect(result.objs).toHaveLength(1);
+    expect(result.objs[0].id).toBe(obj.id);
+  });
+
+  it("should handle array field queries with 'neq' operation", async () => {
+    const obj = makeObjFields({
+      objRecord: {
+        reportsTo: [
+          { userId: "user1", role: "admin" },
+          { userId: "user2", role: "user" },
+        ],
+      },
+    });
+
+    await fmdxPostgresDb.insert(objs).values(obj);
+
+    const arrayFieldsMap = new Map([
+      [
+        "reportsTo",
+        {
+          id: "array-field-16",
+          field: "reportsTo",
+          appId: obj.appId!,
+          groupId: obj.groupId!,
+          tag: obj.tag!,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ],
+    ]);
+
+    const result = await storage.read({
+      query: {
+        appId: obj.appId,
+        partQuery: {
+          and: [{ op: "neq", field: "reportsTo.userId", value: "user3" }],
+        },
+      },
+      tag: obj.tag,
+      arrayFields: arrayFieldsMap,
+    });
+
+    expect(result.objs).toHaveLength(1);
+    expect(result.objs[0].id).toBe(obj.id);
+  });
+
+  it("should handle array field queries with complex nested structures", async () => {
+    const obj = makeObjFields({
+      objRecord: {
+        workflow: {
+          steps: [
+            {
+              id: "step1",
+              actions: [
+                { type: "email", config: { template: "welcome" } },
+                { type: "sms", config: { message: "Hello" } },
+              ],
+            },
+            {
+              id: "step2",
+              actions: [
+                { type: "webhook", config: { url: "https://api.example.com" } },
+              ],
+            },
+          ],
+        },
+      },
+    });
+
+    await fmdxPostgresDb.insert(objs).values(obj);
+
+    const arrayFieldsMap = new Map([
+      [
+        "workflow.steps",
+        {
+          id: "array-field-17",
+          field: "workflow.steps",
+          appId: obj.appId!,
+          groupId: obj.groupId!,
+          tag: obj.tag!,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ],
+      [
+        "workflow.steps.actions",
+        {
+          id: "array-field-18",
+          field: "workflow.steps.actions",
+          appId: obj.appId!,
+          groupId: obj.groupId!,
+          tag: obj.tag!,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ],
+    ]);
+
+    const result = await storage.read({
+      query: {
+        appId: obj.appId,
+        partQuery: {
+          and: [
+            { op: "eq", field: "workflow.steps.actions.type", value: "email" },
+          ],
+        },
+      },
+      tag: obj.tag,
+      arrayFields: arrayFieldsMap,
+    });
+
+    expect(result.objs).toHaveLength(1);
+    expect(result.objs[0].id).toBe(obj.id);
+  });
+
+  it("should handle array field queries with mixed array and scalar at same path", async () => {
+    const obj1 = makeObjFields({
+      objRecord: { reportsTo: [{ userId: "user1" }] },
+    });
+    const obj2 = makeObjFields({
+      objRecord: { reportsTo: { userId: "user2" } },
+    });
+    await fmdxPostgresDb.insert(objs).values([obj1, obj2]);
+    const arrayFieldsMap = new Map([
+      [
+        "reportsTo",
+        {
+          id: "array-field-mixed",
+          field: "reportsTo",
+          appId: obj1.appId!,
+          groupId: obj1.groupId!,
+          tag: obj1.tag!,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ],
+    ]);
+    const fieldsMap = new Map([
+      [
+        "reportsTo.userId",
+        {
+          id: "reportsTo-field",
+          field: "reportsTo.userId",
+          fieldKeys: ["reportsTo", "userId"],
+          fieldKeyTypes: ["string", "string"],
+          valueTypes: ["string"],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          appId: obj1.appId!,
+          groupId: obj1.groupId!,
+          tag: obj1.tag!,
+        },
+      ],
+    ]);
+    // Should find obj1 for array, obj2 for scalar
+    const result1 = await storage.read({
+      query: {
+        appId: obj1.appId,
+        partQuery: {
+          and: [{ op: "eq", field: "reportsTo.userId", value: "user1" }],
+        },
+      },
+      tag: obj1.tag,
+      arrayFields: arrayFieldsMap,
+      fields: fieldsMap,
+    });
+    const result2 = await storage.read({
+      query: {
+        appId: obj2.appId,
+        partQuery: {
+          and: [{ op: "eq", field: "reportsTo.userId", value: "user2" }],
+        },
+      },
+      tag: obj2.tag,
+      arrayFields: new Map(),
+      fields: fieldsMap,
+    });
+    expect(result1.objs.some((o) => o.id === obj1.id)).toBe(true);
+    expect(result2.objs.some((o) => o.id === obj2.id)).toBe(true);
   });
 });

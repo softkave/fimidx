@@ -11,7 +11,9 @@ import type { IAppObjRecord } from "../../../definitions/app.js";
 import type { IInputObjRecord, IObj } from "../../../definitions/obj.js";
 import { createStorage } from "../../../storage/config.js";
 import { addApp } from "../../app/addApp.js";
-import { indexObjs } from "../indexObjs.js";
+import { getObjArrayFields } from "../getObjArrayFields.js";
+import { getObjFields } from "../getObjFields.js";
+import { indexObjs, indexObjsBatch } from "../indexObjs.js";
 
 const backends: { type: "mongo" | "postgres"; name: string }[] = [
   { type: "mongo", name: "MongoDB" },
@@ -484,6 +486,475 @@ describe.each(backends)("indexObjs integration (%s)", (backend) => {
 
       expect(fields.length).toBe(0);
       expect(parts.length).toBe(0);
+    });
+
+    it("should extract array fields from indexed objects", async () => {
+      const obj = makeObj({
+        objRecord: {
+          reportsTo: [
+            { userId: "user1", role: "admin" },
+            { userId: "user2", role: "user" },
+          ],
+          logsQuery: {
+            and: [
+              { op: "eq", field: "status", value: "active" },
+              { op: "in", field: "type", value: ["error", "warning"] },
+            ],
+          },
+        },
+      });
+
+      await storage.create({ objs: [obj] });
+
+      await indexObjsBatch({
+        objs: [obj],
+        getApp: () => null,
+      });
+
+      // Check that array fields were extracted and stored
+      const arrayFields = await getObjArrayFields({
+        appId: obj.appId!,
+        tag: obj.tag!,
+      });
+
+      expect(arrayFields).toHaveLength(2);
+      expect(arrayFields.map((f) => f.field)).toEqual([
+        "reportsTo",
+        "logsQuery.and",
+      ]);
+    });
+
+    it("should extract deeply nested array fields", async () => {
+      const obj = makeObj({
+        objRecord: {
+          logsQuery: {
+            and: [
+              {
+                op: [
+                  { subOp: "eq", value: "test" },
+                  { subOp: "neq", value: "other" },
+                ],
+              },
+            ],
+          },
+        },
+      });
+
+      await storage.create({ objs: [obj] });
+
+      await indexObjsBatch({
+        objs: [obj],
+        getApp: () => null,
+      });
+
+      const arrayFields = await getObjArrayFields({
+        appId: obj.appId!,
+        tag: obj.tag!,
+      });
+
+      expect(arrayFields).toHaveLength(2);
+      expect(arrayFields.map((f) => f.field)).toEqual([
+        "logsQuery.and",
+        "logsQuery.and.op",
+      ]);
+    });
+
+    it("should handle array fields with complex nested structures", async () => {
+      const obj = makeObj({
+        objRecord: {
+          workflow: {
+            steps: [
+              {
+                id: "step1",
+                actions: [
+                  { type: "email", config: { template: "welcome" } },
+                  { type: "sms", config: { message: "Hello" } },
+                ],
+              },
+              {
+                id: "step2",
+                actions: [
+                  {
+                    type: "webhook",
+                    config: { url: "https://api.example.com" },
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      });
+
+      await storage.create({ objs: [obj] });
+
+      await indexObjsBatch({
+        objs: [obj],
+        getApp: () => null,
+      });
+
+      const arrayFields = await getObjArrayFields({
+        appId: obj.appId!,
+        tag: obj.tag!,
+      });
+
+      expect(arrayFields).toHaveLength(2);
+      expect(arrayFields.map((f) => f.field)).toEqual([
+        "workflow.steps",
+        "workflow.steps.actions",
+      ]);
+    });
+
+    it("should handle array fields with array of primitives", async () => {
+      const obj = makeObj({
+        objRecord: {
+          tags: ["javascript", "typescript", "react"],
+          permissions: ["read", "write", "delete"],
+          scores: [85, 92, 78],
+        },
+      });
+
+      await storage.create({ objs: [obj] });
+
+      await indexObjsBatch({
+        objs: [obj],
+        getApp: () => null,
+      });
+
+      const arrayFields = await getObjArrayFields({
+        appId: obj.appId!,
+        tag: obj.tag!,
+      });
+
+      expect(arrayFields).toHaveLength(3);
+      expect(arrayFields.map((f) => f.field)).toEqual([
+        "tags",
+        "permissions",
+        "scores",
+      ]);
+    });
+
+    it("should handle empty arrays", async () => {
+      const obj = makeObj({
+        objRecord: {
+          reportsTo: [],
+          logsQuery: {
+            and: [],
+          },
+        },
+      });
+
+      await storage.create({ objs: [obj] });
+
+      await indexObjsBatch({
+        objs: [obj],
+        getApp: () => null,
+      });
+
+      const arrayFields = await getObjArrayFields({
+        appId: obj.appId!,
+        tag: obj.tag!,
+      });
+
+      expect(arrayFields).toHaveLength(2);
+      expect(arrayFields.map((f) => f.field)).toEqual([
+        "reportsTo",
+        "logsQuery.and",
+      ]);
+    });
+
+    it("should handle mixed array and scalar fields", async () => {
+      const obj = makeObj({
+        objRecord: {
+          name: "Test Object",
+          reportsTo: [
+            { userId: "user1", role: "admin" },
+            { userId: "user2", role: "user" },
+          ],
+          status: "active",
+          scores: [85, 92, 78],
+        },
+      });
+
+      await storage.create({ objs: [obj] });
+
+      await indexObjsBatch({
+        objs: [obj],
+        getApp: () => null,
+      });
+
+      const arrayFields = await getObjArrayFields({
+        appId: obj.appId!,
+        tag: obj.tag!,
+      });
+
+      expect(arrayFields).toHaveLength(2);
+      expect(arrayFields.map((f) => f.field)).toEqual(["reportsTo", "scores"]);
+
+      // Check that regular fields are also indexed
+      const regularFields = await getObjFields({
+        appId: obj.appId!,
+        tag: obj.tag!,
+      });
+
+      expect(regularFields.fields.some((f) => f.field === "name")).toBe(true);
+      expect(regularFields.fields.some((f) => f.field === "status")).toBe(true);
+    });
+
+    it("should handle array fields with special characters in paths", async () => {
+      const obj = makeObj({
+        objRecord: {
+          "user.permissions[0].actions": [
+            { type: "read", scope: "global" },
+            { type: "write", scope: "local" },
+          ],
+          "config.settings.nested.array": [
+            { key: "setting1", value: "value1" },
+            { key: "setting2", value: "value2" },
+          ],
+        },
+      });
+
+      await storage.create({ objs: [obj] });
+
+      await indexObjsBatch({
+        objs: [obj],
+        getApp: () => null,
+      });
+
+      const arrayFields = await getObjArrayFields({
+        appId: obj.appId!,
+        tag: obj.tag!,
+      });
+
+      expect(arrayFields).toHaveLength(2);
+      expect(arrayFields.map((f) => f.field)).toEqual([
+        "user.permissions[0].actions",
+        "config.settings.nested.array",
+      ]);
+    });
+
+    it("should handle array fields with numeric keys", async () => {
+      const obj = makeObj({
+        objRecord: {
+          items: {
+            0: { id: "item1", name: "Item 1" },
+            1: { id: "item2", name: "Item 2" },
+            2: { id: "item3", name: "Item 3" },
+          },
+        },
+      });
+
+      await storage.create({ objs: [obj] });
+
+      await indexObjsBatch({
+        objs: [obj],
+        getApp: () => null,
+      });
+
+      const arrayFields = await getObjArrayFields({
+        appId: obj.appId!,
+        tag: obj.tag!,
+      });
+
+      expect(arrayFields).toHaveLength(1);
+      expect(arrayFields[0].field).toBe("items");
+    });
+
+    it("should handle array fields with mixed numeric and string keys", async () => {
+      const obj = makeObj({
+        objRecord: {
+          data: {
+            "0": { type: "string", value: "hello" },
+            "1": { type: "number", value: 42 },
+            key1: { type: "boolean", value: true },
+            "2": { type: "object", value: { nested: true } },
+          },
+        },
+      });
+
+      await storage.create({ objs: [obj] });
+
+      await indexObjsBatch({
+        objs: [obj],
+        getApp: () => null,
+      });
+
+      const arrayFields = await getObjArrayFields({
+        appId: obj.appId!,
+        tag: obj.tag!,
+      });
+
+      expect(arrayFields).toHaveLength(1);
+      expect(arrayFields[0].field).toBe("data");
+    });
+
+    it("should handle array fields with deeply nested numeric keys", async () => {
+      const obj = makeObj({
+        objRecord: {
+          workflow: {
+            steps: {
+              "0": {
+                actions: {
+                  "0": { type: "email", config: { template: "welcome" } },
+                  "1": { type: "sms", config: { message: "Hello" } },
+                },
+              },
+              "1": {
+                actions: {
+                  "0": {
+                    type: "webhook",
+                    config: { url: "https://api.example.com" },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      await storage.create({ objs: [obj] });
+
+      await indexObjsBatch({
+        objs: [obj],
+        getApp: () => null,
+      });
+
+      const arrayFields = await getObjArrayFields({
+        appId: obj.appId!,
+        tag: obj.tag!,
+      });
+
+      expect(arrayFields).toHaveLength(2);
+      expect(arrayFields.map((f) => f.field)).toEqual([
+        "workflow.steps",
+        "workflow.steps.actions",
+      ]);
+    });
+
+    it("should handle array fields with multiple levels of nesting", async () => {
+      const obj = makeObj({
+        objRecord: {
+          data: {
+            "0": {
+              items: {
+                "0": {
+                  subItems: {
+                    "0": { id: "sub1", value: "value1" },
+                    "1": { id: "sub2", value: "value2" },
+                  },
+                },
+                "1": {
+                  subItems: {
+                    "0": { id: "sub3", value: "value3" },
+                  },
+                },
+              },
+            },
+            "1": {
+              items: {
+                "0": {
+                  subItems: {
+                    "0": { id: "sub4", value: "value4" },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      await storage.create({ objs: [obj] });
+
+      await indexObjsBatch({
+        objs: [obj],
+        getApp: () => null,
+      });
+
+      const arrayFields = await getObjArrayFields({
+        appId: obj.appId!,
+        tag: obj.tag!,
+      });
+
+      expect(arrayFields).toHaveLength(3);
+      expect(arrayFields.map((f) => f.field)).toEqual([
+        "data",
+        "data.items",
+        "data.items.subItems",
+      ]);
+    });
+
+    it("should handle array fields with mixed data types", async () => {
+      const obj = makeObj({
+        objRecord: {
+          mixed: {
+            "0": "string value",
+            "1": 42,
+            "2": true,
+            "3": { nested: "object" },
+            "4": ["array", "of", "strings"],
+            "5": null,
+          },
+        },
+      });
+
+      await storage.create({ objs: [obj] });
+
+      await indexObjsBatch({
+        objs: [obj],
+        getApp: () => null,
+      });
+
+      const arrayFields = await getObjArrayFields({
+        appId: obj.appId!,
+        tag: obj.tag!,
+      });
+
+      expect(arrayFields).toHaveLength(1);
+      expect(arrayFields[0].field).toBe("mixed");
+    });
+
+    it("should handle array fields with sparse arrays", async () => {
+      const obj = makeObj({
+        objRecord: {
+          sparse: {
+            "0": "first",
+            "5": "fifth",
+            "10": "tenth",
+            "15": "fifteenth",
+          },
+        },
+      });
+
+      await storage.create({ objs: [obj] });
+
+      await indexObjsBatch({
+        objs: [obj],
+        getApp: () => null,
+      });
+
+      const arrayFields = await getObjArrayFields({
+        appId: obj.appId!,
+        tag: obj.tag!,
+      });
+
+      expect(arrayFields).toHaveLength(1);
+      expect(arrayFields[0].field).toBe("sparse");
+    });
+
+    it("should extract array fields for mixed array and scalar at same path", async () => {
+      const obj = makeObj({
+        objRecord: {
+          mixed: [{ foo: 1 }, { foo: 2 }],
+          mixed2: { foo: 3 },
+        },
+      });
+      await storage.create({ objs: [obj] });
+      await indexObjs({ lastSuccessAt: null, storageType: backend.type });
+      const arrayFields = await getObjArrayFields({
+        appId: obj.appId!,
+        tag: obj.tag!,
+      });
+      expect(arrayFields.map((f) => f.field)).toContain("mixed");
     });
   });
 });

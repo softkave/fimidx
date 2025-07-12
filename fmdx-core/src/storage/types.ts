@@ -3,6 +3,7 @@ import type { AnyObject } from "softkave-js-utils";
 import type {
   IInputObjRecord,
   IObj,
+  IObjArrayField,
   IObjField,
   IObjQuery,
   IObjSortList,
@@ -39,7 +40,8 @@ export interface ReadObjsParams {
   page?: number;
   limit?: number;
   sort?: IObjSortList;
-  fields?: IObjField[];
+  fields?: Map<string, IObjField>;
+  arrayFields?: Map<string, IObjArrayField>;
   date?: Date;
   includeDeleted?: boolean;
 }
@@ -54,6 +56,8 @@ export interface UpdateObjsParams {
   count?: number;
   shouldIndex?: boolean;
   fieldsToIndex?: string[];
+  fields?: Map<string, IObjField>;
+  arrayFields?: Map<string, IObjArrayField>;
 }
 
 export interface DeleteObjsParams {
@@ -63,6 +67,8 @@ export interface DeleteObjsParams {
   deletedBy: string;
   deletedByType: string;
   deleteMany?: boolean;
+  fields?: Map<string, IObjField>;
+  arrayFields?: Map<string, IObjArrayField>;
 }
 
 // Result types for storage operations
@@ -94,7 +100,11 @@ export interface StorageConfig {
 
 // Query transformer interface
 export interface IQueryTransformer<T> {
-  transformFilter(query: IObjQuery, date: Date): T;
+  transformFilter(
+    query: IObjQuery,
+    date: Date,
+    arrayFields?: Map<string, IObjArrayField>
+  ): T;
   transformSort(sort: IObjSortList, fields?: IObjField[]): T;
   transformPagination(page: number, limit: number): T;
 }

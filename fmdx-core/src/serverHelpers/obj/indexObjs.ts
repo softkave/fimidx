@@ -5,16 +5,59 @@ import { indexJson } from "softkave-js-utils";
 import { v7 as uuidv7 } from "uuid";
 import {
   db,
+  objArrayFields as objArrayFieldsTable,
   objFields as objFieldsTable,
   objParts as objPartsTable,
 } from "../../db/fmdx.sqlite.js";
 import type { IApp } from "../../definitions/app.js";
-import type { IObj, IObjField, IObjPart } from "../../definitions/obj.js";
+import type {
+  IObj,
+  IObjArrayField,
+  IObjField,
+  IObjPart,
+} from "../../definitions/obj.js";
 import { createStorage, getDefaultStorageType } from "../../storage/config.js";
 import type { IObjStorage } from "../../storage/types.js";
 import { getApps } from "../app/getApps.js";
 
 const batchSize = 1000;
+
+function extractArrayFields(
+  indexedJson: ReturnType<typeof indexJson>
+): ArrayField[] {
+  const arrayFields = new Map<string, ArrayField>();
+
+  for (const [fieldPath, fieldData] of Object.entries(indexedJson)) {
+    const segments = fieldPath.split(".");
+
+    // Find array segments (numeric keys)
+    for (let i = 0; i < segments.length - 1; i++) {
+      if (/^\d+$/.test(segments[i])) {
+        // This is an array index, find the parent array field
+        const parentPath = segments.slice(0, i).join(".");
+
+        // Store the ARRAY FIELD, not the specific array element
+        if (!arrayFields.has(parentPath)) {
+          arrayFields.set(parentPath, {
+            field: parentPath, // e.g., 'logsQuery.and'
+            appId: "", // Will be set later
+            groupId: "", // Will be set later
+            tag: "", // Will be set later
+          });
+        }
+      }
+    }
+  }
+
+  return Array.from(arrayFields.values());
+}
+
+type ArrayField = {
+  field: string;
+  appId: string;
+  groupId: string;
+  tag: string;
+};
 
 async function indexObjFields(params: {
   objs: IObj[];
@@ -294,7 +337,7 @@ function initAppGetter() {
   };
 }
 
-async function indexObjsBatch(params: {
+export async function indexObjsBatch(params: {
   objs: IObj[];
   getApp: (obj: IObj) => IApp | null;
 }) {
@@ -322,8 +365,21 @@ async function indexObjsBatch(params: {
     return index;
   });
 
+  // Extract array fields from each indexed object
+  const arrayFieldsList = indexList.map((index) => {
+    const arrayFields = extractArrayFields(index);
+    // Set the metadata from the corresponding object
+    return arrayFields.map((arrayField) => ({
+      ...arrayField,
+      appId: objs[indexList.indexOf(index)].appId,
+      groupId: objs[indexList.indexOf(index)].groupId,
+      tag: objs[indexList.indexOf(index)].tag,
+    }));
+  });
+
   await indexObjFields({ objs, indexList });
   await indexObjParts({ objs, indexList });
+  await indexObjArrayFields({ objs, arrayFieldsList });
 }
 
 export async function indexObjs(params: {
@@ -375,4 +431,100 @@ export async function indexObjs(params: {
 
     page++;
   } while (batch.length > 0);
+}
+
+async function indexObjArrayFields(params: {
+  objs: IObj[];
+  arrayFieldsList: ArrayField[][];
+}) {
+  const { objs, arrayFieldsList } = params;
+
+  const arrayFields: IObjArrayField[] = [];
+
+  arrayFieldsList.forEach((objArrayFields, objIndex) => {
+    const obj = objs[objIndex];
+    objArrayFields.forEach((arrayField) => {
+      arrayFields.push({
+        id: uuidv7(),
+        field: arrayField.field,
+        appId: obj.appId,
+        groupId: obj.groupId,
+        tag: obj.tag,
+        createdAt: obj.createdAt,
+        updatedAt: obj.updatedAt,
+      });
+    });
+  });
+
+  if (arrayFields.length === 0) {
+    return;
+  }
+
+  let batchSize = 100;
+  let batchIndex = 0;
+  while (batchIndex < arrayFields.length) {
+    const batch = arrayFields.slice(batchIndex, batchIndex + batchSize);
+    const existingArrayFields = await db
+      .select()
+      .from(objArrayFieldsTable)
+      .where(
+        and(
+          inArray(
+            objArrayFieldsTable.field,
+            batch.map((field) => field.field)
+          ),
+          eq(objArrayFieldsTable.appId, batch[0].appId)
+        )
+      )
+      .limit(batchSize);
+
+    const existingArrayFieldsMap = new Map<string, IObjArrayField>(
+      existingArrayFields.map((field) => [field.field, field])
+    );
+
+    const newArrayFields: IObjArrayField[] = [];
+    const existingArrayFieldsToUpdate: Array<{
+      id: string;
+      obj: Partial<IObjArrayField>;
+    }> = [];
+
+    batch.forEach((arrayField) => {
+      const existingArrayField = existingArrayFieldsMap.get(arrayField.field);
+      if (existingArrayField) {
+        existingArrayFieldsToUpdate.push({
+          id: existingArrayField.id,
+          obj: {
+            updatedAt: arrayField.updatedAt,
+          },
+        });
+      } else {
+        newArrayFields.push(arrayField);
+      }
+    });
+
+    // @ts-expect-error
+    const batchParams: Parameters<typeof db.batch> = [];
+
+    if (newArrayFields.length > 0) {
+      // @ts-expect-error
+      batchParams.push(db.insert(objArrayFieldsTable).values(newArrayFields));
+    }
+    if (existingArrayFieldsToUpdate.length > 0) {
+      batchParams.push(
+        // @ts-expect-error
+        ...existingArrayFieldsToUpdate.map(({ id, obj }) =>
+          db
+            .update(objArrayFieldsTable)
+            .set(obj)
+            .where(eq(objArrayFieldsTable.id, id))
+        )
+      );
+    }
+
+    if (batchParams.length > 0) {
+      // @ts-expect-error
+      await db.batch(batchParams);
+    }
+    batchIndex += batchSize;
+  }
 }

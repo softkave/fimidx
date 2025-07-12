@@ -48,6 +48,17 @@ export type IObjField = {
   tag: string;
 };
 
+export type IObjArrayField = {
+  id: string;
+  /** dot separated list of keys representing the array field path */
+  field: string;
+  createdAt: Date;
+  updatedAt: Date;
+  appId: string;
+  groupId: string;
+  tag: string;
+};
+
 export type IObj = {
   id: string;
   createdAt: Date;
@@ -114,7 +125,7 @@ export const objPartQueryItemSchema = z.discriminatedUnion("op", [
   z.object({
     op: z.literal("eq"),
     field: z.string(),
-    value: z.union([z.string(), z.number()]),
+    value: z.union([z.string(), z.number(), z.boolean()]),
   }),
   z.object({
     op: z.literal("neq"),

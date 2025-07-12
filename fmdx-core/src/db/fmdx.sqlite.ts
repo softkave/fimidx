@@ -83,3 +83,15 @@ export const objParts = sqliteTable("objPart", {
   updatedAt: integer("updatedAt", { mode: "timestamp_ms" }).notNull(),
   tag: text("tag").notNull(),
 });
+
+export const objArrayFields = sqliteTable("objArrayField", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => uuidv7()),
+  createdAt: integer("createdAt", { mode: "timestamp_ms" }).notNull(),
+  updatedAt: integer("updatedAt", { mode: "timestamp_ms" }).notNull(),
+  field: text("field").notNull(),
+  appId: text("appId").notNull(),
+  groupId: text("groupId").notNull(),
+  tag: text("tag").notNull(),
+});

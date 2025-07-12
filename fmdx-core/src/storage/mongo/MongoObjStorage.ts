@@ -49,7 +49,10 @@ export class MongoObjStorage implements IObjStorage {
     );
 
     const sort = params.sort
-      ? this.queryTransformer.transformSort(params.sort, params.fields)
+      ? this.queryTransformer.transformSort(
+          params.sort,
+          params.fields ? Array.from(params.fields.values()) : undefined
+        )
       : { createdAt: -1 as SortOrder };
 
     const pagination = this.queryTransformer.transformPagination(

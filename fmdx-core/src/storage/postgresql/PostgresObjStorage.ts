@@ -112,9 +112,12 @@ export class PostgresObjStorage implements IObjStorage {
       params.query.metaQuery ||
       params.query.topLevelFields
     ) {
+      // Note: For pure array fields, empty arrays are now excluded from query results (see PostgresQueryTransformer)
       const filterCondition = this.queryTransformer.transformFilter(
         params.query,
-        date
+        date,
+        params.arrayFields,
+        params.fields
       );
       conditions.push(filterCondition);
     }
@@ -122,8 +125,23 @@ export class PostgresObjStorage implements IObjStorage {
     // Build the complete query
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
     const orderByClause = params.sort
-      ? this.queryTransformer.transformSort(params.sort, params.fields)
+      ? this.queryTransformer.transformSort(
+          params.sort,
+          params.fields ? Array.from(params.fields.values()) : undefined
+        )
       : sql`${sql.identifier(mapFieldToDbColumn("createdAt"))} DESC`;
+
+    console.log(
+      "sql",
+      this.db
+        .select()
+        .from(objs)
+        .where(whereClause)
+        .orderBy(orderByClause)
+        .limit(limit)
+        .offset(page * limit)
+        .toSQL()
+    );
 
     const result = await this.db
       .select()
@@ -178,7 +196,9 @@ export class PostgresObjStorage implements IObjStorage {
     ) {
       const filterCondition = this.queryTransformer.transformFilter(
         params.query,
-        date
+        date,
+        params.arrayFields,
+        params.fields
       );
       conditions.push(filterCondition);
     }
@@ -270,7 +290,9 @@ export class PostgresObjStorage implements IObjStorage {
     ) {
       const filterCondition = this.queryTransformer.transformFilter(
         params.query,
-        date
+        date,
+        params.arrayFields,
+        params.fields
       );
       conditions.push(filterCondition);
     }
@@ -422,7 +444,9 @@ export class PostgresObjStorage implements IObjStorage {
     if (query.partQuery || query.metaQuery || query.topLevelFields) {
       const filterCondition = this.queryTransformer.transformFilter(
         query,
-        date
+        date,
+        params.arrayFields,
+        params.fields
       );
       conditions.push(filterCondition);
     }
@@ -538,7 +562,9 @@ export class PostgresObjStorage implements IObjStorage {
     if (query.partQuery || query.metaQuery || query.topLevelFields) {
       const filterCondition = this.queryTransformer.transformFilter(
         query,
-        date
+        date,
+        params.arrayFields,
+        params.fields
       );
       conditions.push(filterCondition);
     }

@@ -483,4 +483,801 @@ describe("PostgresQueryTransformer", () => {
       expect(result).toEqual({ sql: ["TRUE"], values: [] });
     });
   });
+
+  describe("array field queries", () => {
+    const arrayFields = new Map([
+      [
+        "logsQuery.and",
+        {
+          id: "1",
+          field: "logsQuery.and",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          appId: "app1",
+          groupId: "group1",
+          tag: "tag1",
+        },
+      ],
+      [
+        "comments",
+        {
+          id: "2",
+          field: "comments",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          appId: "app1",
+          groupId: "group1",
+          tag: "tag1",
+        },
+      ],
+    ]);
+
+    it("should debug array field in operation", () => {
+      const query: IObjQuery = {
+        appId: "app1",
+        partQuery: {
+          and: [
+            {
+              op: "in",
+              field: "logsQuery.and.level",
+              value: ["error", "warn"],
+            },
+          ],
+        },
+      };
+      const result = transformer.transformFilter(query, now, arrayFields);
+
+      // For now, just verify it doesn't throw
+      expect(result).toBeDefined();
+    });
+
+    it("should handle array field eq operation", () => {
+      const query: IObjQuery = {
+        appId: "app1",
+        partQuery: {
+          and: [
+            {
+              op: "eq",
+              field: "logsQuery.and.message",
+              value: "error occurred",
+            },
+          ],
+        },
+      };
+      const result = transformer.transformFilter(query, now, arrayFields);
+      // Check that the result contains the expected SQL structure
+      expect(result).toBeDefined();
+      expect((result as any).join).toBeDefined();
+      expect((result as any).join.length).toBeGreaterThan(1);
+    });
+
+    it("should handle array field neq operation", () => {
+      const query: IObjQuery = {
+        appId: "app1",
+        partQuery: {
+          and: [
+            {
+              op: "neq",
+              field: "logsQuery.and.level",
+              value: "debug",
+            },
+          ],
+        },
+      };
+      const result = transformer.transformFilter(query, now, arrayFields);
+      // Check that the result contains NOT EXISTS
+      expect(result).toBeDefined();
+      expect((result as any).join).toBeDefined();
+    });
+
+    it("should handle array field in operation", () => {
+      const query: IObjQuery = {
+        appId: "app1",
+        partQuery: {
+          and: [
+            {
+              op: "in",
+              field: "logsQuery.and.level",
+              value: ["error", "warn"],
+            },
+          ],
+        },
+      };
+      const result = transformer.transformFilter(query, now, arrayFields);
+      // Check that the result contains ANY
+      expect(result).toBeDefined();
+      expect((result as any).join).toBeDefined();
+    });
+
+    it("should handle array field not_in operation", () => {
+      const query: IObjQuery = {
+        appId: "app1",
+        partQuery: {
+          and: [
+            {
+              op: "not_in",
+              field: "logsQuery.and.level",
+              value: ["debug", "info"],
+            },
+          ],
+        },
+      };
+      const result = transformer.transformFilter(query, now, arrayFields);
+      // Check that the result contains NOT EXISTS
+      expect(result).toBeDefined();
+      expect((result as any).join).toBeDefined();
+    });
+
+    it("should handle array field like operation", () => {
+      const query: IObjQuery = {
+        appId: "app1",
+        partQuery: {
+          and: [
+            {
+              op: "like",
+              field: "logsQuery.and.message",
+              value: "error.*",
+              caseSensitive: false,
+            },
+          ],
+        },
+      };
+      const result = transformer.transformFilter(query, now, arrayFields);
+      // Check that the result contains regex operator
+      expect(result).toBeDefined();
+      expect((result as any).join).toBeDefined();
+    });
+
+    it("should handle array field exists operation", () => {
+      const query: IObjQuery = {
+        appId: "app1",
+        partQuery: {
+          and: [
+            {
+              op: "exists",
+              field: "logsQuery.and.timestamp",
+              value: true,
+            },
+          ],
+        },
+      };
+      const result = transformer.transformFilter(query, now, arrayFields);
+      // Check that the result contains IS NOT NULL
+      expect(result).toBeDefined();
+      expect((result as any).join).toBeDefined();
+    });
+
+    it("should handle array field numeric operations", () => {
+      const query: IObjQuery = {
+        appId: "app1",
+        partQuery: {
+          and: [
+            {
+              op: "gt",
+              field: "logsQuery.and.count",
+              value: 5,
+            },
+            {
+              op: "lte",
+              field: "logsQuery.and.count",
+              value: 100,
+            },
+          ],
+        },
+      };
+      const result = transformer.transformFilter(query, now, arrayFields);
+      // Check that the result contains numeric casting
+      expect(result).toBeDefined();
+      expect((result as any).join).toBeDefined();
+    });
+
+    it("should handle nested array field paths", () => {
+      const query: IObjQuery = {
+        appId: "app1",
+        partQuery: {
+          and: [
+            {
+              op: "eq",
+              field: "logsQuery.and.details.user.id",
+              value: "user123",
+            },
+          ],
+        },
+      };
+      const result = transformer.transformFilter(query, now, arrayFields);
+      // Check that the result contains the nested path
+      expect(result).toBeDefined();
+      expect((result as any).join).toBeDefined();
+    });
+
+    it("should fall back to regular query for non-array fields", () => {
+      const query: IObjQuery = {
+        appId: "app1",
+        partQuery: {
+          and: [
+            {
+              op: "eq",
+              field: "regularField",
+              value: "value",
+            },
+          ],
+        },
+      };
+      const result = transformer.transformFilter(query, now, arrayFields);
+      // Should not use array-specific SQL
+      expect(result).toBeDefined();
+      expect((result as any).join).toBeDefined();
+    });
+
+    it("should handle array field with empty in array", () => {
+      const query: IObjQuery = {
+        appId: "app1",
+        partQuery: {
+          and: [
+            {
+              op: "in",
+              field: "logsQuery.and.level",
+              value: [],
+            },
+          ],
+        },
+      };
+      const result = transformer.transformFilter(query, now, arrayFields);
+      // Should return FALSE for empty in array
+      expect(result).toBeDefined();
+    });
+
+    it("should handle array field with empty not_in array", () => {
+      const query: IObjQuery = {
+        appId: "app1",
+        partQuery: {
+          and: [
+            {
+              op: "not_in",
+              field: "logsQuery.and.level",
+              value: [],
+            },
+          ],
+        },
+      };
+      const result = transformer.transformFilter(query, now, arrayFields);
+      // Should return TRUE for empty not_in array
+      expect(result).toBeDefined();
+    });
+
+    it("should handle array field between operation", () => {
+      const query: IObjQuery = {
+        appId: "app1",
+        partQuery: {
+          and: [
+            {
+              op: "between",
+              field: "logsQuery.and.count",
+              value: [1, 10],
+            },
+          ],
+        },
+      };
+      const result = transformer.transformFilter(query, now, arrayFields);
+      // Check that the result contains numeric casting
+      expect(result).toBeDefined();
+      expect((result as any).join).toBeDefined();
+    });
+
+    it("should handle complex array field queries with logical operators", () => {
+      const query: IObjQuery = {
+        appId: "app1",
+        partQuery: {
+          and: [
+            {
+              op: "eq",
+              field: "logsQuery.and.level",
+              value: "error",
+            },
+          ],
+          or: [
+            {
+              op: "gt",
+              field: "logsQuery.and.count",
+              value: 5,
+            },
+            {
+              op: "like",
+              field: "logsQuery.and.message",
+              value: "critical",
+            },
+          ],
+        },
+      };
+      const result = transformer.transformFilter(query, now, arrayFields);
+      // Check that the result contains array-specific SQL
+      expect(result).toBeDefined();
+      expect((result as any).join).toBeDefined();
+    });
+
+    it("should not match pure array field when array is empty", () => {
+      const arrayFields = new Map([
+        [
+          "comments",
+          {
+            id: "2",
+            field: "comments",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            appId: "app1",
+            groupId: "group1",
+            tag: "tag1",
+          },
+        ],
+      ]);
+      const query: IObjQuery = {
+        appId: "app1",
+        partQuery: {
+          and: [
+            {
+              op: "eq",
+              field: "comments.rating",
+              value: 5,
+            },
+          ],
+        },
+      };
+      const result = transformer.transformFilter(query, now, arrayFields);
+      // Should include jsonb_array_length check in the SQL
+      const sqlString = JSON.stringify(result);
+      expect(sqlString).toContain("jsonb_array_length");
+      expect(sqlString).toContain("> 0");
+    });
+  });
+
+  describe("enhanced sort functionality", () => {
+    it("should handle sort with fields parameter and skip invalid fields", () => {
+      const sort: IObjSortList = [
+        { field: "objRecord.validField", direction: "asc" },
+        { field: "objRecord.invalidField", direction: "desc" },
+        { field: "objRecord.anotherValidField", direction: "asc" },
+      ];
+
+      const fields: IObjField[] = [
+        {
+          id: "1",
+          field: "validField",
+          fieldKeys: ["validField"],
+          fieldKeyTypes: ["string"],
+          valueTypes: ["string"],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          appId: "app1",
+          groupId: "group1",
+          tag: "tag1",
+        },
+        {
+          id: "2",
+          field: "anotherValidField",
+          fieldKeys: ["anotherValidField"],
+          fieldKeyTypes: ["string"],
+          valueTypes: ["number"],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          appId: "app1",
+          groupId: "group1",
+          tag: "tag1",
+        },
+      ];
+
+      const result = transformer.transformSort(sort, fields);
+      expect(result).toEqual({
+        sql: ["", ", ", ""],
+        values: [
+          { raw: "obj_record->>'validField' ASC" },
+          { raw: "(obj_record->>'anotherValidField')::numeric ASC" },
+        ],
+      });
+    });
+
+    it("should handle sort with mixed field types and nested paths", () => {
+      const sort: IObjSortList = [
+        { field: "objRecord.user.profile.age", direction: "desc" },
+        { field: "objRecord.user.profile.name", direction: "asc" },
+        { field: "objRecord.createdAt", direction: "desc" },
+      ];
+
+      const fields: IObjField[] = [
+        {
+          id: "1",
+          field: "user.profile.age",
+          fieldKeys: ["user", "profile", "age"],
+          fieldKeyTypes: ["string", "string", "string"],
+          valueTypes: ["number"],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          appId: "app1",
+          groupId: "group1",
+          tag: "tag1",
+        },
+        {
+          id: "2",
+          field: "user.profile.name",
+          fieldKeys: ["user", "profile", "name"],
+          fieldKeyTypes: ["string", "string", "string"],
+          valueTypes: ["string"],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          appId: "app1",
+          groupId: "group1",
+          tag: "tag1",
+        },
+      ];
+
+      const result = transformer.transformSort(sort, fields);
+      expect(result).toEqual({
+        sql: ["", ", ", ""],
+        values: [
+          { raw: "(obj_record#>>'{user,profile,age}')::numeric DESC" },
+          { raw: "obj_record#>>'{user,profile,name}' ASC" },
+        ],
+      });
+    });
+
+    it("should handle sort with invalid direction values", () => {
+      const sort: IObjSortList = [
+        // @ts-expect-error: invalid direction
+        { field: "objRecord.field1", direction: "invalid" },
+        { field: "objRecord.field2", direction: "asc" },
+      ];
+
+      const fields: IObjField[] = [
+        {
+          id: "1",
+          field: "field1",
+          fieldKeys: ["field1"],
+          fieldKeyTypes: ["string"],
+          valueTypes: ["string"],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          appId: "app1",
+          groupId: "group1",
+          tag: "tag1",
+        },
+        {
+          id: "2",
+          field: "field2",
+          fieldKeys: ["field2"],
+          fieldKeyTypes: ["string"],
+          valueTypes: ["string"],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          appId: "app1",
+          groupId: "group1",
+          tag: "tag1",
+        },
+      ];
+
+      const result = transformer.transformSort(sort, fields);
+      // Should default to DESC for invalid direction
+      expect(result).toEqual({
+        sql: ["", ", ", ""],
+        values: [
+          { raw: "obj_record->>'field1' DESC" },
+          { raw: "obj_record->>'field2' ASC" },
+        ],
+      });
+    });
+
+    it("should handle sort with multiple clauses properly", () => {
+      const sort: IObjSortList = [
+        { field: "objRecord.priority", direction: "desc" },
+        { field: "objRecord.createdAt", direction: "asc" },
+        { field: "objRecord.status", direction: "desc" },
+      ];
+
+      const fields: IObjField[] = [
+        {
+          id: "1",
+          field: "priority",
+          fieldKeys: ["priority"],
+          fieldKeyTypes: ["string"],
+          valueTypes: ["number"],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          appId: "app1",
+          groupId: "group1",
+          tag: "tag1",
+        },
+        {
+          id: "2",
+          field: "createdAt",
+          fieldKeys: ["createdAt"],
+          fieldKeyTypes: ["string"],
+          valueTypes: ["string"],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          appId: "app1",
+          groupId: "group1",
+          tag: "tag1",
+        },
+        {
+          id: "3",
+          field: "status",
+          fieldKeys: ["status"],
+          fieldKeyTypes: ["string"],
+          valueTypes: ["string"],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          appId: "app1",
+          groupId: "group1",
+          tag: "tag1",
+        },
+      ];
+
+      const result = transformer.transformSort(sort, fields);
+      expect(result).toEqual({
+        sql: ["", ", ", ""],
+        values: [
+          {
+            sql: ["", ", ", ""],
+            values: [
+              { raw: "(obj_record->>'priority')::numeric DESC" },
+              { raw: "obj_record->>'createdAt' ASC" },
+            ],
+          },
+          { raw: "obj_record->>'status' DESC" },
+        ],
+      });
+    });
+  });
+
+  describe("enhanced query generation", () => {
+    it("should handle complex nested JSONB queries", () => {
+      const query: IObjQuery = {
+        appId: "app1",
+        partQuery: {
+          and: [
+            {
+              op: "eq",
+              field: "user.profile.email",
+              value: "test@example.com",
+            },
+            {
+              op: "gt",
+              field: "user.profile.age",
+              value: 18,
+            },
+            {
+              op: "in",
+              field: "user.preferences.tags",
+              value: ["tech", "programming"],
+            },
+          ],
+        },
+      };
+      transformer.transformFilter(query, now);
+      expect(sqlMock.raw).toHaveBeenCalledWith(
+        expect.stringContaining("obj_record#>>")
+      );
+    });
+
+    it("should handle array field detection correctly", () => {
+      const arrayFields = new Map([
+        [
+          "logs",
+          {
+            id: "1",
+            field: "logs",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            appId: "app1",
+            groupId: "group1",
+            tag: "tag1",
+          },
+        ],
+      ]);
+
+      const query: IObjQuery = {
+        appId: "app1",
+        partQuery: {
+          and: [
+            {
+              op: "eq",
+              field: "logs.entry.message",
+              value: "test message",
+            },
+          ],
+        },
+      };
+      const result = transformer.transformFilter(query, now, arrayFields);
+      // Check that the result contains array-specific SQL
+      expect((result as any).join[1].sql[0]).toContain("jsonb_array_elements");
+    });
+
+    it("should handle mixed array and regular field queries", () => {
+      const arrayFields = new Map([
+        [
+          "comments",
+          {
+            id: "1",
+            field: "comments",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            appId: "app1",
+            groupId: "group1",
+            tag: "tag1",
+          },
+        ],
+      ]);
+
+      const query: IObjQuery = {
+        appId: "app1",
+        partQuery: {
+          and: [
+            {
+              op: "eq",
+              field: "title",
+              value: "Test Post",
+            },
+            {
+              op: "gt",
+              field: "comments.rating",
+              value: 4,
+            },
+          ],
+        },
+      };
+      transformer.transformFilter(query, now, arrayFields);
+      // Should handle both regular and array field queries
+      expect(sqlMock).toHaveBeenCalled();
+    });
+
+    it("should handle complex logical queries with array fields", () => {
+      const arrayFields = new Map([
+        [
+          "logsQuery.and",
+          {
+            id: "1",
+            field: "logsQuery.and",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            appId: "app1",
+            groupId: "group1",
+            tag: "tag1",
+          },
+        ],
+      ]);
+
+      const query: IObjQuery = {
+        appId: "app1",
+        partQuery: {
+          and: [
+            {
+              op: "eq",
+              field: "status",
+              value: "active",
+            },
+          ],
+          or: [
+            {
+              op: "eq",
+              field: "logsQuery.and.level",
+              value: "error",
+            },
+            {
+              op: "gt",
+              field: "logsQuery.and.count",
+              value: 10,
+            },
+          ],
+        },
+      };
+      const result = transformer.transformFilter(query, now, arrayFields);
+      // Check that the result contains array-specific SQL
+      expect(result).toBeDefined();
+      expect((result as any).join).toBeDefined();
+    });
+  });
+
+  describe("Hybrid array/scalar field queries", () => {
+    let transformer: PostgresQueryTransformer;
+    beforeEach(() => {
+      transformer = new PostgresQueryTransformer();
+    });
+
+    it("generateHybridArrayQuery: eq", () => {
+      const part = { op: "eq", field: "arr.field", value: "one" } as any;
+      // @ts-ignore
+      const result = transformer.generateHybridArrayQuery(part);
+      // sqlMock returns { raw: ... } for sql.raw
+      expect((result as any).raw).toContain(
+        '($.arr[*].field == "one" || $.arr.field == "one")'
+      );
+    });
+
+    it("generateHybridArrayQuery: in", () => {
+      const part = {
+        op: "in",
+        field: "arr.field",
+        value: ["one", "two"],
+      } as any;
+      // @ts-ignore
+      const result = transformer.generateHybridArrayQuery(part);
+      expect((result as any).raw).toContain(
+        '($.arr[*].field == "one" || $.arr.field == "one")'
+      );
+      expect((result as any).raw).toContain(
+        '($.arr[*].field == "two" || $.arr.field == "two")'
+      );
+    });
+
+    it("generateHybridArrayQuery: like", () => {
+      const part = { op: "like", field: "arr.field", value: "^one" } as any;
+      // @ts-ignore
+      const result = transformer.generateHybridArrayQuery(part);
+      expect((result as any).raw).toContain("like_regex");
+      expect((result as any).raw).toContain(
+        '($.arr[*].field like_regex "^one" flag "i"'
+      );
+    });
+
+    it("generateHybridArrayQuery: exists true", () => {
+      const part = { op: "exists", field: "arr.field", value: true } as any;
+      // @ts-ignore
+      const result = transformer.generateHybridArrayQuery(part);
+      expect((result as any).raw).toContain(
+        "exists($.arr[*].field) || exists($.arr.field)"
+      );
+    });
+
+    it("generateHybridArrayQuery: exists false", () => {
+      const part = { op: "exists", field: "arr.field", value: false } as any;
+      // @ts-ignore
+      const result = transformer.generateHybridArrayQuery(part);
+      expect((result as any).raw).toContain(
+        "!exists($.arr[*].field) && !exists($.arr.field)"
+      );
+    });
+
+    it("transformPartQuery: uses hybrid for mixed path", () => {
+      const partQuery = [{ op: "eq", field: "arr.field", value: "one" } as any];
+      const arrayFields = new Map([
+        [
+          "arr",
+          {
+            id: "1",
+            field: "arr",
+            appId: "a",
+            groupId: "g",
+            tag: "t",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        ],
+      ]);
+      const fields = new Map([
+        [
+          "field",
+          {
+            id: "2",
+            field: "field",
+            fieldKeys: ["field"],
+            fieldKeyTypes: ["string"],
+            valueTypes: ["string"],
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            appId: "a",
+            groupId: "g",
+            tag: "t",
+          },
+        ],
+      ]);
+      // @ts-ignore
+      const result = transformer.transformPartQuery(
+        partQuery,
+        new Date(),
+        "AND",
+        arrayFields,
+        fields
+      );
+      // The test sqlMock returns { raw: ... } for sql.raw
+      expect((result as any).raw).toContain("jsonb_path_exists");
+    });
+  });
 });

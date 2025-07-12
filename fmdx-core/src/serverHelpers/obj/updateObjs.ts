@@ -2,11 +2,15 @@ import { mergeObjects, type AnyObject } from "softkave-js-utils";
 import type {
   IInputObjRecord,
   IObj,
+  IObjArrayField,
+  IObjField,
   IObjQuery,
   OnConflict,
 } from "../../definitions/obj.js";
 import { createStorage, getDefaultStorageType } from "../../storage/config.js";
 import type { IObjStorage } from "../../storage/types.js";
+import { getObjArrayFields } from "./getObjArrayFields.js";
+import { getObjFields } from "./getObjFields.js";
 
 export function getUpdateObj(params: {
   obj: IObj;
@@ -73,6 +77,32 @@ export async function updateManyObjs(params: {
     storage = createStorage({ type: storageType }),
   } = params;
 
+  // Fetch both regular fields and array fields for query generation
+  let fields: IObjField[] = [];
+  let arrayFields: IObjArrayField[] = [];
+
+  if (objQuery.appId) {
+    // Fetch regular fields
+    fields = (
+      await getObjFields({
+        appId: objQuery.appId,
+        tag,
+        limit: 1000, // Fetch all fields for this app/tag combination
+      })
+    ).fields;
+
+    // Fetch array fields
+    arrayFields = await getObjArrayFields({
+      appId: objQuery.appId,
+      tag,
+      limit: 1000, // Fetch all array fields for this app/tag combination
+    });
+  }
+
+  // Convert to Maps for O(1) lookup
+  const fieldsMap = new Map(fields.map((f) => [f.field, f]));
+  const arrayFieldsMap = new Map(arrayFields.map((f) => [f.field, f]));
+
   const result = await storage.bulkUpdate({
     query: objQuery,
     tag,
@@ -84,6 +114,8 @@ export async function updateManyObjs(params: {
     shouldIndex,
     fieldsToIndex,
     batchSize: 1000,
+    fields: fieldsMap,
+    arrayFields: arrayFieldsMap,
   });
 
   return result;
