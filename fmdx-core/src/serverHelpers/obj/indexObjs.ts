@@ -23,33 +23,41 @@ import { getApps } from "../app/getApps.js";
 const batchSize = 1000;
 
 function extractArrayFields(
-  indexedJson: ReturnType<typeof indexJson>
+  indexedJson: ReturnType<typeof indexJson>,
+  originalObj?: any
 ): ArrayField[] {
-  const arrayFields = new Map<string, ArrayField>();
+  const candidateFields = new Set<string>();
 
-  for (const [fieldPath, fieldData] of Object.entries(indexedJson)) {
+  for (const [fieldPath] of Object.entries(indexedJson)) {
     const segments = fieldPath.split(".");
-
-    // Find array segments (numeric keys)
-    for (let i = 0; i < segments.length - 1; i++) {
+    // Find the first numeric segment (shallowest array)
+    let firstNumericIdx = -1;
+    for (let i = 0; i < segments.length; i++) {
       if (/^\d+$/.test(segments[i])) {
-        // This is an array index, find the parent array field
-        const parentPath = segments.slice(0, i).join(".");
-
-        // Store the ARRAY FIELD, not the specific array element
-        if (!arrayFields.has(parentPath)) {
-          arrayFields.set(parentPath, {
-            field: parentPath, // e.g., 'logsQuery.and'
-            appId: "", // Will be set later
-            groupId: "", // Will be set later
-            tag: "", // Will be set later
-          });
-        }
+        firstNumericIdx = i;
+        break;
       }
+    }
+    if (firstNumericIdx !== -1) {
+      const parentPath = segments.slice(0, firstNumericIdx).join(".");
+      if (originalObj) {
+        const value = parentPath
+          ? parentPath
+              .split(".")
+              .reduce((o, k) => (o ? o[k] : undefined), originalObj)
+          : originalObj;
+        if (!Array.isArray(value)) continue;
+      }
+      candidateFields.add(parentPath);
     }
   }
 
-  return Array.from(arrayFields.values());
+  return Array.from(candidateFields).map((parentPath) => ({
+    field: parentPath,
+    appId: "",
+    groupId: "",
+    tag: "",
+  }));
 }
 
 type ArrayField = {
@@ -348,9 +356,7 @@ export async function indexObjsBatch(params: {
   const indexList = objs.map((obj) => {
     const app = getApp(obj);
     const fieldsToIndex = obj.fieldsToIndex ?? app?.objFieldsToIndex ?? null;
-
     const rawIndex = indexJson(obj.objRecord, { flattenNumericKeys: true });
-
     let index: ReturnType<typeof indexJson> = rawIndex;
     if (fieldsToIndex) {
       index = {};
@@ -366,14 +372,16 @@ export async function indexObjsBatch(params: {
   });
 
   // Extract array fields from each indexed object
-  const arrayFieldsList = indexList.map((index) => {
-    const arrayFields = extractArrayFields(index);
+  const arrayFieldsList = indexList.map((index, idx) => {
+    const obj = objs[idx];
+    const arrayFields = extractArrayFields(index, obj.objRecord);
+
     // Set the metadata from the corresponding object
     return arrayFields.map((arrayField) => ({
       ...arrayField,
-      appId: objs[indexList.indexOf(index)].appId,
-      groupId: objs[indexList.indexOf(index)].groupId,
-      tag: objs[indexList.indexOf(index)].tag,
+      appId: obj.appId,
+      groupId: obj.groupId,
+      tag: obj.tag,
     }));
   });
 
@@ -400,7 +408,6 @@ export async function indexObjs(params: {
 
   do {
     const cutoffDate = lastSuccessAt ?? new Date("1970-01-01T00:00:00.000Z");
-
     const readResult = await storage.read({
       query: {
         metaQuery: {
@@ -418,16 +425,14 @@ export async function indexObjs(params: {
     });
 
     batch = readResult.objs;
-
     await prefetchApps(batch);
-
     const batchGroupedByApp = groupBy(batch, (obj) => obj.appId);
 
-    await Promise.all(
-      Object.values(batchGroupedByApp).map((batch) =>
-        indexObjsBatch({ objs: batch, getApp })
-      )
-    );
+    // index one batch at a time to avoid duplicating fields across batches
+    await Object.values(batchGroupedByApp).reduce(async (acc, batch) => {
+      await acc;
+      return indexObjsBatch({ objs: batch, getApp });
+    }, Promise.resolve());
 
     page++;
   } while (batch.length > 0);

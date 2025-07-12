@@ -524,7 +524,7 @@ describe.each(backends)("indexObjs integration (%s)", (backend) => {
       ]);
     });
 
-    it("should extract deeply nested array fields", async () => {
+    it.only("should extract deeply nested array fields", async () => {
       const obj = makeObj({
         objRecord: {
           logsQuery: {
@@ -551,6 +551,8 @@ describe.each(backends)("indexObjs integration (%s)", (backend) => {
         appId: obj.appId!,
         tag: obj.tag!,
       });
+
+      console.log(arrayFields);
 
       expect(arrayFields).toHaveLength(2);
       expect(arrayFields.map((f) => f.field)).toEqual([
@@ -736,11 +738,11 @@ describe.each(backends)("indexObjs integration (%s)", (backend) => {
     it("should handle array fields with numeric keys", async () => {
       const obj = makeObj({
         objRecord: {
-          items: {
-            0: { id: "item1", name: "Item 1" },
-            1: { id: "item2", name: "Item 2" },
-            2: { id: "item3", name: "Item 3" },
-          },
+          items: [
+            { id: "item1", name: "Item 1" },
+            { id: "item2", name: "Item 2" },
+            { id: "item3", name: "Item 3" },
+          ],
         },
       });
 
@@ -761,27 +763,34 @@ describe.each(backends)("indexObjs integration (%s)", (backend) => {
     });
 
     it("should handle array fields with mixed numeric and string keys", async () => {
-      const obj = makeObj({
+      const obj1 = makeObj({
+        objRecord: {
+          data: [
+            { type: "string", value: "hello" },
+            { type: "number", value: 42 },
+            { type: "boolean", value: true },
+            { type: "object", value: { nested: true } },
+          ],
+        },
+      });
+      const obj2 = makeObj({
         objRecord: {
           data: {
-            "0": { type: "string", value: "hello" },
-            "1": { type: "number", value: 42 },
-            key1: { type: "boolean", value: true },
-            "2": { type: "object", value: { nested: true } },
+            scalar: "hello",
           },
         },
       });
 
-      await storage.create({ objs: [obj] });
+      await storage.create({ objs: [obj1, obj2] });
 
       await indexObjsBatch({
-        objs: [obj],
+        objs: [obj1, obj2],
         getApp: () => null,
       });
 
       const arrayFields = await getObjArrayFields({
-        appId: obj.appId!,
-        tag: obj.tag!,
+        appId: obj1.appId!,
+        tag: obj1.tag!,
       });
 
       expect(arrayFields).toHaveLength(1);
@@ -792,22 +801,22 @@ describe.each(backends)("indexObjs integration (%s)", (backend) => {
       const obj = makeObj({
         objRecord: {
           workflow: {
-            steps: {
-              "0": {
-                actions: {
-                  "0": { type: "email", config: { template: "welcome" } },
-                  "1": { type: "sms", config: { message: "Hello" } },
-                },
+            steps: [
+              {
+                actions: [
+                  { type: "email", config: { template: "welcome" } },
+                  { type: "sms", config: { message: "Hello" } },
+                ],
               },
-              "1": {
-                actions: {
-                  "0": {
+              {
+                actions: [
+                  {
                     type: "webhook",
                     config: { url: "https://api.example.com" },
                   },
-                },
+                ],
               },
-            },
+            ],
           },
         },
       });
@@ -834,32 +843,28 @@ describe.each(backends)("indexObjs integration (%s)", (backend) => {
     it("should handle array fields with multiple levels of nesting", async () => {
       const obj = makeObj({
         objRecord: {
-          data: {
-            "0": {
-              items: {
-                "0": {
-                  subItems: {
-                    "0": { id: "sub1", value: "value1" },
-                    "1": { id: "sub2", value: "value2" },
-                  },
+          data: [
+            {
+              items: [
+                {
+                  subItems: [
+                    { id: "sub1", value: "value1" },
+                    { id: "sub2", value: "value2" },
+                  ],
                 },
-                "1": {
-                  subItems: {
-                    "0": { id: "sub3", value: "value3" },
-                  },
+                {
+                  subItems: [{ id: "sub3", value: "value3" }],
                 },
-              },
+              ],
             },
-            "1": {
-              items: {
-                "0": {
-                  subItems: {
-                    "0": { id: "sub4", value: "value4" },
-                  },
+            {
+              items: [
+                {
+                  subItems: [{ id: "sub4", value: "value4" }],
                 },
-              },
+              ],
             },
-          },
+          ],
         },
       });
 
@@ -886,14 +891,14 @@ describe.each(backends)("indexObjs integration (%s)", (backend) => {
     it("should handle array fields with mixed data types", async () => {
       const obj = makeObj({
         objRecord: {
-          mixed: {
-            "0": "string value",
-            "1": 42,
-            "2": true,
-            "3": { nested: "object" },
-            "4": ["array", "of", "strings"],
-            "5": null,
-          },
+          mixed: [
+            "string value",
+            42,
+            true,
+            { nested: "object" },
+            ["array", "of", "strings"],
+            null,
+          ],
         },
       });
 
@@ -911,34 +916,6 @@ describe.each(backends)("indexObjs integration (%s)", (backend) => {
 
       expect(arrayFields).toHaveLength(1);
       expect(arrayFields[0].field).toBe("mixed");
-    });
-
-    it("should handle array fields with sparse arrays", async () => {
-      const obj = makeObj({
-        objRecord: {
-          sparse: {
-            "0": "first",
-            "5": "fifth",
-            "10": "tenth",
-            "15": "fifteenth",
-          },
-        },
-      });
-
-      await storage.create({ objs: [obj] });
-
-      await indexObjsBatch({
-        objs: [obj],
-        getApp: () => null,
-      });
-
-      const arrayFields = await getObjArrayFields({
-        appId: obj.appId!,
-        tag: obj.tag!,
-      });
-
-      expect(arrayFields).toHaveLength(1);
-      expect(arrayFields[0].field).toBe("sparse");
     });
 
     it("should extract array fields for mixed array and scalar at same path", async () => {

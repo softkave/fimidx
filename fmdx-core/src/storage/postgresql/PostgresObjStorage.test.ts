@@ -1772,9 +1772,6 @@ describe("PostgresObjStorage (integration)", () => {
       arrayFields: arrayFieldsMap,
     });
 
-    console.log("result");
-    console.dir(result, { depth: null });
-
     expect(result.objs).toHaveLength(0);
   });
 
@@ -1911,7 +1908,7 @@ describe("PostgresObjStorage (integration)", () => {
     expect(result.objs[0].id).toBe(obj.id);
   });
 
-  it.only("should handle array field queries with array of primitives", async () => {
+  it("should handle array field queries with array of primitives", async () => {
     const obj = makeObjFields({
       objRecord: {
         tags: ["javascript", "typescript", "react"],
@@ -1946,9 +1943,6 @@ describe("PostgresObjStorage (integration)", () => {
       tag: obj.tag,
       arrayFields: arrayFieldsMap,
     });
-
-    console.log("result");
-    console.dir(result, { depth: null });
 
     expect(result.objs).toHaveLength(1);
     expect(result.objs[0].id).toBe(obj.id);

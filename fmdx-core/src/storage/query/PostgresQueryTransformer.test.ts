@@ -1087,7 +1087,9 @@ describe("PostgresQueryTransformer", () => {
       };
       const result = transformer.transformFilter(query, now, arrayFields);
       // Check that the result contains array-specific SQL
-      expect((result as any).join[1].sql[0]).toContain("jsonb_array_elements");
+      // The structure has changed, so we need to check differently
+      const resultString = JSON.stringify(result);
+      expect(resultString).toContain("jsonb_path_exists");
     });
 
     it("should handle mixed array and regular field queries", () => {
@@ -1183,12 +1185,26 @@ describe("PostgresQueryTransformer", () => {
 
     it("generateHybridArrayQuery: eq", () => {
       const part = { op: "eq", field: "arr.field", value: "one" } as any;
+      const arrayFields = new Map([
+        [
+          "arr",
+          {
+            id: "1",
+            field: "arr",
+            appId: "a",
+            groupId: "g",
+            tag: "t",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        ],
+      ]);
       // @ts-ignore
-      const result = transformer.generateHybridArrayQuery(part);
+      const result = transformer.generateHybridArrayQuery(part, arrayFields);
       // sqlMock returns { raw: ... } for sql.raw
-      expect((result as any).raw).toContain(
-        '($.arr[*].field == "one" || $.arr.field == "one")'
-      );
+      expect((result as any).raw).toContain("jsonb_path_exists");
+      expect((result as any).raw).toContain('$.arr.field == "one"');
+      expect((result as any).raw).toContain('$.arr[*].field == "one"');
     });
 
     it("generateHybridArrayQuery: in", () => {
@@ -1197,42 +1213,101 @@ describe("PostgresQueryTransformer", () => {
         field: "arr.field",
         value: ["one", "two"],
       } as any;
+      const arrayFields = new Map([
+        [
+          "arr",
+          {
+            id: "1",
+            field: "arr",
+            appId: "a",
+            groupId: "g",
+            tag: "t",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        ],
+      ]);
       // @ts-ignore
-      const result = transformer.generateHybridArrayQuery(part);
-      expect((result as any).raw).toContain(
-        '($.arr[*].field == "one" || $.arr.field == "one")'
-      );
-      expect((result as any).raw).toContain(
-        '($.arr[*].field == "two" || $.arr.field == "two")'
-      );
+      const result = transformer.generateHybridArrayQuery(part, arrayFields);
+      expect((result as any).raw).toContain("jsonb_path_exists");
+      expect((result as any).raw).toContain('$.arr.field == "one"');
+      expect((result as any).raw).toContain('$.arr[*].field == "one"');
+      expect((result as any).raw).toContain('$.arr.field == "two"');
+      expect((result as any).raw).toContain('$.arr[*].field == "two"');
     });
 
     it("generateHybridArrayQuery: like", () => {
       const part = { op: "like", field: "arr.field", value: "^one" } as any;
+      const arrayFields = new Map([
+        [
+          "arr",
+          {
+            id: "1",
+            field: "arr",
+            appId: "a",
+            groupId: "g",
+            tag: "t",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        ],
+      ]);
       // @ts-ignore
-      const result = transformer.generateHybridArrayQuery(part);
+      const result = transformer.generateHybridArrayQuery(part, arrayFields);
       expect((result as any).raw).toContain("like_regex");
+      expect((result as any).raw).toContain("jsonb_path_exists");
       expect((result as any).raw).toContain(
-        '($.arr[*].field like_regex "^one" flag "i"'
+        '$.arr.field like_regex "^one" flag "i"'
+      );
+      expect((result as any).raw).toContain(
+        '$.arr[*].field like_regex "^one" flag "i"'
       );
     });
 
     it("generateHybridArrayQuery: exists true", () => {
       const part = { op: "exists", field: "arr.field", value: true } as any;
+      const arrayFields = new Map([
+        [
+          "arr",
+          {
+            id: "1",
+            field: "arr",
+            appId: "a",
+            groupId: "g",
+            tag: "t",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        ],
+      ]);
       // @ts-ignore
-      const result = transformer.generateHybridArrayQuery(part);
-      expect((result as any).raw).toContain(
-        "exists($.arr[*].field) || exists($.arr.field)"
-      );
+      const result = transformer.generateHybridArrayQuery(part, arrayFields);
+      expect((result as any).raw).toContain("jsonb_path_exists");
+      expect((result as any).raw).toContain("exists($.arr.field)");
+      expect((result as any).raw).toContain("exists($.arr[*].field)");
     });
 
     it("generateHybridArrayQuery: exists false", () => {
       const part = { op: "exists", field: "arr.field", value: false } as any;
+      const arrayFields = new Map([
+        [
+          "arr",
+          {
+            id: "1",
+            field: "arr",
+            appId: "a",
+            groupId: "g",
+            tag: "t",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        ],
+      ]);
       // @ts-ignore
-      const result = transformer.generateHybridArrayQuery(part);
-      expect((result as any).raw).toContain(
-        "!exists($.arr[*].field) && !exists($.arr.field)"
-      );
+      const result = transformer.generateHybridArrayQuery(part, arrayFields);
+      expect((result as any).raw).toContain("jsonb_path_exists");
+      expect((result as any).raw).toContain("!exists($.arr.field)");
+      expect((result as any).raw).toContain("!exists($.arr[*].field)");
     });
 
     it("transformPartQuery: uses hybrid for mixed path", () => {

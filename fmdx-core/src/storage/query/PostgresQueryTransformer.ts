@@ -940,7 +940,7 @@ export class PostgresQueryTransformer extends BaseQueryTransformer<
   ): ReturnType<typeof sql> {
     const segments = part.field.split(".");
     // Generate all possible JSONPath expressions with arrays at any segment
-    const allPaths = this.generateAllHybridJsonPaths(segments);
+    const allPaths = this.generateAllHybridJsonPaths(segments, arrayFields);
     let opExpr = "";
     const value = part.value;
 
@@ -948,9 +948,7 @@ export class PostgresQueryTransformer extends BaseQueryTransformer<
     function wrapWithArrayCheck(path: string, expr: string) {
       // If the path contains [*], add a non-empty array check for the array segment
       const arrayMatch = path.match(/\$\.(.+?)\[\*\]/);
-      console.log("arrayMatch", arrayMatch);
-      console.log("path", path);
-      console.log("expr", expr);
+
       if (arrayMatch) {
         // Extract the array segment (e.g., $.arr[*].field -> arr)
         const arrayPath = arrayMatch[1];
@@ -1023,22 +1021,56 @@ export class PostgresQueryTransformer extends BaseQueryTransformer<
   /**
    * Generate all possible JSONPath expressions with arrays at any segment
    * E.g. [a, b, c] => ['$.a.b.c', '$.a[*].b.c', '$.a.b[*].c', '$.a[*].b[*].c']
+   * Takes into account known array fields to generate appropriate paths
    */
-  private generateAllHybridJsonPaths(segments: string[]): string[] {
+  private generateAllHybridJsonPaths(
+    segments: string[],
+    arrayFields: Map<string, IObjArrayField>
+  ): string[] {
     const n = segments.length;
     const results: string[] = [];
-    // There are 2^(n-1) ways to insert [*] after each segment (except last)
-    const max = 1 << (n - 1);
-    for (let mask = 0; mask < max; mask++) {
-      let path = "$";
-      for (let i = 0; i < n; i++) {
-        path += "." + segments[i];
-        if (i < n - 1 && mask & (1 << i)) {
-          path += "[*]";
-        }
+
+    // Check if any segments are known array fields
+    const arrayFieldIndices: number[] = [];
+    for (let i = 0; i < n; i++) {
+      const pathToSegment = segments.slice(0, i + 1).join(".");
+      if (arrayFields.has(pathToSegment)) {
+        arrayFieldIndices.push(i);
       }
-      results.push(path);
     }
+
+    // If we have known array fields, generate paths that include [*] for those fields
+    if (arrayFieldIndices.length > 0) {
+      // Generate combinations of array field positions
+      const max = 1 << arrayFieldIndices.length;
+      for (let mask = 0; mask < max; mask++) {
+        let path = "$";
+        for (let i = 0; i < n; i++) {
+          path += "." + segments[i];
+          // Add [*] if this segment is an array field and the mask bit is set
+          const arrayFieldIndex = arrayFieldIndices.indexOf(i);
+          if (arrayFieldIndex !== -1 && mask & (1 << arrayFieldIndex)) {
+            path += "[*]";
+          }
+        }
+        results.push(path);
+      }
+    } else {
+      // Fallback to original logic for unknown array fields
+      // There are 2^(n-1) ways to insert [*] after each segment (except last)
+      const max = 1 << (n - 1);
+      for (let mask = 0; mask < max; mask++) {
+        let path = "$";
+        for (let i = 0; i < n; i++) {
+          path += "." + segments[i];
+          if (i < n - 1 && mask & (1 << i)) {
+            path += "[*]";
+          }
+        }
+        results.push(path);
+      }
+    }
+
     return results;
   }
 }
