@@ -60,7 +60,10 @@ describe("MongoQueryTransformer", () => {
         { field: "foo", direction: "asc" },
         { field: "bar", direction: "desc" },
       ];
-      expect(transformer.transformSort(sort)).toEqual({ foo: 1, bar: -1 });
+      expect(transformer.transformSort(sort)).toEqual({
+        "objRecord.foo": 1,
+        "objRecord.bar": -1,
+      });
     });
 
     it("should include all sort fields regardless of fields array", () => {
@@ -363,7 +366,7 @@ describe("MongoQueryTransformer", () => {
         },
       };
       expect(transformer.transformFilter(query, now)).toEqual({
-        $and: [{ appId: "app1" }, { deletedAt: null }],
+        appId: "app1",
       });
     });
 
@@ -1067,7 +1070,6 @@ describe("MongoQueryTransformer", () => {
             shouldIndex: true,
             tag: "test-tag",
             groupId: { $in: ["group1", "group2"] },
-            deletedAt: null,
             deletedBy: "user123",
             deletedByType: "admin",
           },

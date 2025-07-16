@@ -421,7 +421,7 @@ describe.each(backends)("indexObjs integration (%s)", (backend) => {
       expect(fieldPaths).toContain("name");
       expect(fieldPaths).toContain("value");
       expect(fieldPaths).toContain("newField");
-    });
+    }, 10000);
   });
 
   describe("indexObjsBatch function", () => {

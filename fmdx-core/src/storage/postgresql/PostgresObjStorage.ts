@@ -26,6 +26,8 @@ import type {
   UpdateObjsResult,
 } from "../types.js";
 
+// Do not use. It's currently untested.
+
 export class PostgresObjStorage implements IObjStorage {
   private queryTransformer: PostgresQueryTransformer;
   private db: any;

@@ -577,7 +577,7 @@ describe.each(backends)("getManyObjs integration (%s)", (backend) => {
     expect(result.objs.some((o: IObj) => o.id === obj2.id)).toBe(true);
   });
 
-  it.only("supports sorting", async () => {
+  it("supports sorting", async () => {
     const obj1 = makeObjFields({
       appId: defaultAppId,
       tag: defaultTag,
