@@ -10,7 +10,10 @@ export function objToApp(obj: IObj): IApp {
     updatedBy: obj.updatedBy,
     groupId: obj.groupId,
     name: obj.objRecord.name,
-    description: obj.objRecord.description,
+    description:
+      obj.objRecord.description === null
+        ? undefined
+        : obj.objRecord.description,
     createdByType: obj.createdByType,
     updatedByType: obj.updatedByType,
     objFieldsToIndex: obj.objRecord.objFieldsToIndex,

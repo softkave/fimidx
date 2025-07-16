@@ -72,11 +72,15 @@ async function insertActionFieldForSorting(params: {
     updatedAt: now,
     appId: defaultAppId,
     groupId,
-    field: "action", // This is the field name that getManyObjs will look for
+    tag,
+    field: "action",
+    path: "action",
+    type: "string",
+    arrayTypes: [],
+    isArrayCompressed: false,
     fieldKeys: ["action"],
     fieldKeyTypes: ["string"],
     valueTypes: ["string"],
-    tag,
   };
 
   // Insert the field definition

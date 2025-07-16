@@ -1,5 +1,4 @@
 import type {
-  IObjArrayField,
   IObjField,
   IObjQuery,
   IObjSortList,
@@ -11,7 +10,6 @@ export abstract class BaseQueryTransformer<T> implements IQueryTransformer<T> {
   abstract transformFilter(
     query: IObjQuery,
     date: Date,
-    arrayFields?: Map<string, IObjArrayField>,
     fields?: Map<string, IObjField>
   ): T;
   abstract transformSort(sort: IObjSortList, fields?: IObjField[]): T;

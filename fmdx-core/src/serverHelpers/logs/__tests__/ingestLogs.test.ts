@@ -9,14 +9,12 @@ import {
 } from "vitest";
 import type { IngestLogsEndpointArgs } from "../../../definitions/log.js";
 import { kObjTags } from "../../../definitions/obj.js";
-import { createDefaultStorage } from "../../../storage/config.js";
-import type { IObjStorage } from "../../../storage/types.js";
 import { ingestLogs } from "../ingestLogs.js";
+import { createTestSetup } from "./testUtils.js";
 
-const defaultAppId = "test-app-ingestLogs";
-const defaultGroupId = "test-group";
-const defaultBy = "tester";
-const defaultByType = "user";
+const testName = "ingestLogs";
+const { storage, cleanup, testData } = createTestSetup({ testName });
+const { appId, by, byType } = testData;
 
 // Test counter to ensure unique names
 let testCounter = 0;
@@ -29,7 +27,7 @@ function makeIngestLogsArgs(
     .toString(36)
     .substr(2, 9)}`;
   return {
-    appId: defaultAppId,
+    appId: appId,
     logs: [
       {
         level: "info",
@@ -43,59 +41,20 @@ function makeIngestLogsArgs(
 }
 
 describe("ingestLogs integration", () => {
-  let storage: IObjStorage;
-  let cleanup: (() => Promise<void>) | undefined;
-
   beforeAll(async () => {
-    // Test will use the default storage type from createDefaultStorage()
-    storage = createDefaultStorage();
-
-    // For MongoDB, we need to ensure the connection is ready
-    if (
-      process.env.FMDX_STORAGE_TYPE === "mongo" ||
-      !process.env.FMDX_STORAGE_TYPE
-    ) {
-      // MongoDB specific setup - we'll handle this through the storage interface
-      cleanup = async () => {
-        // Cleanup will be handled by the storage interface
-      };
-    }
+    // Storage is already created by createTestSetup
   });
 
   afterAll(async () => {
-    if (cleanup) await cleanup();
+    await cleanup();
   });
 
   beforeEach(async () => {
-    // Clean up test data before each test using hard deletes for complete isolation
-    try {
-      await storage.bulkDelete({
-        query: { appId: defaultAppId },
-        tag: kObjTags.log,
-        deletedBy: defaultBy,
-        deletedByType: defaultByType,
-        deleteMany: true,
-        hardDelete: true, // Use hard delete for test cleanup
-      });
-    } catch (error) {
-      // Ignore errors in cleanup
-    }
+    await cleanup();
   });
 
   afterEach(async () => {
-    // Clean up after each test using hard deletes for complete isolation
-    try {
-      await storage.bulkDelete({
-        query: { appId: defaultAppId },
-        tag: kObjTags.log,
-        deletedBy: defaultBy,
-        deletedByType: defaultByType,
-        deleteMany: true,
-        hardDelete: true, // Use hard delete for test cleanup
-      });
-    } catch (error) {
-      // Ignore errors in cleanup
-    }
+    await cleanup();
   });
 
   it("verifies test isolation by checking empty state", async () => {
@@ -114,9 +73,9 @@ describe("ingestLogs integration", () => {
     // First log ingestion should succeed
     const result1 = await ingestLogs({
       args,
-      by: defaultBy,
-      byType: defaultByType,
-      groupId: defaultGroupId,
+      by: by,
+      byType: byType,
+      groupId: "test-group", // Assuming a default groupId for this test
       storage,
     });
 
@@ -148,9 +107,9 @@ describe("ingestLogs integration", () => {
 
     const result = await ingestLogs({
       args,
-      by: defaultBy,
-      byType: defaultByType,
-      groupId: defaultGroupId,
+      by: by,
+      byType: byType,
+      groupId: "test-group", // Assuming a default groupId for this test
       storage,
     });
 
@@ -162,10 +121,10 @@ describe("ingestLogs integration", () => {
     expect(result.logs[0].objRecord.message).toBe("Test log message");
     expect(result.logs[0].objRecord.source).toBe("test");
     expect(result.logs[0].objRecord.userId).toBe("user123");
-    expect(result.logs[0].appId).toBe(defaultAppId);
-    expect(result.logs[0].groupId).toBe(defaultGroupId);
-    expect(result.logs[0].createdBy).toBe(defaultBy);
-    expect(result.logs[0].createdByType).toBe(defaultByType);
+    expect(result.logs[0].appId).toBe(appId);
+    expect(result.logs[0].groupId).toBe("test-group"); // Assuming a default groupId for this test
+    expect(result.logs[0].createdBy).toBe(by);
+    expect(result.logs[0].createdByType).toBe(byType);
     expect(result.logs[0].tag).toBe(kObjTags.log);
     expect(result.logs[0].id).toBeDefined();
     expect(result.logs[0].createdAt).toBeInstanceOf(Date);
@@ -195,9 +154,9 @@ describe("ingestLogs integration", () => {
 
     const result = await ingestLogs({
       args,
-      by: defaultBy,
-      byType: defaultByType,
-      groupId: defaultGroupId,
+      by: by,
+      byType: byType,
+      groupId: "test-group", // Assuming a default groupId for this test
       storage,
     });
 
@@ -223,9 +182,9 @@ describe("ingestLogs integration", () => {
 
     const result = await ingestLogs({
       args,
-      by: defaultBy,
-      byType: defaultByType,
-      groupId: defaultGroupId,
+      by: by,
+      byType: byType,
+      groupId: "test-group", // Assuming a default groupId for this test
       storage,
     });
 
@@ -242,9 +201,9 @@ describe("ingestLogs integration", () => {
 
     const result = await ingestLogs({
       args,
-      by: defaultBy,
-      byType: defaultByType,
-      groupId: defaultGroupId,
+      by: by,
+      byType: byType,
+      groupId: "test-group", // Assuming a default groupId for this test
       storage,
     });
 
@@ -284,9 +243,9 @@ describe("ingestLogs integration", () => {
 
     const result = await ingestLogs({
       args,
-      by: defaultBy,
-      byType: defaultByType,
-      groupId: defaultGroupId,
+      by: by,
+      byType: byType,
+      groupId: "test-group", // Assuming a default groupId for this test
       storage,
     });
 
@@ -323,9 +282,9 @@ describe("ingestLogs integration", () => {
 
     const result = await ingestLogs({
       args,
-      by: defaultBy,
-      byType: defaultByType,
-      groupId: defaultGroupId,
+      by: by,
+      byType: byType,
+      groupId: "test-group", // Assuming a default groupId for this test
       storage,
     });
 

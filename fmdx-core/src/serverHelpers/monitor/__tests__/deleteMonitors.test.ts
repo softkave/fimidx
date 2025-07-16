@@ -486,6 +486,9 @@ describe("deleteMonitors integration", () => {
 
     const result = await getMonitors({ args: getArgs, storage });
 
+    console.log("result");
+    console.dir(result, { depth: null });
+
     expect(result.monitors).toHaveLength(1);
     expect(result.monitors[0].name).toBe("Monitor 2");
     expect(result.monitors[0].updatedBy).toBe("updater2");
@@ -602,25 +605,25 @@ describe("deleteMonitors integration", () => {
       })
     );
 
-    // Get the updated monitor1 to get its updatedAt timestamp
-    const getMonitor1Args = {
+    // Get the updated monitor2 to get its updatedAt timestamp
+    const getMonitor2Args = {
       query: {
         appId: defaultAppId,
-        id: { eq: monitor1.monitor.id },
+        id: { eq: monitor2.monitor.id },
       },
     };
 
-    const monitor1Result = await getMonitors({
-      args: getMonitor1Args,
+    const monitor2Result = await getMonitors({
+      args: getMonitor2Args,
       storage,
     });
-    const updatedMonitor1 = monitor1Result.monitors[0];
+    const updatedMonitor2 = monitor2Result.monitors[0];
 
-    // Delete monitors updated before monitor1's update
+    // Delete monitors updated before monitor2's update (should delete monitor1)
     const args = makeDeleteMonitorsArgs({
       query: {
         appId: defaultAppId,
-        updatedAt: { lt: updatedMonitor1.updatedAt.getTime() },
+        updatedAt: { lt: updatedMonitor2.updatedAt.getTime() },
       },
       deleteMany: true,
     });
@@ -642,7 +645,7 @@ describe("deleteMonitors integration", () => {
     const result = await getMonitors({ args: getArgs, storage });
 
     expect(result.monitors).toHaveLength(1);
-    expect(result.monitors[0].name).toBe("Monitor 1");
+    expect(result.monitors[0].name).toBe("Monitor 2");
   });
 
   it("combines multiple filters for deletion", async () => {

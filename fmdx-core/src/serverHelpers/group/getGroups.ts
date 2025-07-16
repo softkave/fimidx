@@ -31,14 +31,41 @@ export function getGroupsObjQuery(params: { args: GetGroupsEndpointArgs }) {
   }
 
   // Handle meta field filtering
-  const metaPartQuery = meta?.map(
-    (part) =>
-      ({
-        op: part.op,
-        field: `meta.${part.field}`,
-        value: part.value,
-      } as IObjPartQueryItem)
-  );
+  const metaPartQuery = meta?.map((part) => {
+    let value = part.value;
+    // Only convert to number if value is a string and not a duration object
+    const isConvertibleString =
+      typeof value === "string" && !isNaN(Number(value)) && value.trim() !== "";
+    if (
+      ["gt", "lt", "gte", "lte", "between"].includes(part.op) &&
+      isConvertibleString
+    ) {
+      value = Number(value);
+    }
+    if ((part.op === "in" || part.op === "not_in") && Array.isArray(value)) {
+      value = value
+        .map((v) =>
+          typeof v === "string" && !isNaN(Number(v)) && v.trim() !== ""
+            ? Number(v)
+            : v
+        )
+        .filter((v) => typeof v === "string" || typeof v === "number");
+    }
+    if (part.op === "between" && Array.isArray(value)) {
+      value = value
+        .map((v) =>
+          typeof v === "string" && !isNaN(Number(v)) && v.trim() !== ""
+            ? Number(v)
+            : v
+        )
+        .filter((v) => typeof v === "string" || typeof v === "number");
+    }
+    return {
+      op: part.op,
+      field: `meta.${part.field}`,
+      value,
+    } as IObjPartQueryItem;
+  });
 
   if (metaPartQuery) {
     filterArr.push(...metaPartQuery);

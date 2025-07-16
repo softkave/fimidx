@@ -105,6 +105,9 @@ export async function getMonitors(params: {
     storage,
   });
 
+  console.log("result");
+  console.dir(result, { depth: null });
+
   return {
     monitors: result.objs.map(objToMonitor),
     page: pageNumber, // Return 1-based page number

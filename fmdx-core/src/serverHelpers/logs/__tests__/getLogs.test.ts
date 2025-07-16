@@ -13,15 +13,13 @@ import { db, objFields as objFieldsTable } from "../../../db/fmdx.sqlite.js";
 import type { GetLogsEndpointArgs } from "../../../definitions/log.js";
 import type { IObjField } from "../../../definitions/obj.js";
 import { kObjTags } from "../../../definitions/obj.js";
-import { createDefaultStorage } from "../../../storage/config.js";
-import type { IObjStorage } from "../../../storage/types.js";
 import { getLogs } from "../getLogs.js";
 import { ingestLogs } from "../ingestLogs.js";
+import { createTestSetup } from "./testUtils.js";
 
-const defaultAppId = "test-app-getLogs";
-const defaultGroupId = "test-group";
-const defaultBy = "tester";
-const defaultByType = "user";
+const testName = "getLogs";
+const { storage, cleanup, testData } = createTestSetup({ testName });
+const { appId, by, byType } = testData;
 
 // Test counter to ensure unique names
 let testCounter = 0;
@@ -32,13 +30,13 @@ function makeObjField(overrides: Partial<IObjField> = {}): IObjField {
     id: uuidv7(),
     createdAt: now,
     updatedAt: now,
-    appId: defaultAppId,
-    groupId: defaultGroupId,
-    field: "objRecord.timestamp",
-    fieldKeys: ["timestamp"],
-    fieldKeyTypes: ["string"],
-    valueTypes: ["number"],
+    appId: appId,
+    groupId: "test-group",
     tag: kObjTags.log,
+    path: "timestamp",
+    type: "string",
+    arrayTypes: [],
+    isArrayCompressed: false,
     ...overrides,
   };
 }
@@ -69,7 +67,7 @@ function makeGetLogsArgs(
   testCounter++;
   return {
     query: {
-      appId: defaultAppId,
+      appId: appId,
       logsQuery: undefined,
       metaQuery: undefined,
     },
@@ -94,86 +92,30 @@ function makeTestLog(overrides: any = {}) {
   };
 }
 
+// Helper to generate a unique appId for each test
+function makeUniqueAppId() {
+  return `test-app-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
 describe("getLogs integration", () => {
-  let storage: IObjStorage;
-  let cleanup: (() => Promise<void>) | undefined;
-
   beforeAll(async () => {
-    // Test will use the default storage type from createDefaultStorage()
-    storage = createDefaultStorage();
-
-    // For MongoDB, we need to ensure the connection is ready
-    if (
-      process.env.FMDX_STORAGE_TYPE === "mongo" ||
-      !process.env.FMDX_STORAGE_TYPE
-    ) {
-      // MongoDB specific setup - we'll handle this through the storage interface
-      cleanup = async () => {
-        // Cleanup will be handled by the storage interface
-      };
-    }
+    // Storage is already created by createTestSetup
   });
 
   afterAll(async () => {
-    if (cleanup) await cleanup();
+    await cleanup();
   });
 
   beforeEach(async () => {
-    // Clean up test data before each test using hard deletes for complete isolation
-    try {
-      await storage.bulkDelete({
-        query: { appId: defaultAppId },
-        tag: kObjTags.log,
-        deletedBy: defaultBy,
-        deletedByType: defaultByType,
-        deleteMany: true,
-        hardDelete: true, // Use hard delete for test cleanup
-      });
-    } catch (error) {
-      // Ignore errors in cleanup
-    }
-
-    // Clean up obj fields for all backends
-    await db
-      .delete(objFieldsTable)
-      .where(
-        and(
-          eq(objFieldsTable.appId, defaultAppId),
-          eq(objFieldsTable.tag, kObjTags.log)
-        )
-      )
-      .execute();
+    await cleanup();
   });
 
   afterEach(async () => {
-    // Clean up after each test using hard deletes for complete isolation
-    try {
-      await storage.bulkDelete({
-        query: { appId: defaultAppId },
-        tag: kObjTags.log,
-        deletedBy: defaultBy,
-        deletedByType: defaultByType,
-        deleteMany: true,
-        hardDelete: true, // Use hard delete for test cleanup
-      });
-    } catch (error) {
-      // Ignore errors in cleanup
-    }
-
-    // Clean up obj fields for all backends
-    await db
-      .delete(objFieldsTable)
-      .where(
-        and(
-          eq(objFieldsTable.appId, defaultAppId),
-          eq(objFieldsTable.tag, kObjTags.log)
-        )
-      )
-      .execute();
+    await cleanup();
   });
 
   it("returns empty result when no logs exist", async () => {
-    const args = makeGetLogsArgs();
+    const args = makeGetLogsArgs({ query: { appId: appId } });
 
     const result = await getLogs({
       args,
@@ -196,12 +138,12 @@ describe("getLogs integration", () => {
 
     await ingestLogs({
       args: {
-        appId: defaultAppId,
+        appId: appId,
         logs,
       },
-      by: defaultBy,
-      byType: defaultByType,
-      groupId: defaultGroupId,
+      by: by,
+      byType: byType,
+      groupId: "test-group",
       storage,
     });
 
@@ -209,6 +151,7 @@ describe("getLogs integration", () => {
     const args1 = makeGetLogsArgs({
       page: 1,
       limit: 2,
+      query: { appId: appId },
     });
 
     const result1 = await getLogs({
@@ -225,6 +168,7 @@ describe("getLogs integration", () => {
     const args2 = makeGetLogsArgs({
       page: 2,
       limit: 2,
+      query: { appId: appId },
     });
 
     const result2 = await getLogs({
@@ -248,19 +192,19 @@ describe("getLogs integration", () => {
 
     await ingestLogs({
       args: {
-        appId: defaultAppId,
+        appId: appId,
         logs,
       },
-      by: defaultBy,
-      byType: defaultByType,
-      groupId: defaultGroupId,
+      by: by,
+      byType: byType,
+      groupId: "test-group",
       storage,
     });
 
     // Filter by error level
     const args = makeGetLogsArgs({
       query: {
-        appId: defaultAppId,
+        appId: appId,
         logsQuery: {
           and: [
             {
@@ -293,19 +237,19 @@ describe("getLogs integration", () => {
 
     await ingestLogs({
       args: {
-        appId: defaultAppId,
+        appId: appId,
         logs,
       },
-      by: defaultBy,
-      byType: defaultByType,
-      groupId: defaultGroupId,
+      by: by,
+      byType: byType,
+      groupId: "test-group",
       storage,
     });
 
     // Filter by info level AND api source
     const args = makeGetLogsArgs({
       query: {
-        appId: defaultAppId,
+        appId: appId,
         logsQuery: {
           and: [
             {
@@ -343,30 +287,30 @@ describe("getLogs integration", () => {
 
     await ingestLogs({
       args: {
-        appId: defaultAppId,
+        appId: appId,
         logs,
       },
       by: "user1",
-      byType: defaultByType,
-      groupId: defaultGroupId,
+      byType: byType,
+      groupId: "test-group",
       storage,
     });
 
     await ingestLogs({
       args: {
-        appId: defaultAppId,
+        appId: appId,
         logs: [makeTestLog({ level: "error", message: "User 2 log" })],
       },
       by: "user2",
-      byType: defaultByType,
-      groupId: defaultGroupId,
+      byType: byType,
+      groupId: "test-group",
       storage,
     });
 
     // Filter by creator
     const args = makeGetLogsArgs({
       query: {
-        appId: defaultAppId,
+        appId: appId,
         metaQuery: {
           createdBy: {
             eq: "user1",
@@ -390,10 +334,11 @@ describe("getLogs integration", () => {
   it("sorts logs by timestamp", async () => {
     // Set up obj fields for sorting
     const timestampField = makeObjField({
-      field: "timestamp",
-      fieldKeys: ["timestamp"],
-      fieldKeyTypes: ["string"],
-      valueTypes: ["number"],
+      path: "timestamp",
+      type: "string",
+      arrayTypes: [],
+      isArrayCompressed: false,
+      appId: appId,
     });
     await setupObjFields([timestampField]);
 
@@ -407,12 +352,12 @@ describe("getLogs integration", () => {
 
     await ingestLogs({
       args: {
-        appId: defaultAppId,
+        appId: appId,
         logs,
       },
-      by: defaultBy,
-      byType: defaultByType,
-      groupId: defaultGroupId,
+      by: by,
+      byType: byType,
+      groupId: "test-group",
       storage,
     });
 
@@ -424,6 +369,7 @@ describe("getLogs integration", () => {
           direction: "desc",
         },
       ],
+      query: { appId: appId },
     });
 
     const result = await getLogs({
@@ -440,10 +386,11 @@ describe("getLogs integration", () => {
   it("sorts logs by level", async () => {
     // Set up obj fields for sorting
     const levelField = makeObjField({
-      field: "level",
-      fieldKeys: ["level"],
-      fieldKeyTypes: ["string"],
-      valueTypes: ["string"],
+      path: "level",
+      type: "string",
+      arrayTypes: [],
+      isArrayCompressed: false,
+      appId: appId,
     });
     await setupObjFields([levelField]);
 
@@ -457,12 +404,12 @@ describe("getLogs integration", () => {
 
     await ingestLogs({
       args: {
-        appId: defaultAppId,
+        appId: appId,
         logs,
       },
-      by: defaultBy,
-      byType: defaultByType,
-      groupId: defaultGroupId,
+      by: by,
+      byType: byType,
+      groupId: "test-group",
       storage,
     });
 
@@ -474,6 +421,7 @@ describe("getLogs integration", () => {
           direction: "asc",
         },
       ],
+      query: { appId: appId },
     });
 
     const result = await getLogs({
@@ -512,19 +460,19 @@ describe("getLogs integration", () => {
 
     await ingestLogs({
       args: {
-        appId: defaultAppId,
+        appId: appId,
         logs,
       },
-      by: defaultBy,
-      byType: defaultByType,
-      groupId: defaultGroupId,
+      by: by,
+      byType: byType,
+      groupId: "test-group",
       storage,
     });
 
     // Filter by nested field
     const args = makeGetLogsArgs({
       query: {
-        appId: defaultAppId,
+        appId: appId,
         logsQuery: {
           and: [
             {
@@ -549,35 +497,37 @@ describe("getLogs integration", () => {
 
   it("returns only logs for the specified appId", async () => {
     // Create logs for different apps
+    const appId1 = makeUniqueAppId();
+    const appId2 = makeUniqueAppId();
     const logs1 = [makeTestLog({ level: "info", message: "App 1 log" })];
     const logs2 = [makeTestLog({ level: "info", message: "App 2 log" })];
 
     await ingestLogs({
       args: {
-        appId: "app-1",
+        appId: appId1,
         logs: logs1,
       },
-      by: defaultBy,
-      byType: defaultByType,
-      groupId: defaultGroupId,
+      by: by,
+      byType: byType,
+      groupId: "test-group",
       storage,
     });
 
     await ingestLogs({
       args: {
-        appId: "app-2",
+        appId: appId2,
         logs: logs2,
       },
-      by: defaultBy,
-      byType: defaultByType,
-      groupId: defaultGroupId,
+      by: by,
+      byType: byType,
+      groupId: "test-group",
       storage,
     });
 
     // Query for app-1 logs
     const args = makeGetLogsArgs({
       query: {
-        appId: "app-1",
+        appId: appId1,
       },
     });
 
@@ -588,6 +538,6 @@ describe("getLogs integration", () => {
 
     expect(result.logs.length).toBe(1);
     expect(result.logs[0].objRecord.message).toBe("App 1 log");
-    expect(result.logs[0].appId).toBe("app-1");
+    expect(result.logs[0].appId).toBe(appId1);
   });
 });

@@ -104,11 +104,15 @@ async function insertNameFieldForSorting(params: {
     updatedAt: now,
     appId: defaultAppId,
     groupId,
-    field: "name", // This is the field name that getManyObjs will look for
+    tag,
+    field: "name",
+    path: "name",
+    type: "string",
+    arrayTypes: [],
+    isArrayCompressed: false,
     fieldKeys: ["name"],
     fieldKeyTypes: ["string"],
     valueTypes: ["string"],
-    tag,
   };
 
   // Insert the field definition
@@ -131,11 +135,15 @@ async function insertStatusFieldForSorting(params: {
     updatedAt: now,
     appId: defaultAppId,
     groupId,
-    field: "status", // This is the field name that getManyObjs will look for
+    tag,
+    field: "status",
+    path: "status",
+    type: "string",
+    arrayTypes: [],
+    isArrayCompressed: false,
     fieldKeys: ["status"],
     fieldKeyTypes: ["string"],
     valueTypes: ["string"],
-    tag,
   };
 
   // Insert the field definition

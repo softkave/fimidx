@@ -5,15 +5,8 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1751468022083,
-      "tag": "0000_gifted_sage",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1752016848548,
-      "tag": "0001_early_the_call",
+      "when": 1752345815159,
+      "tag": "0000_many_praxagora",
       "breakpoints": true
     }
   ]

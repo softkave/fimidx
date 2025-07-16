@@ -32,7 +32,7 @@ export async function addGroup(params: {
     input: {
       appId,
       items: [objRecord],
-      conflictOnKeys: ["name"],
+      conflictOnKeys: ["appId", "name"],
       onConflict: "fail",
     },
     storage,

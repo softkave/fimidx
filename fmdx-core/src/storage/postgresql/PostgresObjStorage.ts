@@ -116,7 +116,6 @@ export class PostgresObjStorage implements IObjStorage {
       const filterCondition = this.queryTransformer.transformFilter(
         params.query,
         date,
-        params.arrayFields,
         params.fields
       );
       conditions.push(filterCondition);
@@ -197,7 +196,6 @@ export class PostgresObjStorage implements IObjStorage {
       const filterCondition = this.queryTransformer.transformFilter(
         params.query,
         date,
-        params.arrayFields,
         params.fields
       );
       conditions.push(filterCondition);
@@ -291,7 +289,6 @@ export class PostgresObjStorage implements IObjStorage {
       const filterCondition = this.queryTransformer.transformFilter(
         params.query,
         date,
-        params.arrayFields,
         params.fields
       );
       conditions.push(filterCondition);
@@ -445,7 +442,6 @@ export class PostgresObjStorage implements IObjStorage {
       const filterCondition = this.queryTransformer.transformFilter(
         query,
         date,
-        params.arrayFields,
         params.fields
       );
       conditions.push(filterCondition);
@@ -563,7 +559,6 @@ export class PostgresObjStorage implements IObjStorage {
       const filterCondition = this.queryTransformer.transformFilter(
         query,
         date,
-        params.arrayFields,
         params.fields
       );
       conditions.push(filterCondition);

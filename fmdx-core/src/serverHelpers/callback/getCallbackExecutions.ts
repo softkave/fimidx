@@ -30,12 +30,20 @@ export async function getCallbackExecutions(params: {
     },
   };
 
+  // Transform sort fields to use objRecord prefix for executedAt field
+  const transformedSort = sort?.map((sortItem) => {
+    if (sortItem.field === "executedAt") {
+      return { ...sortItem, field: "objRecord.executedAt" };
+    }
+    return sortItem;
+  });
+
   const result = await getManyObjs({
     objQuery,
     page: storagePage,
     limit: limitNumber,
     tag: kObjTags.callbackExecution,
-    sort: sort ? sort : undefined,
+    sort: transformedSort ? transformedSort : undefined,
     storage,
   });
 

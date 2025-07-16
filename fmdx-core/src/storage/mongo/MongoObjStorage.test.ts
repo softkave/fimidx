@@ -719,10 +719,10 @@ describe("MongoObjStorage (integration)", () => {
             "name",
             {
               id: "name-field",
-              field: "name",
-              fieldKeys: ["name"],
-              fieldKeyTypes: ["string"],
-              valueTypes: ["string"],
+              path: "name",
+              type: "string",
+              arrayTypes: [],
+              isArrayCompressed: false,
               createdAt: new Date(),
               updatedAt: new Date(),
               appId: "sort-string-app",
@@ -766,10 +766,10 @@ describe("MongoObjStorage (integration)", () => {
             "score",
             {
               id: "score-field",
-              field: "score",
-              fieldKeys: ["score"],
-              fieldKeyTypes: ["string"],
-              valueTypes: ["number"],
+              path: "score",
+              type: "number",
+              arrayTypes: [],
+              isArrayCompressed: false,
               createdAt: new Date(),
               updatedAt: new Date(),
               appId: "sort-number-app",
@@ -813,10 +813,10 @@ describe("MongoObjStorage (integration)", () => {
             "user.age",
             {
               id: "user-age-field",
-              field: "user.age",
-              fieldKeys: ["user", "age"],
-              fieldKeyTypes: ["string", "string"],
-              valueTypes: ["number"],
+              path: "user.age",
+              type: "number",
+              arrayTypes: [],
+              isArrayCompressed: false,
               createdAt: new Date(),
               updatedAt: new Date(),
               appId: "sort-nested-app",
@@ -860,10 +860,10 @@ describe("MongoObjStorage (integration)", () => {
             "stats.views.daily",
             {
               id: "stats-views-daily-field",
-              field: "stats.views.daily",
-              fieldKeys: ["stats", "views", "daily"],
-              fieldKeyTypes: ["string", "string", "string"],
-              valueTypes: ["number"],
+              path: "stats.views.daily",
+              type: "number",
+              arrayTypes: [],
+              isArrayCompressed: false,
               createdAt: new Date(),
               updatedAt: new Date(),
               appId: "sort-deep-app",
@@ -915,10 +915,10 @@ describe("MongoObjStorage (integration)", () => {
             "category",
             {
               id: "category-field",
-              field: "category",
-              fieldKeys: ["category"],
-              fieldKeyTypes: ["string"],
-              valueTypes: ["string"],
+              path: "category",
+              type: "string",
+              arrayTypes: [],
+              isArrayCompressed: false,
               createdAt: new Date(),
               updatedAt: new Date(),
               appId: "sort-multi-app",
@@ -930,10 +930,10 @@ describe("MongoObjStorage (integration)", () => {
             "priority",
             {
               id: "priority-field",
-              field: "priority",
-              fieldKeys: ["priority"],
-              fieldKeyTypes: ["string"],
-              valueTypes: ["number"],
+              path: "priority",
+              type: "number",
+              arrayTypes: [],
+              isArrayCompressed: false,
               createdAt: new Date(),
               updatedAt: new Date(),
               appId: "sort-multi-app",
@@ -1024,10 +1024,10 @@ describe("MongoObjStorage (integration)", () => {
             "score",
             {
               id: "score-field",
-              field: "score",
-              fieldKeys: ["score"],
-              fieldKeyTypes: ["string"],
-              valueTypes: ["number"],
+              path: "score",
+              type: "number",
+              arrayTypes: [],
+              isArrayCompressed: false,
               createdAt: new Date(),
               updatedAt: new Date(),
               appId: "sort-skip-app",
@@ -1098,10 +1098,10 @@ describe("MongoObjStorage (integration)", () => {
             "priority",
             {
               id: "priority-field",
-              field: "priority",
-              fieldKeys: ["priority"],
-              fieldKeyTypes: ["string"],
-              valueTypes: ["number"],
+              path: "priority",
+              type: "number",
+              arrayTypes: [],
+              isArrayCompressed: false,
               createdAt: new Date(),
               updatedAt: new Date(),
               appId: "sort-mixed-app",
@@ -1113,10 +1113,10 @@ describe("MongoObjStorage (integration)", () => {
             "metadata.views",
             {
               id: "metadata-views-field",
-              field: "metadata.views",
-              fieldKeys: ["metadata", "views"],
-              fieldKeyTypes: ["string", "string"],
-              valueTypes: ["number"],
+              path: "metadata.views",
+              type: "number",
+              arrayTypes: [],
+              isArrayCompressed: false,
               createdAt: new Date(),
               updatedAt: new Date(),
               appId: "sort-mixed-app",
@@ -1175,10 +1175,10 @@ describe("MongoObjStorage (integration)", () => {
             "name",
             {
               id: "name-field",
-              field: "name",
-              fieldKeys: ["name"],
-              fieldKeyTypes: ["string"],
-              valueTypes: ["string"],
+              path: "name",
+              type: "string",
+              arrayTypes: [],
+              isArrayCompressed: false,
               createdAt: new Date(),
               updatedAt: new Date(),
               appId: "sort-invalid-app",
@@ -1214,6 +1214,10 @@ describe("MongoObjStorage (integration)", () => {
         {
           id: "array-field-1",
           field: "reportsTo",
+          path: "reportsTo",
+          type: "string" as const,
+          arrayTypes: [],
+          isArrayCompressed: false,
           appId: obj.appId!,
           groupId: obj.groupId!,
           tag: obj.tag!,
@@ -1231,7 +1235,7 @@ describe("MongoObjStorage (integration)", () => {
         },
       },
       tag: obj.tag,
-      arrayFields: arrayFieldsMap,
+      fields: arrayFieldsMap,
     });
 
     expect(result.objs).toHaveLength(1);
@@ -1259,6 +1263,10 @@ describe("MongoObjStorage (integration)", () => {
         {
           id: "array-field-2",
           field: "logsQuery.and",
+          path: "logsQuery.and",
+          type: "string" as const,
+          arrayTypes: [],
+          isArrayCompressed: false,
           appId: obj.appId!,
           groupId: obj.groupId!,
           tag: obj.tag!,
@@ -1276,7 +1284,7 @@ describe("MongoObjStorage (integration)", () => {
         },
       },
       tag: obj.tag,
-      arrayFields: arrayFieldsMap,
+      fields: arrayFieldsMap,
     });
 
     expect(result.objs).toHaveLength(1);
@@ -1308,6 +1316,10 @@ describe("MongoObjStorage (integration)", () => {
         {
           id: "array-field-3",
           field: "logsQuery.and",
+          path: "logsQuery.and",
+          type: "string" as const,
+          arrayTypes: [],
+          isArrayCompressed: false,
           appId: obj.appId!,
           groupId: obj.groupId!,
           tag: obj.tag!,
@@ -1320,6 +1332,10 @@ describe("MongoObjStorage (integration)", () => {
         {
           id: "array-field-4",
           field: "logsQuery.and.op",
+          path: "logsQuery.and.op",
+          type: "string" as const,
+          arrayTypes: [],
+          isArrayCompressed: false,
           appId: obj.appId!,
           groupId: obj.groupId!,
           tag: obj.tag!,
@@ -1337,7 +1353,7 @@ describe("MongoObjStorage (integration)", () => {
         },
       },
       tag: obj.tag,
-      arrayFields: arrayFieldsMap,
+      fields: arrayFieldsMap,
     });
 
     expect(result.objs).toHaveLength(1);
@@ -1363,6 +1379,10 @@ describe("MongoObjStorage (integration)", () => {
         {
           id: "array-field-5",
           field: "reportsTo",
+          path: "reportsTo",
+          type: "string" as const,
+          arrayTypes: [],
+          isArrayCompressed: false,
           appId: obj.appId!,
           groupId: obj.groupId!,
           tag: obj.tag!,
@@ -1382,7 +1402,7 @@ describe("MongoObjStorage (integration)", () => {
         },
       },
       tag: obj.tag,
-      arrayFields: arrayFieldsMap,
+      fields: arrayFieldsMap,
     });
 
     expect(result.objs).toHaveLength(1);
@@ -1407,6 +1427,10 @@ describe("MongoObjStorage (integration)", () => {
         {
           id: "array-field-6",
           field: "reportsTo",
+          path: "reportsTo",
+          type: "string" as const,
+          arrayTypes: [],
+          isArrayCompressed: false,
           appId: obj.appId!,
           groupId: obj.groupId!,
           tag: obj.tag!,
@@ -1430,7 +1454,7 @@ describe("MongoObjStorage (integration)", () => {
         },
       },
       tag: obj.tag,
-      arrayFields: arrayFieldsMap,
+      fields: arrayFieldsMap,
     });
 
     expect(result.objs).toHaveLength(1);
@@ -1456,6 +1480,10 @@ describe("MongoObjStorage (integration)", () => {
         {
           id: "array-field-7",
           field: "scores",
+          path: "scores",
+          type: "string" as const,
+          arrayTypes: [],
+          isArrayCompressed: false,
           appId: obj.appId!,
           groupId: obj.groupId!,
           tag: obj.tag!,
@@ -1473,7 +1501,7 @@ describe("MongoObjStorage (integration)", () => {
         },
       },
       tag: obj.tag,
-      arrayFields: arrayFieldsMap,
+      fields: arrayFieldsMap,
     });
 
     expect(result.objs).toHaveLength(1);
@@ -1498,6 +1526,10 @@ describe("MongoObjStorage (integration)", () => {
         {
           id: "array-field-8",
           field: "reportsTo",
+          path: "reportsTo",
+          type: "string" as const,
+          arrayTypes: [],
+          isArrayCompressed: false,
           appId: obj.appId!,
           groupId: obj.groupId!,
           tag: obj.tag!,
@@ -1515,7 +1547,7 @@ describe("MongoObjStorage (integration)", () => {
         },
       },
       tag: obj.tag,
-      arrayFields: arrayFieldsMap,
+      fields: arrayFieldsMap,
     });
 
     expect(result.objs).toHaveLength(1);
@@ -1540,6 +1572,10 @@ describe("MongoObjStorage (integration)", () => {
         {
           id: "array-field-9",
           field: "reportsTo",
+          path: "reportsTo",
+          type: "string" as const,
+          arrayTypes: [],
+          isArrayCompressed: false,
           appId: obj.appId!,
           groupId: obj.groupId!,
           tag: obj.tag!,
@@ -1559,7 +1595,7 @@ describe("MongoObjStorage (integration)", () => {
         },
       },
       tag: obj.tag,
-      arrayFields: arrayFieldsMap,
+      fields: arrayFieldsMap,
     });
 
     expect(result.objs).toHaveLength(1);
@@ -1585,6 +1621,10 @@ describe("MongoObjStorage (integration)", () => {
         {
           id: "array-field-10",
           field: "reportsTo",
+          path: "reportsTo",
+          type: "string" as const,
+          arrayTypes: [],
+          isArrayCompressed: false,
           appId: obj.appId!,
           groupId: obj.groupId!,
           tag: obj.tag!,
@@ -1605,7 +1645,7 @@ describe("MongoObjStorage (integration)", () => {
         },
       },
       tag: obj.tag,
-      arrayFields: arrayFieldsMap,
+      fields: arrayFieldsMap,
     });
 
     expect(result.objs).toHaveLength(1);
@@ -1627,6 +1667,10 @@ describe("MongoObjStorage (integration)", () => {
         {
           id: "array-field-11",
           field: "reportsTo",
+          path: "reportsTo",
+          type: "string" as const,
+          arrayTypes: [],
+          isArrayCompressed: false,
           appId: obj.appId!,
           groupId: obj.groupId!,
           tag: obj.tag!,
@@ -1644,7 +1688,7 @@ describe("MongoObjStorage (integration)", () => {
         },
       },
       tag: obj.tag,
-      arrayFields: arrayFieldsMap,
+      fields: arrayFieldsMap,
     });
 
     expect(result.objs).toHaveLength(0);
@@ -1669,6 +1713,10 @@ describe("MongoObjStorage (integration)", () => {
         {
           id: "array-field-12",
           field: "scores",
+          path: "scores",
+          type: "string" as const,
+          arrayTypes: [],
+          isArrayCompressed: false,
           appId: obj.appId!,
           groupId: obj.groupId!,
           tag: obj.tag!,
@@ -1686,7 +1734,7 @@ describe("MongoObjStorage (integration)", () => {
         },
       },
       tag: obj.tag,
-      arrayFields: arrayFieldsMap,
+      fields: arrayFieldsMap,
     });
 
     expect(result.objs).toHaveLength(1);
@@ -1709,6 +1757,10 @@ describe("MongoObjStorage (integration)", () => {
         {
           id: "array-field-13",
           field: "tags",
+          path: "tags",
+          type: "string" as const,
+          arrayTypes: [],
+          isArrayCompressed: false,
           appId: obj.appId!,
           groupId: obj.groupId!,
           tag: obj.tag!,
@@ -1726,7 +1778,7 @@ describe("MongoObjStorage (integration)", () => {
         },
       },
       tag: obj.tag,
-      arrayFields: arrayFieldsMap,
+      fields: arrayFieldsMap,
     });
 
     expect(result.objs).toHaveLength(1);
@@ -1751,6 +1803,10 @@ describe("MongoObjStorage (integration)", () => {
         {
           id: "array-field-14",
           field: "reportsTo",
+          path: "reportsTo",
+          type: "string" as const,
+          arrayTypes: [],
+          isArrayCompressed: false,
           appId: obj.appId!,
           groupId: obj.groupId!,
           tag: obj.tag!,
@@ -1768,7 +1824,7 @@ describe("MongoObjStorage (integration)", () => {
         },
       },
       tag: obj.tag,
-      arrayFields: arrayFieldsMap,
+      fields: arrayFieldsMap,
     });
 
     expect(result.objs).toHaveLength(1);
@@ -1806,6 +1862,10 @@ describe("MongoObjStorage (integration)", () => {
         {
           id: "array-field-15",
           field: "workflow.steps",
+          path: "workflow.steps",
+          type: "string" as const,
+          arrayTypes: [],
+          isArrayCompressed: false,
           appId: obj.appId!,
           groupId: obj.groupId!,
           tag: obj.tag!,
@@ -1818,6 +1878,10 @@ describe("MongoObjStorage (integration)", () => {
         {
           id: "array-field-16",
           field: "workflow.steps.actions",
+          path: "workflow.steps.actions",
+          type: "string" as const,
+          arrayTypes: [],
+          isArrayCompressed: false,
           appId: obj.appId!,
           groupId: obj.groupId!,
           tag: obj.tag!,
@@ -1837,7 +1901,7 @@ describe("MongoObjStorage (integration)", () => {
         },
       },
       tag: obj.tag,
-      arrayFields: arrayFieldsMap,
+      fields: arrayFieldsMap,
     });
 
     expect(result.objs).toHaveLength(1);
@@ -1858,6 +1922,10 @@ describe("MongoObjStorage (integration)", () => {
         {
           id: "array-field-mixed",
           field: "reportsTo",
+          path: "reportsTo",
+          type: "string" as const,
+          arrayTypes: [],
+          isArrayCompressed: false,
           appId: obj1.appId!,
           groupId: obj1.groupId!,
           tag: obj1.tag!,
@@ -1875,7 +1943,7 @@ describe("MongoObjStorage (integration)", () => {
         },
       },
       tag: obj1.tag,
-      arrayFields: arrayFieldsMap,
+      fields: arrayFieldsMap,
     });
     const result2 = await storage.read({
       query: {
@@ -1885,7 +1953,7 @@ describe("MongoObjStorage (integration)", () => {
         },
       },
       tag: obj2.tag,
-      arrayFields: new Map(),
+      fields: new Map(),
     });
     expect(result1.objs.some((o) => o.id === obj1.id)).toBe(true);
     expect(result2.objs.some((o) => o.id === obj2.id)).toBe(true);

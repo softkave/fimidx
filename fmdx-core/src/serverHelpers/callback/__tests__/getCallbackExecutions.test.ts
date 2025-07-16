@@ -283,7 +283,7 @@ describe("getCallbackExecutions integration", () => {
     expect(result3.hasMore).toBe(false);
   });
 
-  it("sorts executions by createdAt when sort is provided", async () => {
+  it("sorts executions by executedAt when sort is provided", async () => {
     // Create a callback
     const callback = await addCallback({
       args: makeAddCallbackArgs(),
@@ -345,37 +345,39 @@ describe("getCallbackExecutions integration", () => {
       storage,
     });
 
-    // Test ascending sort by createdAt (should be oldest first)
+    // Test ascending sort by executedAt (should be oldest first)
     const resultAsc = await getCallbackExecutions({
       args: {
         callbackId: callback.id,
-        sort: [{ field: "createdAt", direction: "asc" }],
+        sort: [{ field: "executedAt", direction: "asc" }],
       },
       appId: defaultAppId,
       storage,
     });
 
-    expect(resultAsc.executions).toHaveLength(3);
-    // Should be sorted by createdAt ASC, so execution 3 (created first) should be first
-    expect(resultAsc.executions[0].responseBodyJson).toEqual({ execution: 3 });
-    expect(resultAsc.executions[1].responseBodyJson).toEqual({ execution: 2 });
-    expect(resultAsc.executions[2].responseBodyJson).toEqual({ execution: 1 });
+    console.dir(resultAsc, { depth: null });
 
-    // Test descending sort by createdAt (should be newest first)
+    expect(resultAsc.executions).toHaveLength(3);
+    // Should be sorted by executedAt ASC, so execution 1 (oldest) should be first
+    expect(resultAsc.executions[0].responseBodyJson).toEqual({ execution: 1 });
+    expect(resultAsc.executions[1].responseBodyJson).toEqual({ execution: 2 });
+    expect(resultAsc.executions[2].responseBodyJson).toEqual({ execution: 3 });
+
+    // Test descending sort by executedAt (should be newest first)
     const resultDesc = await getCallbackExecutions({
       args: {
         callbackId: callback.id,
-        sort: [{ field: "createdAt", direction: "desc" }],
+        sort: [{ field: "executedAt", direction: "desc" }],
       },
       appId: defaultAppId,
       storage,
     });
 
     expect(resultDesc.executions).toHaveLength(3);
-    // Should be sorted by createdAt DESC, so execution 1 (created last) should be first
-    expect(resultDesc.executions[0].responseBodyJson).toEqual({ execution: 1 });
+    // Should be sorted by executedAt DESC, so execution 3 (newest) should be first
+    expect(resultDesc.executions[0].responseBodyJson).toEqual({ execution: 3 });
     expect(resultDesc.executions[1].responseBodyJson).toEqual({ execution: 2 });
-    expect(resultDesc.executions[2].responseBodyJson).toEqual({ execution: 3 });
+    expect(resultDesc.executions[2].responseBodyJson).toEqual({ execution: 1 });
   });
 
   it("returns only executions for the specified callback", async () => {

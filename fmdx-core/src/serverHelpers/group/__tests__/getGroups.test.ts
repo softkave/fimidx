@@ -81,11 +81,15 @@ async function insertNameFieldForSorting(params: {
     updatedAt: now,
     appId,
     groupId,
-    field: "name", // This is the field name that getManyObjs will look for
+    tag,
+    field: "name",
+    path: "name",
+    type: "string",
+    arrayTypes: [],
+    isArrayCompressed: false,
     fieldKeys: ["name"],
     fieldKeyTypes: ["string"],
     valueTypes: ["string"],
-    tag,
   };
 
   // Insert the field definition
@@ -1018,7 +1022,7 @@ describe("getGroups integration", () => {
   it("handles complex meta queries with different operators", async () => {
     // Create groups with different meta data
     const groupAArgs = makeTestGroupArgs("GroupA", {
-      meta: { priority: "high", count: "10" },
+      meta: { priority: "high", count: 10 },
     });
     await addGroup({
       args: groupAArgs,
@@ -1029,7 +1033,7 @@ describe("getGroups integration", () => {
     });
 
     const groupBArgs = makeTestGroupArgs("GroupB", {
-      meta: { priority: "medium", count: "5" },
+      meta: { priority: "medium", count: 5 },
     });
     await addGroup({
       args: groupBArgs,
@@ -1040,7 +1044,7 @@ describe("getGroups integration", () => {
     });
 
     const groupCArgs = makeTestGroupArgs("GroupC", {
-      meta: { priority: "low", count: "15" },
+      meta: { priority: "low", count: 15 },
     });
     await addGroup({
       args: groupCArgs,
@@ -1063,7 +1067,7 @@ describe("getGroups integration", () => {
           {
             op: "gt",
             field: "count",
-            value: "5",
+            value: 5,
           },
         ],
       },
@@ -1076,7 +1080,7 @@ describe("getGroups integration", () => {
     expect(result.groups).toHaveLength(1);
     expect(result.groups[0].name).toBe(groupAArgs.name);
     expect(result.groups[0].meta?.priority).toBe("high");
-    expect(result.groups[0].meta?.count).toBe("10");
+    expect(result.groups[0].meta?.count).toBe(10);
   });
 
   it("returns correct group structure", async () => {

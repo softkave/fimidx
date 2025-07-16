@@ -80,7 +80,6 @@ export const updateMonitorsSchema = z.object({
     reportsTo: z.array(z.string().min(1)).optional(),
     interval: durationSchema.optional(),
   }),
-  updateMany: z.boolean().optional(),
 });
 
 export const getMonitorsSchema = z.object({

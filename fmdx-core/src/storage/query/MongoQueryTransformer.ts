@@ -2,7 +2,6 @@ import type { FilterQuery, SortOrder } from "mongoose";
 import type {
   INumberMetaQuery,
   IObj,
-  IObjArrayField,
   IObjField,
   IObjMetaQuery,
   IObjPartLogicalQuery,
@@ -21,7 +20,7 @@ export class MongoQueryTransformer extends BaseQueryTransformer<
   transformFilter(
     query: IObjQuery,
     date: Date,
-    arrayFields?: Map<string, IObjArrayField>
+    fields?: Map<string, IObjField>
   ): FilterQuery<IObj> {
     const filters: FilterQuery<IObj>[] = [];
 
@@ -35,7 +34,7 @@ export class MongoQueryTransformer extends BaseQueryTransformer<
       const partFilter = this.transformLogicalQuery(
         query.partQuery,
         date,
-        arrayFields
+        fields
       );
       if (Object.keys(partFilter).length > 0) filters.push(partFilter);
     }
@@ -62,7 +61,8 @@ export class MongoQueryTransformer extends BaseQueryTransformer<
 
   transformSort(
     sort: IObjSortList,
-    fields?: IObjField[]
+    // TODO: change to Map<string, IObjField>
+    _fields?: IObjField[]
   ): Record<string, SortOrder> {
     if (sort.length === 0) {
       return { createdAt: -1 };
@@ -70,26 +70,37 @@ export class MongoQueryTransformer extends BaseQueryTransformer<
 
     const sortObj: Record<string, SortOrder> = {};
 
+    // List of top-level fields that should not be prefixed
+    const topLevelFields = new Set([
+      "id",
+      "createdAt",
+      "updatedAt",
+      "createdBy",
+      "createdByType",
+      "updatedBy",
+      "updatedByType",
+      "appId",
+      "groupId",
+      "tag",
+      "deletedAt",
+      "deletedBy",
+      "deletedByType",
+      "shouldIndex",
+      "fieldsToIndex",
+    ]);
+
     sort.forEach((sortItem) => {
       const direction = sortItem.direction === "asc" ? 1 : -1;
       let outputField = sortItem.field;
-      let matchField = sortItem.field;
 
-      // If the field starts with 'objRecord.', strip it for matching
-      if (sortItem.field.startsWith("objRecord.")) {
-        matchField = sortItem.field.slice("objRecord.".length);
+      // Prefix with objRecord. if not a top-level field and not already prefixed
+      if (
+        !topLevelFields.has(outputField) &&
+        !outputField.startsWith("objRecord.")
+      ) {
+        outputField = `objRecord.${outputField}`;
       }
 
-      // Check if field exists in fields array
-      if (fields) {
-        const fieldInfo = fields.find((f) => f.field === matchField);
-        if (!fieldInfo) {
-          // Skip this sort field if not found in fields array
-          return;
-        }
-      }
-
-      // Output field: use as-is (do not add objRecord. prefix if not present)
       sortObj[outputField] = direction;
     });
 
@@ -114,42 +125,33 @@ export class MongoQueryTransformer extends BaseQueryTransformer<
   protected transformPartQuery(
     partQuery: IObjPartQueryList,
     date: Date,
-    arrayFields?: Map<string, IObjArrayField>
+    fields?: Map<string, IObjField>
   ): FilterQuery<IObj> {
     const fieldOps: Record<string, Record<string, any>> = {};
 
     partQuery.forEach((part) => {
-      // Check if this field involves array access
-      const arrayField = this.findArrayField(part.field, arrayFields);
+      const fieldInfo = fields?.get(part.field);
+      const query = this.generateFieldQuery(part, fieldInfo, date);
 
-      if (arrayField) {
-        // Generate MongoDB array query
-        const arrayQuery = this.generateMongoArrayQuery(part, arrayField, date);
-        // Merge operations for the same field
-        for (const [fieldPath, operations] of Object.entries(arrayQuery)) {
-          if (!fieldOps[fieldPath]) fieldOps[fieldPath] = {};
-          Object.assign(fieldOps[fieldPath], operations);
-        }
-      } else {
-        // Fall back to regular field query
-        const field = `objRecord.${part.field}`;
-        if (!fieldOps[field]) fieldOps[field] = {};
-        this.addFieldOperation(fieldOps[field], part, date);
+      // Merge operations for the same field
+      for (const [fieldPath, operations] of Object.entries(query)) {
+        if (!fieldOps[fieldPath]) fieldOps[fieldPath] = {};
+        Object.assign(fieldOps[fieldPath], operations);
       }
     });
 
     // Flatten: if only $eq, keep as { $eq: value }, not just value
-    const pongoQuery: FilterQuery<IObj> = {};
+    const mongoQuery: FilterQuery<IObj> = {};
     for (const [field, ops] of Object.entries(fieldOps)) {
-      pongoQuery[field] = { ...ops };
+      mongoQuery[field] = { ...ops };
     }
-    return pongoQuery;
+    return mongoQuery;
   }
 
   protected transformLogicalQuery(
     logicalQuery: IObjPartLogicalQuery,
     date: Date,
-    arrayFields?: Map<string, IObjArrayField>
+    fields?: Map<string, IObjField>
   ): FilterQuery<IObj> {
     let filter: FilterQuery<IObj> = {};
 
@@ -158,23 +160,19 @@ export class MongoQueryTransformer extends BaseQueryTransformer<
 
     if (hasAnd && hasOr) {
       // When both AND and OR are present, we want: (AND conditions) OR (OR conditions)
-      const andQuery = this.transformPartQuery(
-        logicalQuery.and!,
-        date,
-        arrayFields
-      );
+      const andQuery = this.transformPartQuery(logicalQuery.and!, date, fields);
       const orArray = logicalQuery.or!.map((part) =>
-        this.transformPartQuery([part], date, arrayFields)
+        this.transformPartQuery([part], date, fields)
       );
 
       // Create an OR query that combines the AND result with the OR results
       const orConditions = [andQuery, ...orArray];
       filter = { $or: orConditions };
     } else if (hasAnd) {
-      filter = this.transformPartQuery(logicalQuery.and!, date, arrayFields);
+      filter = this.transformPartQuery(logicalQuery.and!, date, fields);
     } else if (hasOr) {
       const orArray = logicalQuery.or!.map((part) =>
-        this.transformPartQuery([part], date, arrayFields)
+        this.transformPartQuery([part], date, fields)
       );
       filter = { $or: orArray };
     }
@@ -189,6 +187,14 @@ export class MongoQueryTransformer extends BaseQueryTransformer<
     const filter: FilterQuery<IObj> = {};
 
     Object.entries(metaQuery).forEach(([key, value]) => {
+      // Skip empty objects (e.g., id: {})
+      if (
+        typeof value === "object" &&
+        value !== null &&
+        Object.keys(value).length === 0
+      ) {
+        return;
+      }
       // Map meta fields to top-level fields
       const fieldMap: Record<string, string> = {
         createdAt: "createdAt",
@@ -201,11 +207,25 @@ export class MongoQueryTransformer extends BaseQueryTransformer<
         deletedBy: "deletedBy",
         deletedByType: "deletedByType",
       };
-      const mappedKey = fieldMap[key] || key;
-      if (this.isStringMetaQuery(value)) {
-        this.transformStringMetaQuery(filter, mappedKey, value, true);
-      } else if (this.isNumberMetaQuery(value)) {
-        this.transformNumberMetaQuery(filter, mappedKey, value, date, true);
+
+      const mongoField = fieldMap[key] || key;
+
+      if (this.isNumberMetaQuery(value)) {
+        this.transformNumberMetaQuery(filter, mongoField, value, date);
+      } else if (this.isStringMetaQuery(value)) {
+        this.transformStringMetaQuery(filter, mongoField, value);
+      }
+    });
+
+    // Flatten { $eq: value } to value for all fields
+    Object.keys(filter).forEach((k) => {
+      if (
+        filter[k] &&
+        typeof filter[k] === "object" &&
+        Object.keys(filter[k]).length === 1 &&
+        Object.prototype.hasOwnProperty.call(filter[k], "$eq")
+      ) {
+        filter[k] = filter[k]["$eq"];
       }
     });
 
@@ -218,72 +238,357 @@ export class MongoQueryTransformer extends BaseQueryTransformer<
   ): FilterQuery<IObj> {
     const filter: FilterQuery<IObj> = {};
 
-    // Handle shouldIndex (boolean field)
-    if (topLevelFields.shouldIndex !== undefined) {
-      filter.shouldIndex = topLevelFields.shouldIndex;
-    }
-
-    // Handle fieldsToIndex (array field)
-    if (topLevelFields.fieldsToIndex !== undefined) {
-      filter.fieldsToIndex = topLevelFields.fieldsToIndex;
-    }
-
-    // Handle tag (string meta query)
-    if (topLevelFields.tag) {
-      this.transformStringMetaQuery(filter, "tag", topLevelFields.tag, true);
-    }
-
-    // Handle groupId (string meta query)
-    if (topLevelFields.groupId) {
-      this.transformStringMetaQuery(
-        filter,
-        "groupId",
-        topLevelFields.groupId,
-        true
-      );
-    }
-
-    // Handle deletedAt (null or number meta query)
-    if (topLevelFields.deletedAt !== undefined) {
-      if (topLevelFields.deletedAt === null) {
-        filter.deletedAt = null;
-      } else {
-        this.transformNumberMetaQuery(
-          filter,
-          "deletedAt",
-          topLevelFields.deletedAt,
-          date,
-          true
-        );
+    Object.entries(topLevelFields).forEach(([key, value]) => {
+      // If deletedAt is explicitly null, skip adding it to the filter here
+      // so that the storage layer can handle includeDeleted logic
+      if (key === "deletedAt" && value === null) {
+        return;
       }
-    }
+      if (this.isStringMetaQuery(value)) {
+        this.transformStringMetaQuery(filter, key, value);
+      } else if (this.isNumberMetaQuery(value)) {
+        this.transformNumberMetaQuery(filter, key, value, date);
+      } else {
+        // Handle simple values (boolean, null, array, string, number)
+        filter[key] = value;
+      }
+    });
 
-    // Handle deletedBy (string meta query)
-    if (topLevelFields.deletedBy) {
-      this.transformStringMetaQuery(
-        filter,
-        "deletedBy",
-        topLevelFields.deletedBy,
-        true
-      );
-    }
-
-    // Handle deletedByType (string meta query)
-    if (topLevelFields.deletedByType) {
-      this.transformStringMetaQuery(
-        filter,
-        "deletedByType",
-        topLevelFields.deletedByType,
-        true
-      );
-    }
+    // Flatten { $eq: value } to value for all fields
+    Object.keys(filter).forEach((k) => {
+      if (
+        filter[k] &&
+        typeof filter[k] === "object" &&
+        Object.keys(filter[k]).length === 1 &&
+        Object.prototype.hasOwnProperty.call(filter[k], "$eq")
+      ) {
+        filter[k] = filter[k]["$eq"];
+      }
+    });
 
     return filter;
   }
 
+  private generateFieldQuery(
+    part: IObjPartQueryItem,
+    fieldInfo: IObjField | undefined,
+    date: Date
+  ): Record<string, Record<string, any>> {
+    const fieldPath = part.field;
+
+    // If field is not indexed, we need to generate a dynamic query
+    if (!fieldInfo) {
+      return this.generateDynamicQuery(part, date);
+    }
+
+    // Handle array-compressed fields
+    if (fieldInfo.isArrayCompressed) {
+      return this.generateArrayCompressedQuery(part, fieldInfo, date);
+    }
+
+    // Handle regular fields
+    return this.generateRegularFieldQuery(part, fieldInfo, date);
+  }
+
+  private generateDynamicQuery(
+    part: IObjPartQueryItem,
+    date: Date
+  ): Record<string, Record<string, any>> {
+    const fieldPath = part.field;
+
+    // Check if this is an array-compressed field (contains [*])
+    if (fieldPath.includes("[*]")) {
+      return this.generateDynamicArrayQuery(part, date);
+    }
+
+    // Generate regular field query
+    const field = `objRecord.${fieldPath}`;
+    const operations: Record<string, any> = {};
+    this.addFieldOperation(operations, part, date);
+
+    return { [field]: operations };
+  }
+
+  private generateDynamicArrayQuery(
+    part: IObjPartQueryItem,
+    date: Date
+  ): Record<string, Record<string, any>> {
+    const fieldPath = part.field;
+
+    // Replace [*] with MongoDB array access pattern
+    const arrayPath = fieldPath.replace(/\.\[\*\]/g, "");
+    const field = `objRecord.${arrayPath}`;
+
+    const operations: Record<string, any> = {};
+    this.addArrayFieldOperation(operations, part, date);
+
+    return { [field]: operations };
+  }
+
+  private generateArrayCompressedQuery(
+    part: IObjPartQueryItem,
+    fieldInfo: IObjField,
+    date: Date
+  ): Record<string, Record<string, any>> {
+    const fieldPath = part.field;
+
+    // Remove [*] for the base path
+    const basePath = fieldPath.replace(/\.\[\*\]/g, "");
+    const field = `objRecord.${basePath}`;
+
+    const operations: Record<string, any> = {};
+    this.addArrayFieldOperation(operations, part, date);
+
+    return { [field]: operations };
+  }
+
+  private generateRegularFieldQuery(
+    part: IObjPartQueryItem,
+    fieldInfo: IObjField,
+    date: Date
+  ): Record<string, Record<string, any>> {
+    const fieldPath = part.field;
+    const field = `objRecord.${fieldPath}`;
+
+    const operations: Record<string, any> = {};
+    this.addFieldOperation(operations, part, date);
+
+    return { [field]: operations };
+  }
+
+  private addArrayFieldOperation(
+    fieldOps: Record<string, any>,
+    part: IObjPartQueryItem,
+    date: Date
+  ): void {
+    const { op, value } = part;
+
+    switch (op) {
+      case "eq":
+        fieldOps.$elemMatch = { $eq: value };
+        break;
+      case "neq":
+        fieldOps.$not = { $elemMatch: { $eq: value } };
+        break;
+      case "gt":
+        const gtValue = this.getGtGteValue(value, date);
+        if (
+          this.isDateValue(value) &&
+          typeof value === "string" &&
+          value.match(/^\d+[dhms]$/)
+        ) {
+          fieldOps.$elemMatch = { $gt: new Date(gtValue!) };
+        } else {
+          fieldOps.$elemMatch = { $gt: gtValue ?? value };
+        }
+        break;
+      case "gte":
+        const gteValue = this.getGtGteValue(value, date);
+        if (
+          this.isDateValue(value) &&
+          typeof value === "string" &&
+          value.match(/^\d+[dhms]$/)
+        ) {
+          fieldOps.$elemMatch = { $gte: new Date(gteValue!) };
+        } else {
+          fieldOps.$elemMatch = { $gte: gteValue ?? value };
+        }
+        break;
+      case "lt":
+        const ltValue = this.getLtLteValue(value, date);
+        if (
+          this.isDateValue(value) &&
+          typeof value === "string" &&
+          value.match(/^\d+[dhms]$/)
+        ) {
+          fieldOps.$elemMatch = { $lt: new Date(ltValue!) };
+        } else {
+          fieldOps.$elemMatch = { $lt: ltValue ?? value };
+        }
+        break;
+      case "lte":
+        const lteValue = this.getLtLteValue(value, date);
+        if (
+          this.isDateValue(value) &&
+          typeof value === "string" &&
+          value.match(/^\d+[dhms]$/)
+        ) {
+          fieldOps.$elemMatch = { $lte: new Date(lteValue!) };
+        } else {
+          fieldOps.$elemMatch = { $lte: lteValue ?? value };
+        }
+        break;
+      case "like":
+        const likeValue = typeof value === "string" ? value : String(value);
+        const caseSensitive = part.caseSensitive ?? false;
+        const regex = new RegExp(likeValue, caseSensitive ? "" : "i");
+        fieldOps.$elemMatch = { $regex: regex };
+        break;
+      case "in":
+        const inValues = Array.isArray(value) ? value : [value];
+        fieldOps.$elemMatch = { $in: inValues };
+        break;
+      case "not_in":
+        const notInValues = Array.isArray(value) ? value : [value];
+        fieldOps.$not = { $elemMatch: { $in: notInValues } };
+        break;
+      case "between":
+        const [min, max] = Array.isArray(value) ? value : [value, value];
+        const betweenValues = this.getBetweenValue([min, max], date);
+        if (betweenValues) {
+          if (this.isDateValue(min) || this.isDateValue(max)) {
+            fieldOps.$elemMatch = {
+              $gte: new Date(betweenValues[0]),
+              $lte: new Date(betweenValues[1]),
+            };
+          } else {
+            fieldOps.$elemMatch = {
+              $gte: betweenValues[0],
+              $lte: betweenValues[1],
+            };
+          }
+        } else {
+          fieldOps.$elemMatch = { $gte: min, $lte: max };
+        }
+        break;
+      case "exists":
+        const existsValue = Boolean(value);
+        if (existsValue) {
+          fieldOps.$exists = true;
+          fieldOps.$ne = [];
+        } else {
+          fieldOps.$exists = false;
+        }
+        break;
+    }
+  }
+
+  private isDateValue(value: any): boolean {
+    // Check if the value is an ISO date string
+    if (typeof value === "string") {
+      // Check for ISO date format (YYYY-MM-DDTHH:mm:ss.sssZ or similar)
+      const isoDateRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?$/;
+      if (isoDateRegex.test(value)) {
+        const date = new Date(value);
+        return !isNaN(date.getTime());
+      }
+
+      // Check for relative date patterns (e.g., "1d", "2h", "30m", "45s")
+      const relativeDateRegex = /^\d+[dhms]$/;
+      return relativeDateRegex.test(value);
+    }
+
+    // Check if it's already a Date object
+    if (value instanceof Date) {
+      return !isNaN(value.getTime());
+    }
+
+    return false;
+  }
+
+  private addFieldOperation(
+    fieldOps: Record<string, any>,
+    part: IObjPartQueryItem,
+    date: Date
+  ): void {
+    const { op, value } = part;
+
+    switch (op) {
+      case "eq":
+        fieldOps.$eq = value;
+        break;
+      case "neq":
+        fieldOps.$ne = value;
+        break;
+      case "gt":
+        const gtValue = this.getGtGteValue(value, date);
+        if (
+          this.isDateValue(value) &&
+          typeof value === "string" &&
+          value.match(/^\d+[dhms]$/)
+        ) {
+          fieldOps.$gt = new Date(gtValue!);
+        } else {
+          fieldOps.$gt = gtValue ?? value;
+        }
+        break;
+      case "gte":
+        const gteValue = this.getGtGteValue(value, date);
+        if (
+          this.isDateValue(value) &&
+          typeof value === "string" &&
+          value.match(/^\d+[dhms]$/)
+        ) {
+          fieldOps.$gte = new Date(gteValue!);
+        } else {
+          fieldOps.$gte = gteValue ?? value;
+        }
+        break;
+      case "lt":
+        const ltValue = this.getLtLteValue(value, date);
+        if (
+          this.isDateValue(value) &&
+          typeof value === "string" &&
+          value.match(/^\d+[dhms]$/)
+        ) {
+          fieldOps.$lt = new Date(ltValue!);
+        } else {
+          fieldOps.$lt = ltValue ?? value;
+        }
+        break;
+      case "lte":
+        const lteValue = this.getLtLteValue(value, date);
+        if (
+          this.isDateValue(value) &&
+          typeof value === "string" &&
+          value.match(/^\d+[dhms]$/)
+        ) {
+          fieldOps.$lte = new Date(lteValue!);
+        } else {
+          fieldOps.$lte = lteValue ?? value;
+        }
+        break;
+      case "like":
+        const likeValue = typeof value === "string" ? value : String(value);
+        const caseSensitive = part.caseSensitive ?? false;
+        const regex = new RegExp(likeValue, caseSensitive ? "" : "i");
+        fieldOps.$regex = regex;
+        break;
+      case "in":
+        const inValues = Array.isArray(value) ? value : [value];
+        fieldOps.$in = inValues;
+        break;
+      case "not_in":
+        const notInValues = Array.isArray(value) ? value : [value];
+        fieldOps.$nin = notInValues;
+        break;
+      case "between":
+        const [min, max] = Array.isArray(value) ? value : [value, value];
+        const betweenValues = this.getBetweenValue([min, max], date);
+        if (betweenValues) {
+          if (this.isDateValue(min) || this.isDateValue(max)) {
+            fieldOps.$gte = new Date(betweenValues[0]);
+            fieldOps.$lte = new Date(betweenValues[1]);
+          } else {
+            fieldOps.$gte = betweenValues[0];
+            fieldOps.$lte = betweenValues[1];
+          }
+        } else {
+          fieldOps.$gte = min;
+          fieldOps.$lte = max;
+        }
+        break;
+      case "exists":
+        const existsValue = Boolean(value);
+        fieldOps.$exists = existsValue;
+        break;
+    }
+  }
+
   private isStringMetaQuery(value: any): value is IStringMetaQuery {
     return (
-      value &&
+      typeof value === "object" &&
+      value !== null &&
       (value.eq !== undefined ||
         value.neq !== undefined ||
         value.in !== undefined ||
@@ -293,7 +598,8 @@ export class MongoQueryTransformer extends BaseQueryTransformer<
 
   private isNumberMetaQuery(value: any): value is INumberMetaQuery {
     return (
-      value &&
+      typeof value === "object" &&
+      value !== null &&
       (value.eq !== undefined ||
         value.neq !== undefined ||
         value.in !== undefined ||
@@ -312,22 +618,36 @@ export class MongoQueryTransformer extends BaseQueryTransformer<
     value: IStringMetaQuery,
     useFlatKeys = false
   ): void {
-    const hasEq = value.eq !== undefined;
-    const hasOther =
-      value.neq !== undefined ||
-      value.in !== undefined ||
-      value.not_in !== undefined;
-    // Always use object form for meta queries (fix for $in, $ne, etc.)
-    if (hasEq && !hasOther) {
-      filter[key] = value.eq;
-    } else {
-      const obj: any = {};
-      if (hasEq) obj.$eq = value.eq;
-      if (value.neq !== undefined) obj.$ne = value.neq;
-      if (value.in !== undefined) obj.$in = value.in;
-      if (value.not_in !== undefined) obj.$nin = value.not_in;
-      filter[key] = obj;
+    const fieldKey = useFlatKeys ? key : key;
+
+    const hasNeq = value.neq !== undefined;
+    const hasIn = value.in !== undefined && value.in.length > 0;
+    const hasNotIn = value.not_in !== undefined && value.not_in.length > 0;
+    const hasOnlyEq = value.eq !== undefined && !hasNeq && !hasIn && !hasNotIn;
+
+    if (hasOnlyEq) {
+      filter[fieldKey] = value.eq;
+      return;
     }
+
+    // Build a single filter object for all operations
+    const fieldFilter: any = {};
+
+    if (value.eq !== undefined) {
+      fieldFilter.$eq = value.eq;
+    }
+    if (hasNeq) {
+      fieldFilter.$ne = value.neq;
+    }
+    if (hasIn) {
+      fieldFilter.$in = value.in;
+    }
+    if (hasNotIn) {
+      fieldFilter.$nin = value.not_in;
+    }
+
+    // Assign the field filter to the main filter
+    filter[fieldKey] = fieldFilter;
   }
 
   private transformNumberMetaQuery(
@@ -337,304 +657,111 @@ export class MongoQueryTransformer extends BaseQueryTransformer<
     date: Date,
     useFlatKeys = false
   ): void {
-    // If the key is a date field, always convert values to Date objects
-    const isDateField = ["createdAt", "updatedAt", "deletedAt"].includes(key);
+    const fieldKey = useFlatKeys ? key : key;
+
     const toDate = (v: any) => {
-      if (v instanceof Date) return v;
-      if (typeof v === "string" || typeof v === "number") return new Date(v);
+      if (typeof v === "number") return new Date(v);
+      if (typeof v === "string") {
+        const date = new Date(v);
+        if (!isNaN(date.getTime())) return date;
+      }
       return v;
     };
-    const eqValue =
-      value.eq !== undefined
-        ? isDateField
-          ? toDate(value.eq)
-          : this.getNumberOrDurationMsFromValue(value.eq).valueNumber
-        : undefined;
-    const neqValue =
-      value.neq !== undefined
-        ? isDateField
-          ? toDate(value.neq)
-          : this.getNumberOrDurationMsFromValue(value.neq).valueNumber
-        : undefined;
-    const inValues = value.in
-      ? value.in
-          .map((v) =>
-            isDateField
-              ? toDate(v)
-              : this.getNumberOrDurationMsFromValue(v).valueNumber
-          )
-          .filter((v) => v !== undefined)
-      : undefined;
-    const notInValues = value.not_in
-      ? value.not_in
-          .map((v) =>
-            isDateField
-              ? toDate(v)
-              : this.getNumberOrDurationMsFromValue(v).valueNumber
-          )
-          .filter((v) => v !== undefined)
-      : undefined;
-    // Handle gt/gte/lt/lte
-    const gtValue =
-      value.gt !== undefined
-        ? isDateField
-          ? toDate(value.gt)
-          : this.getGtGteValue(value.gt, date)
-        : undefined;
-    const gteValue =
-      value.gte !== undefined
-        ? isDateField
-          ? toDate(value.gte)
-          : this.getGtGteValue(value.gte, date)
-        : undefined;
-    const ltValue =
-      value.lt !== undefined
-        ? isDateField
-          ? toDate(value.lt)
-          : this.getLtLteValue(value.lt, date)
-        : undefined;
-    const lteValue =
-      value.lte !== undefined
-        ? isDateField
-          ? toDate(value.lte)
-          : this.getLtLteValue(value.lte, date)
-        : undefined;
-    const hasEq = eqValue !== undefined;
-    const hasOther =
-      neqValue !== undefined ||
-      (inValues && inValues.length > 0) ||
-      (notInValues && notInValues.length > 0) ||
-      gtValue !== undefined ||
-      gteValue !== undefined ||
-      ltValue !== undefined ||
-      lteValue !== undefined;
-    // Always use object form for meta queries (fix for $in, $ne, etc.)
-    if (hasEq && !hasOther) {
-      filter[key] = eqValue;
-    } else {
-      const obj: any = {};
-      if (hasEq) obj.$eq = eqValue;
-      if (neqValue !== undefined) obj.$ne = neqValue;
-      if (inValues && inValues.length > 0) obj.$in = inValues;
-      if (notInValues && notInValues.length > 0) obj.$nin = notInValues;
-      if (gtValue !== undefined) obj.$gt = gtValue;
-      if (gteValue !== undefined) obj.$gte = gteValue;
-      if (ltValue !== undefined) obj.$lt = ltValue;
-      if (lteValue !== undefined) obj.$lte = lteValue;
-      filter[key] = obj;
-    }
-  }
 
-  private findArrayField(
-    field: string,
-    arrayFields?: Map<string, IObjArrayField>
-  ): IObjArrayField | undefined {
-    if (!arrayFields) return undefined;
+    // Check if this is a known date field
+    const isDateField = ["createdAt", "updatedAt", "deletedAt"].includes(key);
 
-    const segments = field.split(".");
+    // Build a single filter object for all operations
+    const fieldFilter: any = {};
 
-    // Check if any parent path is an array field
-    for (let i = 1; i <= segments.length; i++) {
-      const parentPath = segments.slice(0, i).join(".");
-      const arrayField = arrayFields.get(parentPath);
-      if (arrayField) {
-        return arrayField;
+    // Check if in/not_in operations are present - they take precedence over eq/neq
+    const hasInNotIn =
+      (value.in !== undefined && value.in.length > 0) ||
+      (value.not_in !== undefined && value.not_in.length > 0);
+
+    // Only process eq/neq if no in/not_in operations are present
+    if (!hasInNotIn) {
+      if (value.eq !== undefined) {
+        const eqVal = isDateField ? toDate(value.eq) : value.eq;
+        if (eqVal !== undefined) fieldFilter.$eq = eqVal;
+      }
+      if (value.neq !== undefined) {
+        const neVal = isDateField ? toDate(value.neq) : value.neq;
+        if (neVal !== undefined) fieldFilter.$ne = neVal;
       }
     }
 
-    return undefined;
-  }
-
-  private generateMongoArrayQuery(
-    part: IObjPartQueryItem,
-    arrayField: IObjArrayField,
-    date: Date
-  ): Record<string, Record<string, any>> {
-    const segments = part.field.split(".");
-    const arrayFieldPath = arrayField.field; // e.g., 'logsQuery.and'
-    const arrayFieldSegments = arrayFieldPath.split(".");
-
-    // Find the part after the array field
-    const remainingPath = segments.slice(arrayFieldSegments.length).join(".");
-    const fullPath = `objRecord.${arrayFieldPath}.${remainingPath}`;
-
-    const fieldOps: Record<string, Record<string, any>> = {};
-    fieldOps[fullPath] = {};
-
-    // Check if this value should be treated as a date based on its content
-    const shouldTreatAsDate = this.shouldTreatValueAsDate(part.value);
-
-    switch (part.op) {
-      case "eq":
-        fieldOps[fullPath]["$eq"] = part.value;
-        break;
-      case "neq":
-        fieldOps[fullPath]["$ne"] = part.value;
-        break;
-      case "gt": {
-        const value = shouldTreatAsDate
-          ? this.getGtGteValueAsDate(part.value, date)
-          : this.getGtGteValue(part.value, date);
-        if (value !== undefined) fieldOps[fullPath]["$gt"] = value;
-        break;
+    // Process in/not_in operations (they take precedence)
+    if (value.in !== undefined && value.in.length > 0) {
+      if (isDateField && value.in.some((v) => typeof v !== "number")) {
+        fieldFilter.$in = value.in.map(toDate);
+      } else {
+        fieldFilter.$in = value.in;
       }
-      case "gte": {
-        const value = shouldTreatAsDate
-          ? this.getGtGteValueAsDate(part.value, date)
-          : this.getGtGteValue(part.value, date);
-        if (value !== undefined) fieldOps[fullPath]["$gte"] = value;
-        break;
+    }
+    if (value.not_in !== undefined && value.not_in.length > 0) {
+      if (isDateField && value.not_in.some((v) => typeof v !== "number")) {
+        fieldFilter.$nin = value.not_in.map(toDate);
+      } else {
+        fieldFilter.$nin = value.not_in;
       }
-      case "lt": {
-        const value = shouldTreatAsDate
-          ? this.getLtLteValueAsDate(part.value, date)
-          : this.getLtLteValue(part.value, date);
-        if (value !== undefined) fieldOps[fullPath]["$lt"] = value;
-        break;
-      }
-      case "lte": {
-        const value = shouldTreatAsDate
-          ? this.getLtLteValueAsDate(part.value, date)
-          : this.getLtLteValue(part.value, date);
-        if (value !== undefined) fieldOps[fullPath]["$lte"] = value;
-        break;
-      }
-      case "like": {
-        fieldOps[fullPath]["$regex"] = new RegExp(
-          part.value,
-          part.caseSensitive ? "" : "i"
-        );
-        break;
-      }
-      case "in":
-        fieldOps[fullPath]["$in"] = part.value;
-        break;
-      case "not_in":
-        fieldOps[fullPath]["$nin"] = part.value;
-        break;
-      case "between": {
-        const [min, max] = this.getBetweenValue(part.value, date) || [];
-        if (min !== undefined && max !== undefined) {
-          if (shouldTreatAsDate) {
-            fieldOps[fullPath]["$gte"] = new Date(min);
-            fieldOps[fullPath]["$lte"] = new Date(max);
-          } else {
-            fieldOps[fullPath]["$gte"] = min;
-            fieldOps[fullPath]["$lte"] = max;
-          }
+    }
+
+    // Process other operations
+    if (value.gt !== undefined) {
+      const gtValue = isDateField
+        ? this.getGtGteValueAsDate(value.gt, date)
+        : this.getGtGteValue(value.gt, date);
+      if (gtValue !== undefined)
+        fieldFilter.$gt =
+          gtValue ?? (isDateField ? toDate(value.gt) : value.gt);
+    }
+    if (value.gte !== undefined) {
+      const gteValue = isDateField
+        ? this.getGtGteValueAsDate(value.gte, date)
+        : this.getGtGteValue(value.gte, date);
+      if (gteValue !== undefined)
+        fieldFilter.$gte =
+          gteValue ?? (isDateField ? toDate(value.gte) : value.gte);
+    }
+    if (value.lt !== undefined) {
+      const ltValue = isDateField
+        ? this.getLtLteValueAsDate(value.lt, date)
+        : this.getLtLteValue(value.lt, date);
+      if (ltValue !== undefined)
+        fieldFilter.$lt =
+          ltValue ?? (isDateField ? toDate(value.lt) : value.lt);
+    }
+    if (value.lte !== undefined) {
+      const lteValue = isDateField
+        ? this.getLtLteValueAsDate(value.lte, date)
+        : this.getLtLteValue(value.lte, date);
+      if (lteValue !== undefined)
+        fieldFilter.$lte =
+          lteValue ?? (isDateField ? toDate(value.lte) : value.lte);
+    }
+    if (value.between !== undefined) {
+      const [min, max] = value.between;
+      const betweenValues = this.getBetweenValue([min, max], date);
+      if (betweenValues) {
+        if (isDateField) {
+          fieldFilter.$gte = new Date(betweenValues[0]);
+          fieldFilter.$lte = new Date(betweenValues[1]);
+        } else {
+          fieldFilter.$gte = betweenValues[0];
+          fieldFilter.$lte = betweenValues[1];
         }
-        break;
-      }
-      case "exists": {
-        fieldOps[fullPath]["$exists"] = part.value;
-        break;
+      } else {
+        fieldFilter.$gte = isDateField ? toDate(min) : min;
+        fieldFilter.$lte = isDateField ? toDate(max) : max;
       }
     }
 
-    return fieldOps;
-  }
-
-  private addFieldOperation(
-    fieldOps: Record<string, any>,
-    part: IObjPartQueryItem,
-    date: Date
-  ): void {
-    // Check if this value should be treated as a date based on its content
-    const shouldTreatAsDate = this.shouldTreatValueAsDate(part.value);
-
-    switch (part.op) {
-      case "eq":
-        fieldOps["$eq"] = part.value;
-        break;
-      case "neq":
-        fieldOps["$ne"] = part.value;
-        break;
-      case "gt": {
-        const value = shouldTreatAsDate
-          ? this.getGtGteValueAsDate(part.value, date)
-          : this.getGtGteValue(part.value, date);
-        if (value !== undefined) fieldOps["$gt"] = value;
-        break;
-      }
-      case "gte": {
-        const value = shouldTreatAsDate
-          ? this.getGtGteValueAsDate(part.value, date)
-          : this.getGtGteValue(part.value, date);
-        if (value !== undefined) fieldOps["$gte"] = value;
-        break;
-      }
-      case "lt": {
-        const value = shouldTreatAsDate
-          ? this.getLtLteValueAsDate(part.value, date)
-          : this.getLtLteValue(part.value, date);
-        if (value !== undefined) fieldOps["$lt"] = value;
-        break;
-      }
-      case "lte": {
-        const value = shouldTreatAsDate
-          ? this.getLtLteValueAsDate(part.value, date)
-          : this.getLtLteValue(part.value, date);
-        if (value !== undefined) fieldOps["$lte"] = value;
-        break;
-      }
-      case "like": {
-        fieldOps["$regex"] = new RegExp(
-          part.value,
-          part.caseSensitive ? "" : "i"
-        );
-        break;
-      }
-      case "in":
-        fieldOps["$in"] = part.value;
-        break;
-      case "not_in":
-        fieldOps["$nin"] = part.value;
-        break;
-      case "between": {
-        const [min, max] = this.getBetweenValue(part.value, date) || [];
-        if (min !== undefined && max !== undefined) {
-          if (shouldTreatAsDate) {
-            fieldOps["$gte"] = new Date(min);
-            fieldOps["$lte"] = new Date(max);
-          } else {
-            fieldOps["$gte"] = min;
-            fieldOps["$lte"] = max;
-          }
-        }
-        break;
-      }
-      case "exists": {
-        fieldOps["$exists"] = part.value;
-        break;
-      }
+    // Assign the field filter to the main filter
+    if (hasInNotIn) {
+      delete fieldFilter.$eq;
+      delete fieldFilter.$ne;
     }
-  }
-
-  private shouldTreatValueAsDate(value: any): boolean {
-    // If it's already a Date object, treat it as a date
-    if (value instanceof Date) {
-      return true;
-    }
-
-    // If it's a number, check if it looks like a timestamp
-    if (typeof value === "number") {
-      // If it's a large number (> 1e12), it's likely a timestamp in milliseconds
-      // If it's a smaller number, it might be a timestamp in seconds
-      return value > 1e12 || (value > 1e9 && value < 1e12);
-    }
-
-    // If it's a string, check if it's a valid ISO date string or duration string
-    if (typeof value === "string") {
-      // Check if it's a duration string (should be treated as date for query purposes)
-      if (/^\d+[dhms]$/.test(value)) {
-        return true;
-      }
-
-      // Check if it's a valid ISO date string
-      const date = new Date(value);
-      return !isNaN(date.getTime());
-    }
-
-    return false;
+    filter[fieldKey] = fieldFilter;
   }
 }

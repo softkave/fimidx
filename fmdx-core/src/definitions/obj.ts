@@ -1,5 +1,6 @@
 import type { AnyObject } from "softkave-js-utils";
 import { z } from "zod";
+import type { FieldType } from "../common/indexer.js";
 import { durationSchema } from "./other.js";
 
 export const kObjTags = {
@@ -15,43 +16,27 @@ export const kObjTags = {
   permission: "permission",
 } as const;
 
-export interface IObjPart {
-  id: string;
-  objId: string;
-  field: string;
-  /** string value */
-  value: string;
-  /** number value */
-  valueNumber?: number | null;
-  /** boolean value */
-  valueBoolean?: boolean | null;
-  type: string;
-  appId: string;
-  groupId: string;
-  createdAt: Date;
-  updatedAt: Date;
-  tag: string;
-}
-
 export type IObjField = {
   id: string;
-  /** dot separated list of keys */
-  field: string;
-  // fieldKeys: Array<string | number>;
-  fieldKeys: Array<string>;
-  fieldKeyTypes: string[];
-  valueTypes: string[];
-  createdAt: Date;
-  updatedAt: Date;
-  appId: string;
-  groupId: string;
-  tag: string;
-};
-
-export type IObjArrayField = {
-  id: string;
-  /** dot separated list of keys representing the array field path */
-  field: string;
+  /**
+   * dot separated list of keys, and for array fields, the index of the array
+   * element or a '[*]' wildcard for all elements.
+   *
+   * For example:
+   * - "primary"
+   * - "content.name"
+   * - "content.scores[0]"
+   * - "content.scores[*]"
+   * - "content.tags[0].name"
+   * - "content.tags[*].name"
+   *
+   * `path` will not include `objRecord`, but its content. For example,
+   * `objRecord.content.tags[0].name` will be `content.tags[0].name`.
+   */
+  path: string;
+  type: FieldType;
+  arrayTypes: FieldType[];
+  isArrayCompressed: boolean;
   createdAt: Date;
   updatedAt: Date;
   appId: string;
@@ -96,8 +81,15 @@ export const setManyObjsSchema = z.object({
   appId: z.string(),
   items: inputObjRecordArraySchema.min(1).max(100),
   onConflict: onConflictSchema.optional(),
+  /**
+   * fields to check for conflicts. Only applies to contained fields within
+   * `objRecord`.
+   */
   conflictOnKeys: z.array(z.string()).optional(),
   shouldIndex: z.boolean().optional(),
+  /**
+   * fields to index. Only applies to contained fields within `objRecord`.
+   */
   fieldsToIndex: z.array(z.string()).optional(),
 });
 
@@ -124,6 +116,9 @@ export const objPartQueryItemNumberValueSchema = z.union([
 export const objPartQueryItemSchema = z.discriminatedUnion("op", [
   z.object({
     op: z.literal("eq"),
+    /**
+     * {@see IObjField.path}
+     */
     field: z.string(),
     value: z.union([z.string(), z.number(), z.boolean()]),
   }),
@@ -232,6 +227,9 @@ export const objMetaQuerySchema = z.object({
 // New schema for top-level field queries
 export const topLevelFieldQuerySchema = z.object({
   shouldIndex: z.boolean().optional(),
+  /**
+   * {@see IObjField.path}
+   */
   fieldsToIndex: z.array(z.string()).optional(),
   tag: stringMetaQuerySchema.optional(),
   groupId: stringMetaQuerySchema.optional(),
@@ -249,6 +247,9 @@ export const objQuerySchema = z.object({
 });
 
 export const objSortSchema = z.object({
+  /**
+   * {@see IObjField.path}
+   */
   field: z.string(),
   direction: z.enum(["asc", "desc"]),
 });
@@ -259,6 +260,9 @@ export const updateManyObjsSchema = z.object({
   update: inputObjRecordSchema,
   updateMany: z.boolean().optional(),
   updateWay: onConflictSchema.optional(),
+  /**
+   * {@see IObjField.path}
+   */
   fieldsToIndex: z.array(z.string()).optional(),
 });
 

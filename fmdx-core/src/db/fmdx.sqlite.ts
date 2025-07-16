@@ -3,6 +3,7 @@ import assert from "assert";
 import { drizzle } from "drizzle-orm/libsql";
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { v7 as uuidv7 } from "uuid";
+import type { FieldType } from "../common/indexer.js";
 
 const fmdxDbURL = process.env.FMDX_DB_TURSO_DATABASE_URL;
 const fmdxDbAuthToken = process.env.FMDX_DB_TURSO_AUTH_TOKEN;
@@ -58,40 +59,13 @@ export const objFields = sqliteTable("objField", {
   updatedAt: integer("updatedAt", { mode: "timestamp_ms" }).notNull(),
   appId: text("appId").notNull(),
   groupId: text("groupId").notNull(),
-  field: text("field").notNull(),
-  fieldKeys: text("fieldKeys", { mode: "json" }).$type<string[]>().notNull(),
-  fieldKeyTypes: text("fieldKeyTypes", { mode: "json" })
-    .$type<string[]>()
-    .notNull(),
-  valueTypes: text("valueTypes", { mode: "json" }).$type<string[]>().notNull(),
-  tag: text("tag").notNull(),
-});
-
-export const objParts = sqliteTable("objPart", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => uuidv7()),
-  objId: text("objId").notNull(),
-  field: text("field").notNull(),
-  value: text("value").notNull(),
-  valueNumber: integer("valueNumber"),
-  valueBoolean: integer("valueBoolean", { mode: "boolean" }),
+  path: text("path").notNull(),
   type: text("type").notNull(),
-  appId: text("appId").notNull(),
-  groupId: text("groupId").notNull(),
-  createdAt: integer("createdAt", { mode: "timestamp_ms" }).notNull(),
-  updatedAt: integer("updatedAt", { mode: "timestamp_ms" }).notNull(),
-  tag: text("tag").notNull(),
-});
-
-export const objArrayFields = sqliteTable("objArrayField", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => uuidv7()),
-  createdAt: integer("createdAt", { mode: "timestamp_ms" }).notNull(),
-  updatedAt: integer("updatedAt", { mode: "timestamp_ms" }).notNull(),
-  field: text("field").notNull(),
-  appId: text("appId").notNull(),
-  groupId: text("groupId").notNull(),
+  arrayTypes: text("arrayTypes", { mode: "json" })
+    .$type<FieldType[]>()
+    .notNull(),
+  isArrayCompressed: integer("isArrayCompressed", {
+    mode: "boolean",
+  }).notNull(),
   tag: text("tag").notNull(),
 });

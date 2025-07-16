@@ -1,11 +1,6 @@
-import type {
-  IObjArrayField,
-  IObjField,
-  IObjQuery,
-} from "../../definitions/obj.js";
+import type { IObjField, IObjQuery } from "../../definitions/obj.js";
 import { createStorage, getDefaultStorageType } from "../../storage/config.js";
 import type { IObjStorage } from "../../storage/types.js";
-import { getObjArrayFields } from "./getObjArrayFields.js";
 import { getObjFields } from "./getObjFields.js";
 
 export async function deleteManyObjs(params: {
@@ -29,31 +24,24 @@ export async function deleteManyObjs(params: {
     storage = createStorage({ type: storageType }),
   } = params;
 
-  // Fetch both regular fields and array fields for query generation
+  // Fetch fields for query generation
   let fields: IObjField[] = [];
-  let arrayFields: IObjArrayField[] = [];
 
   if (objQuery.appId) {
-    // Fetch regular fields
+    // Fetch fields
     const fieldsResult = await getObjFields({
       appId: objQuery.appId,
       tag,
       limit: 1000, // Fetch all fields for this app/tag combination
     });
-    fields = fieldsResult.fields;
-
-    // Fetch array fields
-    const arrayFieldsResult = await getObjArrayFields({
-      appId: objQuery.appId,
-      tag,
-      limit: 1000, // Fetch all array fields for this app/tag combination
-    });
-    arrayFields = arrayFieldsResult;
+    fields = fieldsResult.fields.map((field) => ({
+      ...field,
+      type: field.type as any, // Cast to fix type issue
+    }));
   }
 
   // Convert to Maps for O(1) lookup
-  const fieldsMap = new Map(fields.map((f) => [f.field, f]));
-  const arrayFieldsMap = new Map(arrayFields.map((f) => [f.field, f]));
+  const fieldsMap = new Map(fields.map((f) => [f.path, f]));
 
   // Use the new bulkDelete method from the storage abstraction
   const result = await storage.bulkDelete({
@@ -66,7 +54,6 @@ export async function deleteManyObjs(params: {
     batchSize: 1000,
     hardDelete: false, // Always soft delete for this function
     fields: fieldsMap,
-    arrayFields: arrayFieldsMap,
   });
 
   return result;

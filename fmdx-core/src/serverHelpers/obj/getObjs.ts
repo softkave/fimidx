@@ -2,7 +2,6 @@ import { and, eq, inArray } from "drizzle-orm";
 import { db, objFields as objFieldsTable } from "../../db/fmdx.sqlite.js";
 import type {
   INumberMetaQuery,
-  IObjArrayField,
   IObjField,
   IObjPartQueryList,
   IObjQuery,
@@ -11,7 +10,6 @@ import type {
 } from "../../definitions/obj.js";
 import { createStorage, getDefaultStorageType } from "../../storage/config.js";
 import type { IObjStorage } from "../../storage/types.js";
-import { getObjArrayFields } from "./getObjArrayFields.js";
 import { getObjFields } from "./getObjFields.js";
 
 export function metaQueryToPartQueryList(params: {
@@ -116,7 +114,7 @@ async function getObjFieldsFromDb(params: {
       and(
         eq(objFieldsTable.appId, appId),
         eq(objFieldsTable.tag, tag),
-        fields ? inArray(objFieldsTable.field, fields) : undefined
+        fields ? inArray(objFieldsTable.path, fields) : undefined
       )
     )
     .limit(limit);
@@ -143,30 +141,28 @@ export async function getManyObjs(params: {
     storage = createStorage({ type: storageType }),
   } = params;
 
-  // Fetch both regular fields and array fields for query generation
+  // Fetch fields for query generation
   let fields: IObjField[] = [];
-  let arrayFields: IObjArrayField[] = [];
 
   if (objQuery.appId) {
-    // Fetch regular fields
+    // Fetch fields
     const fieldsResult = await getObjFields({
       appId: objQuery.appId,
       tag,
       limit: 1000, // Fetch all fields for this app/tag combination
     });
-    fields = fieldsResult.fields;
-
-    // Fetch array fields
-    arrayFields = await getObjArrayFields({
-      appId: objQuery.appId,
-      tag,
-      limit: 1000, // Fetch all array fields for this app/tag combination
-    });
+    fields = fieldsResult.fields.map((field) => ({
+      ...field,
+      type: field.type as any, // Cast to fix type issue
+    }));
   }
 
   // Convert to Maps for O(1) lookup
-  const fieldsMap = new Map(fields.map((f) => [f.field, f]));
-  const arrayFieldsMap = new Map(arrayFields.map((f) => [f.field, f]));
+  const fieldsMap = new Map(fields.map((f) => [f.path, f]));
+
+  // Determine if we should include deleted objects
+  // If topLevelFields.deletedAt is explicitly set to null, include deleted objects
+  const includeDeleted = objQuery.topLevelFields?.deletedAt === null;
 
   // Use the new read method from the storage abstraction
   const result = await storage.read({
@@ -177,7 +173,7 @@ export async function getManyObjs(params: {
     sort,
     date,
     fields: fieldsMap,
-    arrayFields: arrayFieldsMap,
+    includeDeleted,
   });
 
   return result;

@@ -63,54 +63,16 @@ describe("MongoQueryTransformer", () => {
       expect(transformer.transformSort(sort)).toEqual({ foo: 1, bar: -1 });
     });
 
-    it("should filter by fields", () => {
+    it("should include all sort fields regardless of fields array", () => {
       const sort: IObjSortList = [
         { field: "objRecord.price", direction: "asc" },
         { field: "objRecord.name", direction: "desc" },
         { field: "objRecord.quantity", direction: "asc" },
       ];
-
       const fields: IObjField[] = [
-        {
-          id: "1",
-          field: "price",
-          fieldKeys: ["price"],
-          fieldKeyTypes: ["string"],
-          valueTypes: ["number"],
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          appId: "app1",
-          groupId: "group1",
-          tag: "tag1",
-        },
-        {
-          id: "2",
-          field: "name",
-          fieldKeys: ["name"],
-          fieldKeyTypes: ["string"],
-          valueTypes: ["string"],
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          appId: "app1",
-          groupId: "group1",
-          tag: "tag1",
-        },
-        {
-          id: "3",
-          field: "quantity",
-          fieldKeys: ["quantity"],
-          fieldKeyTypes: ["string"],
-          valueTypes: ["number"],
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          appId: "app1",
-          groupId: "group1",
-          tag: "tag1",
-        },
+        // fields array is now ignored
       ];
-
       const result = transformer.transformSort(sort, fields);
-      // Should include all fields that are present in the fields array
       expect(result).toEqual({
         "objRecord.price": 1,
         "objRecord.name": -1,
@@ -118,119 +80,57 @@ describe("MongoQueryTransformer", () => {
       });
     });
 
-    it("should skip fields not found in fields array", () => {
+    it("should include all sort fields even if not in fields array", () => {
       const sort: IObjSortList = [
         { field: "objRecord.price", direction: "asc" },
         { field: "objRecord.unknown", direction: "desc" },
       ];
-
       const fields: IObjField[] = [
-        {
-          id: "1",
-          field: "price",
-          fieldKeys: ["price"],
-          fieldKeyTypes: ["string"],
-          valueTypes: ["number"],
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          appId: "app1",
-          groupId: "group1",
-          tag: "tag1",
-        },
+        // fields array is now ignored
       ];
-
       const result = transformer.transformSort(sort, fields);
-      // Should only include price, skip unknown field
       expect(result).toEqual({
         "objRecord.price": 1,
+        "objRecord.unknown": -1,
       });
     });
 
-    it("should return empty object when no fields found in fields array", () => {
+    it("should include all sort fields even if fields array is empty", () => {
       const sort: IObjSortList = [
         { field: "objRecord.name", direction: "asc" },
         { field: "objRecord.description", direction: "desc" },
       ];
-
       const fields: IObjField[] = [
-        {
-          id: "1",
-          field: "price",
-          fieldKeys: ["price"],
-          fieldKeyTypes: ["string"],
-          valueTypes: ["number"],
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          appId: "app1",
-          groupId: "group1",
-          tag: "tag1",
-        },
+        // fields array is now ignored
       ];
-
       const result = transformer.transformSort(sort, fields);
-      // Should return default sort since name and description are not in fields array
-      expect(result).toEqual({ createdAt: -1 });
+      expect(result).toEqual({
+        "objRecord.name": 1,
+        "objRecord.description": -1,
+      });
     });
 
     it("should handle nested fields correctly", () => {
       const sort: IObjSortList = [
         { field: "objRecord.product.price", direction: "asc" },
       ];
-
       const fields: IObjField[] = [
-        {
-          id: "1",
-          field: "product.price",
-          fieldKeys: ["product", "price"],
-          fieldKeyTypes: ["string", "string"],
-          valueTypes: ["number"],
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          appId: "app1",
-          groupId: "group1",
-          tag: "tag1",
-        },
+        // fields array is now ignored
       ];
-
       const result = transformer.transformSort(sort, fields);
       expect(result).toEqual({
         "objRecord.product.price": 1,
       });
     });
 
-    it("should include string fields when present in fields array", () => {
+    it("should include string fields regardless of fields array", () => {
       const sort: IObjSortList = [
         { field: "objRecord.name", direction: "asc" },
         { field: "objRecord.category", direction: "desc" },
       ];
-
       const fields: IObjField[] = [
-        {
-          id: "1",
-          field: "name",
-          fieldKeys: ["name"],
-          fieldKeyTypes: ["string"],
-          valueTypes: ["string"],
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          appId: "app1",
-          groupId: "group1",
-          tag: "tag1",
-        },
-        {
-          id: "2",
-          field: "category",
-          fieldKeys: ["category"],
-          fieldKeyTypes: ["string"],
-          valueTypes: ["string"],
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          appId: "app1",
-          groupId: "group1",
-          tag: "tag1",
-        },
+        // fields array is now ignored
       ];
-
       const result = transformer.transformSort(sort, fields);
       expect(result).toEqual({
         "objRecord.name": 1,
@@ -374,8 +274,6 @@ describe("MongoQueryTransformer", () => {
           { appId: "app1" },
           {
             createdAt: {
-              $eq: 123,
-              $ne: 456,
               $in: [1, 2],
               $nin: [3, 4],
             },
@@ -538,7 +436,10 @@ describe("MongoQueryTransformer", () => {
         "logsQuery.and",
         {
           id: "1",
-          field: "logsQuery.and",
+          path: "logsQuery.and",
+          type: "string" as const,
+          arrayTypes: [],
+          isArrayCompressed: false,
           createdAt: new Date(),
           updatedAt: new Date(),
           appId: "app1",
@@ -550,7 +451,10 @@ describe("MongoQueryTransformer", () => {
         "comments",
         {
           id: "2",
-          field: "comments",
+          path: "comments",
+          type: "string" as const,
+          arrayTypes: [],
+          isArrayCompressed: false,
           createdAt: new Date(),
           updatedAt: new Date(),
           appId: "app1",
@@ -885,85 +789,37 @@ describe("MongoQueryTransformer", () => {
   });
 
   describe("enhanced sort functionality", () => {
-    it("should handle sort with fields parameter and skip invalid fields", () => {
+    it("should include all sort fields, even if not in fields array", () => {
       const sort: IObjSortList = [
         { field: "objRecord.validField", direction: "asc" },
         { field: "objRecord.invalidField", direction: "desc" },
         { field: "objRecord.anotherValidField", direction: "asc" },
       ];
-
       const fields: IObjField[] = [
-        {
-          id: "1",
-          field: "validField",
-          fieldKeys: ["validField"],
-          fieldKeyTypes: ["string"],
-          valueTypes: ["string"],
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          appId: "app1",
-          groupId: "group1",
-          tag: "tag1",
-        },
-        {
-          id: "2",
-          field: "anotherValidField",
-          fieldKeys: ["anotherValidField"],
-          fieldKeyTypes: ["string"],
-          valueTypes: ["number"],
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          appId: "app1",
-          groupId: "group1",
-          tag: "tag1",
-        },
+        // fields array is now ignored
       ];
-
       const result = transformer.transformSort(sort, fields);
       expect(result).toEqual({
         "objRecord.validField": 1,
+        "objRecord.invalidField": -1,
         "objRecord.anotherValidField": 1,
       });
     });
 
-    it("should handle sort with mixed field types and nested paths", () => {
+    it("should include all sort fields with mixed types and nested paths", () => {
       const sort: IObjSortList = [
         { field: "objRecord.user.profile.age", direction: "desc" },
         { field: "objRecord.user.profile.name", direction: "asc" },
         { field: "objRecord.createdAt", direction: "desc" },
       ];
-
       const fields: IObjField[] = [
-        {
-          id: "1",
-          field: "user.profile.age",
-          fieldKeys: ["user", "profile", "age"],
-          fieldKeyTypes: ["string", "string", "string"],
-          valueTypes: ["number"],
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          appId: "app1",
-          groupId: "group1",
-          tag: "tag1",
-        },
-        {
-          id: "2",
-          field: "user.profile.name",
-          fieldKeys: ["user", "profile", "name"],
-          fieldKeyTypes: ["string", "string", "string"],
-          valueTypes: ["string"],
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          appId: "app1",
-          groupId: "group1",
-          tag: "tag1",
-        },
+        // fields array is now ignored
       ];
-
       const result = transformer.transformSort(sort, fields);
       expect(result).toEqual({
         "objRecord.user.profile.age": -1,
         "objRecord.user.profile.name": 1,
+        "objRecord.createdAt": -1,
       });
     });
 
@@ -973,34 +829,9 @@ describe("MongoQueryTransformer", () => {
         { field: "objRecord.field1", direction: "invalid" },
         { field: "objRecord.field2", direction: "asc" },
       ];
-
       const fields: IObjField[] = [
-        {
-          id: "1",
-          field: "field1",
-          fieldKeys: ["field1"],
-          fieldKeyTypes: ["string"],
-          valueTypes: ["string"],
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          appId: "app1",
-          groupId: "group1",
-          tag: "tag1",
-        },
-        {
-          id: "2",
-          field: "field2",
-          fieldKeys: ["field2"],
-          fieldKeyTypes: ["string"],
-          valueTypes: ["string"],
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          appId: "app1",
-          groupId: "group1",
-          tag: "tag1",
-        },
+        // fields array is now ignored
       ];
-
       const result = transformer.transformSort(sort, fields);
       // Should default to -1 (desc) for invalid direction
       expect(result).toEqual({
@@ -1015,46 +846,9 @@ describe("MongoQueryTransformer", () => {
         { field: "objRecord.createdAt", direction: "asc" },
         { field: "objRecord.status", direction: "desc" },
       ];
-
       const fields: IObjField[] = [
-        {
-          id: "1",
-          field: "priority",
-          fieldKeys: ["priority"],
-          fieldKeyTypes: ["string"],
-          valueTypes: ["number"],
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          appId: "app1",
-          groupId: "group1",
-          tag: "tag1",
-        },
-        {
-          id: "2",
-          field: "createdAt",
-          fieldKeys: ["createdAt"],
-          fieldKeyTypes: ["string"],
-          valueTypes: ["string"],
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          appId: "app1",
-          groupId: "group1",
-          tag: "tag1",
-        },
-        {
-          id: "3",
-          field: "status",
-          fieldKeys: ["status"],
-          fieldKeyTypes: ["string"],
-          valueTypes: ["string"],
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          appId: "app1",
-          groupId: "group1",
-          tag: "tag1",
-        },
+        // fields array is now ignored
       ];
-
       const result = transformer.transformSort(sort, fields);
       expect(result).toEqual({
         "objRecord.priority": -1,
@@ -1063,27 +857,11 @@ describe("MongoQueryTransformer", () => {
       });
     });
 
-    it("should return default sort when no valid fields found", () => {
-      const sort: IObjSortList = [
-        { field: "objRecord.unknown1", direction: "asc" },
-        { field: "objRecord.unknown2", direction: "desc" },
-      ];
-
+    it("should return default sort when no sort fields provided", () => {
+      const sort: IObjSortList = [];
       const fields: IObjField[] = [
-        {
-          id: "1",
-          field: "knownField",
-          fieldKeys: ["knownField"],
-          fieldKeyTypes: ["string"],
-          valueTypes: ["string"],
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          appId: "app1",
-          groupId: "group1",
-          tag: "tag1",
-        },
+        // fields array is now ignored
       ];
-
       const result = transformer.transformSort(sort, fields);
       expect(result).toEqual({ createdAt: -1 });
     });
@@ -1131,7 +909,10 @@ describe("MongoQueryTransformer", () => {
           "logs",
           {
             id: "1",
-            field: "logs",
+            path: "logs",
+            type: "string" as const,
+            arrayTypes: [],
+            isArrayCompressed: false,
             createdAt: new Date(),
             updatedAt: new Date(),
             appId: "app1",
@@ -1167,7 +948,10 @@ describe("MongoQueryTransformer", () => {
           "logsQuery.and",
           {
             id: "1",
-            field: "logsQuery.and",
+            path: "logsQuery.and",
+            type: "string" as const,
+            arrayTypes: [],
+            isArrayCompressed: false,
             createdAt: new Date(),
             updatedAt: new Date(),
             appId: "app1",

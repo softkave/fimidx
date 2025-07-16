@@ -45,8 +45,11 @@ export class MongoObjStorage implements IObjStorage {
   async read(params: ReadObjsParams, session?: any): Promise<ReadObjsResult> {
     const filter = this.queryTransformer.transformFilter(
       params.query,
-      params.date || new Date()
+      params.date || new Date(),
+      params.fields
     );
+
+    console.log("params.sort", params.sort);
 
     const sort = params.sort
       ? this.queryTransformer.transformSort(
@@ -65,10 +68,19 @@ export class MongoObjStorage implements IObjStorage {
       filter.tag = params.tag;
     }
 
-    // Add deleted filter if not including deleted
-    if (!params.includeDeleted) {
+    // Add deleted filter if not including deleted and no deletedAt filter already exists
+    // Note: When includeDeleted is true, we don't add any deletedAt filter
+    // This means we include both deleted and non-deleted objects
+    if (!params.includeDeleted && filter.deletedAt === undefined) {
       filter.deletedAt = null;
     }
+
+    console.log("read filter");
+    console.dir(filter, { depth: null });
+    console.log("read sort");
+    console.dir(sort, { depth: null });
+    console.log("read pagination");
+    console.dir(pagination, { depth: null });
 
     const objs = await this.objModel
       .find(filter, undefined, session ? { session } : undefined)
@@ -91,7 +103,8 @@ export class MongoObjStorage implements IObjStorage {
   ): Promise<UpdateObjsResult> {
     const filter = this.queryTransformer.transformFilter(
       params.query,
-      new Date()
+      new Date(),
+      params.fields
     );
 
     // Add tag filter if provided
@@ -101,6 +114,11 @@ export class MongoObjStorage implements IObjStorage {
 
     // Add deleted filter
     filter.deletedAt = null;
+
+    console.log("update filter");
+    console.dir(filter, { depth: null });
+    console.log("update update");
+    console.dir(params.update, { depth: null });
 
     // Find all objects to update
     const objs = await this.objModel
@@ -153,7 +171,8 @@ export class MongoObjStorage implements IObjStorage {
   ): Promise<DeleteObjsResult> {
     const filter = this.queryTransformer.transformFilter(
       params.query,
-      params.date || new Date()
+      params.date || new Date(),
+      params.fields
     );
 
     // Add tag filter if provided
@@ -169,6 +188,11 @@ export class MongoObjStorage implements IObjStorage {
       deletedBy: params.deletedBy,
       deletedByType: params.deletedByType,
     };
+
+    console.log("delete filter");
+    console.dir(filter, { depth: null });
+    console.log("delete updateData");
+    console.dir(updateData, { depth: null });
 
     const result = await this.objModel.updateMany(
       filter,
@@ -316,6 +340,14 @@ export class MongoObjStorage implements IObjStorage {
         currentBatchSize = count - totalProcessed;
       }
 
+      console.log("bulkUpdate filter");
+      console.dir(filter, { depth: null });
+      console.log("bulkUpdate update");
+      console.dir(update, { depth: null });
+      console.log("bulkUpdate updateWay");
+      console.dir(updateWay, { depth: null });
+      console.log("bulkUpdate count");
+
       const objs = await this.objModel
         .find(filter, undefined, session ? { session } : undefined)
         .skip(page * currentBatchSize)
@@ -416,6 +448,13 @@ export class MongoObjStorage implements IObjStorage {
     const effectiveBatchSize = deleteMany ? batchSize : 1;
 
     while (!isDone) {
+      console.log("bulkDelete filter");
+      console.dir(filter, { depth: null });
+      console.log("bulkDelete date");
+      console.dir(date, { depth: null });
+      console.log("bulkDelete deletedBy");
+      console.dir(deletedBy, { depth: null });
+
       const objs = await this.objModel
         .find(filter, undefined, session ? { session } : undefined)
         .skip(page * effectiveBatchSize)
@@ -584,6 +623,8 @@ export class MongoObjStorage implements IObjStorage {
         existingObjs.push(undefined);
         continue;
       }
+
+      console.log("conflictFilter", conflictFilter);
 
       const existing = await this.objModel
         .findOne(conflictFilter, undefined, session ? { session } : undefined)

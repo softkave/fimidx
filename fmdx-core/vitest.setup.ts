@@ -1,6 +1,7 @@
 import { exec } from "child_process";
 import { Pool } from "pg";
 import { promisify } from "util";
+import { getMongoConnection } from "./src/db/fmdx.mongo.js";
 import { fmdxPostgresDb as postgresDb } from "./src/db/fmdx.postgres.js";
 import { db as sqliteDb } from "./src/db/fmdx.sqlite.js";
 
@@ -28,6 +29,22 @@ async function deleteAllPostgresTables() {
   console.log("Done deleting all Postgres tables");
 }
 
+async function deleteAllMongoCollections() {
+  console.log("Deleting all Mongo collections");
+  const { connection, promise } = await getMongoConnection();
+  await promise;
+  const db = connection?.db;
+  if (!db) {
+    throw new Error("Mongo connection not found");
+  }
+  const collections = await db.listCollections().toArray();
+  for (const collection of collections) {
+    await db.collection(collection.name).drop(); // eslint-disable-line no-await-in-loop
+  }
+  await connection?.destroy();
+  console.log("Done deleting all Mongo collections");
+}
+
 async function runMigrationsForPostgresUsingShell() {
   const postgresMigrationCommand = "pnpm db:migrate:postgres:test";
   const sqliteMigrationCommand = "pnpm db:migrate:sqlite:test";
@@ -50,6 +67,7 @@ export async function setup() {
 export async function teardown() {
   await deleteAllSQLiteTables();
   await deleteAllPostgresTables();
+  await deleteAllMongoCollections();
 
   if (postgresDb.$client instanceof Pool) {
     await postgresDb.$client.end();

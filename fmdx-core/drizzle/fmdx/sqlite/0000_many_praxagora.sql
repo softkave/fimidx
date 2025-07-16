@@ -31,24 +31,9 @@ CREATE TABLE `objField` (
 	`updatedAt` integer NOT NULL,
 	`appId` text NOT NULL,
 	`groupId` text NOT NULL,
-	`field` text NOT NULL,
-	`fieldKeys` text NOT NULL,
-	`fieldKeyTypes` text NOT NULL,
-	`valueTypes` text NOT NULL,
-	`tag` text NOT NULL
-);
---> statement-breakpoint
-CREATE TABLE `objPart` (
-	`id` text PRIMARY KEY NOT NULL,
-	`objId` text NOT NULL,
-	`field` text NOT NULL,
-	`value` text NOT NULL,
-	`valueNumber` integer,
-	`valueBoolean` integer,
+	`path` text NOT NULL,
 	`type` text NOT NULL,
-	`appId` text NOT NULL,
-	`groupId` text NOT NULL,
-	`createdAt` integer NOT NULL,
-	`updatedAt` integer NOT NULL,
+	`arrayTypes` text NOT NULL,
+	`isArrayCompressed` integer NOT NULL,
 	`tag` text NOT NULL
 );

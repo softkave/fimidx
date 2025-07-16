@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "7710204a-b2a0-4cb6-b653-b56b2fde5adb",
+  "id": "bfaee445-39c5-473e-86ca-b01012473303",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "emailBlockList": {
@@ -216,91 +216,11 @@
           "notNull": true,
           "autoincrement": false
         },
-        "field": {
-          "name": "field",
+        "path": {
+          "name": "path",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false
-        },
-        "fieldKeys": {
-          "name": "fieldKeys",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "fieldKeyTypes": {
-          "name": "fieldKeyTypes",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "valueTypes": {
-          "name": "valueTypes",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "tag": {
-          "name": "tag",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "objPart": {
-      "name": "objPart",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "objId": {
-          "name": "objId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "field": {
-          "name": "field",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "value": {
-          "name": "value",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "valueNumber": {
-          "name": "valueNumber",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "valueBoolean": {
-          "name": "valueBoolean",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
           "autoincrement": false
         },
         "type": {
@@ -310,29 +230,15 @@
           "notNull": true,
           "autoincrement": false
         },
-        "appId": {
-          "name": "appId",
+        "arrayTypes": {
+          "name": "arrayTypes",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "groupId": {
-          "name": "groupId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "createdAt": {
-          "name": "createdAt",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "updatedAt": {
-          "name": "updatedAt",
+        "isArrayCompressed": {
+          "name": "isArrayCompressed",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,

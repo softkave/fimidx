@@ -34,7 +34,6 @@ function makeUpdateMonitorsArgs(
     update: {
       ...overrides.update,
     },
-    updateMany: overrides.updateMany,
   };
 }
 
@@ -361,66 +360,6 @@ describe("updateMonitors integration", () => {
 
     expect(result.monitors).toHaveLength(1);
     expect(result.monitors[0].logsQuery).toEqual(newLogsQuery);
-  });
-
-  it("updates multiple monitors with updateMany", async () => {
-    // Create multiple monitors
-    await addMonitor({
-      args: makeAddMonitorArgs({ name: "Monitor 1", status: "enabled" }),
-      by: defaultBy,
-      byType: defaultByType,
-      groupId: defaultGroupId,
-      storage,
-    });
-
-    await addMonitor({
-      args: makeAddMonitorArgs({ name: "Monitor 2", status: "enabled" }),
-      by: defaultBy,
-      byType: defaultByType,
-      groupId: defaultGroupId,
-      storage,
-    });
-
-    await addMonitor({
-      args: makeAddMonitorArgs({ name: "Monitor 3", status: "disabled" }),
-      by: defaultBy,
-      byType: defaultByType,
-      groupId: defaultGroupId,
-      storage,
-    });
-
-    const args = makeUpdateMonitorsArgs({
-      query: {
-        appId: defaultAppId,
-        status: { eq: "enabled" },
-      },
-      update: {
-        status: "disabled",
-      },
-      updateMany: true,
-    });
-
-    await updateMonitors({
-      args,
-      by: "updater",
-      byType: "user",
-      storage,
-    });
-
-    // Verify the updates
-    const getArgs = {
-      query: {
-        appId: defaultAppId,
-      },
-    };
-
-    const result = await getMonitors({ args: getArgs, storage });
-
-    expect(result.monitors).toHaveLength(3);
-    // All monitors should now be disabled
-    result.monitors.forEach((monitor) => {
-      expect(monitor.status).toBe("disabled");
-    });
   });
 
   it("updates monitors by name filter", async () => {
