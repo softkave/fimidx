@@ -41,7 +41,7 @@ export function ClientTokenItemMenu(props: IClientTokenItemMenuProps) {
   const {
     checks: [canDelete, canUpdate],
   } = useHasPermission({
-    groupId: clientToken.groupId,
+    orgId: clientToken.orgId,
     permission: [
       kPermissions.clientToken.delete,
       kPermissions.clientToken.update,
@@ -60,8 +60,8 @@ export function ClientTokenItemMenu(props: IClientTokenItemMenuProps) {
         router.push(
           isString(routeAfterDelete)
             ? routeAfterDelete
-            : kClientPaths.app.group.app.clientToken.index(
-                clientToken.groupId,
+            : kClientPaths.app.org.app.clientToken.index(
+                clientToken.orgId,
                 appId
               )
         );
@@ -87,7 +87,7 @@ export function ClientTokenItemMenu(props: IClientTokenItemMenuProps) {
       {deleteClientTokenDialog.DeleteResourceDialog()}
       <ClientTokenFormSheet
         clientToken={clientToken}
-        groupId={clientToken.groupId}
+        orgId={clientToken.orgId}
         appId={appId}
         onOpenChange={setIsEditing}
         isOpen={isEditing}

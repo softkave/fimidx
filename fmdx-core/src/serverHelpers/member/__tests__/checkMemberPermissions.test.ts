@@ -163,7 +163,6 @@ describe("checkMemberPermissions integration", () => {
       args: memberArgs,
       by: defaultBy,
       byType: defaultByType,
-      memberId: memberArgs.memberId,
       storage,
     });
 
@@ -220,7 +219,6 @@ describe("checkMemberPermissions integration", () => {
       args: memberArgs,
       by: defaultBy,
       byType: defaultByType,
-      memberId: memberArgs.memberId,
       storage,
     });
 
@@ -272,7 +270,6 @@ describe("checkMemberPermissions integration", () => {
       args: memberArgs,
       by: defaultBy,
       byType: defaultByType,
-      memberId: memberArgs.memberId,
       storage,
     });
 
@@ -354,7 +351,6 @@ describe("checkMemberPermissions integration", () => {
       args: memberArgs,
       by: defaultBy,
       byType: defaultByType,
-      memberId: memberArgs.memberId,
       storage,
     });
 
@@ -406,7 +402,6 @@ describe("checkMemberPermissions integration", () => {
       args: memberArgs,
       by: defaultBy,
       byType: defaultByType,
-      memberId: memberArgs.memberId,
       storage,
     });
 

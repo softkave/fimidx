@@ -281,11 +281,15 @@ export async function getClientTokensPermissions(params: {
 
 export async function getClientTokens(params: {
   args: GetClientTokensEndpointArgs;
-  includePermissions?: boolean;
   storage?: IObjStorage;
 }) {
-  const { args, includePermissions = false, storage } = params;
-  const { page: inputPage, limit: inputLimit, sort } = args;
+  const { args, storage } = params;
+  const {
+    page: inputPage,
+    limit: inputLimit,
+    sort,
+    includePermissions = false,
+  } = args;
 
   // Convert 1-based pagination to 0-based for storage layer
   const pageNumber = inputPage ?? 1;

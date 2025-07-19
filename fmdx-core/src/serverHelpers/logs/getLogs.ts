@@ -1,7 +1,11 @@
-import type { GetLogsEndpointArgs } from "../../definitions/log.js";
+import type {
+  GetLogsEndpointArgs,
+  GetLogsEndpointResponse,
+} from "../../definitions/log.js";
 import { kObjTags, type IObjQuery } from "../../definitions/obj.js";
 import type { IObjStorage } from "../../storage/types.js";
 import { getManyObjs } from "../obj/getObjs.js";
+import { objToLog } from "./objToLog.js";
 
 export function getLogsObjQuery(params: { args: GetLogsEndpointArgs }) {
   const { args } = params;
@@ -20,7 +24,7 @@ export function getLogsObjQuery(params: { args: GetLogsEndpointArgs }) {
 export async function getLogs(params: {
   args: GetLogsEndpointArgs;
   storage?: IObjStorage;
-}) {
+}): Promise<GetLogsEndpointResponse> {
   const { args, storage } = params;
   const { page, limit, sort } = args;
 
@@ -53,7 +57,7 @@ export async function getLogs(params: {
   });
 
   return {
-    logs: result.objs,
+    logs: result.objs.map(objToLog),
     page: pageNumber, // Return 1-based page number
     limit: limitNumber,
     hasMore: result.hasMore,

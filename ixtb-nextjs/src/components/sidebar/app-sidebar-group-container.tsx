@@ -1,17 +1,17 @@
 "use client";
 
 import { AppContainer } from "../app/app-container";
-import { AppSidebarGroup } from "./app-sidebar-group";
+import { AppSidebarOrg } from "./app-sidebar-org";
 
-export function AppSidebarGroupContainer(props: {
-  groupId: string;
+export function AppSidebarOrgContainer(props: {
+  orgId: string;
   appId: string;
 }) {
   return (
     <AppContainer
       appId={props.appId}
       render={({ app }) => (
-        <AppSidebarGroup groupId={app.groupId} appId={app.id} name={app.name} />
+        <AppSidebarOrg orgId={app.orgId} appId={app.id} name={app.name} />
       )}
       renderLoading={() => null}
       renderError={() => null}

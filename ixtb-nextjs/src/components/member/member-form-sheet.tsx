@@ -14,7 +14,7 @@ import { AddMemberForm } from "./add-member-form.tsx";
 import { UpdateMemberForm } from "./update-member-form.tsx";
 
 export interface IMemberFormSheetProps {
-  groupId: string;
+  orgId: string;
   member?: IMember;
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
@@ -22,7 +22,7 @@ export interface IMemberFormSheetProps {
 }
 
 export function MemberFormSheet(props: IMemberFormSheetProps) {
-  const { isOpen, onOpenChange, onSubmitComplete, member, groupId } = props;
+  const { isOpen, onOpenChange, onSubmitComplete, member, orgId } = props;
 
   const handleSubmitComplete = useCallback(
     (member: IMember) => {
@@ -41,7 +41,7 @@ export function MemberFormSheet(props: IMemberFormSheetProps) {
             <SheetDescription>
               {member
                 ? "Update the member to change the permissions."
-                : "Add a new member to the group."}
+                : "Add a new member to the org."}
             </SheetDescription>
           </SheetHeader>
           <div className="mt-2 p-4">
@@ -53,7 +53,7 @@ export function MemberFormSheet(props: IMemberFormSheetProps) {
             ) : (
               <AddMemberForm
                 onSubmitComplete={handleSubmitComplete}
-                groupId={groupId}
+                orgId={orgId}
               />
             )}
           </div>

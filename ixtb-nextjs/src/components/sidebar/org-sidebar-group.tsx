@@ -1,26 +1,26 @@
 import {
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarOrg,
+  SidebarOrgContent,
+  SidebarOrgLabel,
 } from "@/src/components/ui/sidebar";
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
 import { AppWindow, Users } from "lucide-react";
 import { useMemo } from "react";
 import { ISidebarItem } from "./types";
 
-function getItems(groupId: string) {
+function getItems(orgId: string) {
   const items: ISidebarItem[] = [
     {
       title: "Apps",
-      url: kClientPaths.app.group.app.index(groupId),
+      url: kClientPaths.app.org.app.index(orgId),
       icon: AppWindow,
     },
     {
       title: "Members",
-      url: kClientPaths.app.group.members.index(groupId),
+      url: kClientPaths.app.org.members.index(orgId),
       icon: Users,
     },
   ];
@@ -28,13 +28,13 @@ function getItems(groupId: string) {
   return items;
 }
 
-export function GroupSidebarGroup(props: { groupId: string; name: string }) {
-  const items = useMemo(() => getItems(props.groupId), [props.groupId]);
+export function OrgSidebarOrg(props: { orgId: string; name: string }) {
+  const items = useMemo(() => getItems(props.orgId), [props.orgId]);
 
   return (
-    <SidebarGroup>
-      <SidebarGroupLabel>{props.name}</SidebarGroupLabel>
-      <SidebarGroupContent>
+    <SidebarOrg>
+      <SidebarOrgLabel>{props.name}</SidebarOrgLabel>
+      <SidebarOrgContent>
         <SidebarMenu>
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
@@ -47,7 +47,7 @@ export function GroupSidebarGroup(props: { groupId: string; name: string }) {
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
-      </SidebarGroupContent>
-    </SidebarGroup>
+      </SidebarOrgContent>
+    </SidebarOrg>
   );
 }

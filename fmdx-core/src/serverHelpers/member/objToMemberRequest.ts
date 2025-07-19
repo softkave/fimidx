@@ -38,6 +38,7 @@ export async function objToMemberRequest(params: { requests: IMember[] }) {
         groupName: group?.name ?? "",
         status: request.status as MemberStatus,
         updatedAt: request.updatedAt,
+        groupId: request.groupId,
       };
     })
     .filter((request) => request.groupName !== "");

@@ -8,12 +8,12 @@ import { sendEmail } from "./sendEmail";
 
 export const sendAddParticipantEmail = async (params: {
   to: string;
-  groupName: string;
+  orgName: string;
   inviterName: string;
   callerId: string;
 }) => {
   const params2: AddParticipantEmailProps = {
-    groupName: params.groupName,
+    orgName: params.orgName,
     inviterName: params.inviterName,
   };
 

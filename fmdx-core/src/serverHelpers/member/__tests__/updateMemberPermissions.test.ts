@@ -79,7 +79,6 @@ describe("updateMemberPermissions integration", () => {
       args: memberArgs,
       by: by,
       byType: byType,
-      memberId: memberArgs.memberId,
       storage,
     });
 
@@ -134,7 +133,6 @@ describe("updateMemberPermissions integration", () => {
       args: memberArgs,
       by: by,
       byType: byType,
-      memberId: memberArgs.memberId,
       storage,
     });
 
@@ -177,7 +175,6 @@ describe("updateMemberPermissions integration", () => {
       args: memberArgs,
       by: by,
       byType: byType,
-      memberId: memberArgs.memberId,
       storage,
     });
 
@@ -229,7 +226,6 @@ describe("updateMemberPermissions integration", () => {
       args: memberArgs,
       by: by,
       byType: byType,
-      memberId: memberArgs.memberId,
       storage,
     });
 
@@ -271,7 +267,6 @@ describe("updateMemberPermissions integration", () => {
       args: memberArgs,
       by: by,
       byType: byType,
-      memberId: memberArgs.memberId,
       storage,
     });
 
@@ -310,7 +305,6 @@ describe("updateMemberPermissions integration", () => {
       args: memberArgs,
       by: by,
       byType: byType,
-      memberId: memberArgs.memberId,
       storage,
     });
 
@@ -349,7 +343,6 @@ describe("updateMemberPermissions integration", () => {
       args: member1Args,
       by: by,
       byType: byType,
-      memberId: member1Args.memberId,
       storage,
     });
 
@@ -357,7 +350,6 @@ describe("updateMemberPermissions integration", () => {
       args: member2Args,
       by: by,
       byType: byType,
-      memberId: member2Args.memberId,
       storage,
     });
 
@@ -427,7 +419,6 @@ describe("updateMemberPermissions integration", () => {
       args: memberArgs,
       by: by,
       byType: byType,
-      memberId: memberArgs.memberId,
       storage,
     });
 

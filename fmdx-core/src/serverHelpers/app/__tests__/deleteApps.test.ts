@@ -42,7 +42,7 @@ function makeDeleteAppsArgs(
 ): DeleteAppsEndpointArgs {
   return {
     query: {
-      groupId: defaultGroupId,
+      orgId: defaultGroupId,
       ...overrides.query,
     },
     deleteMany: overrides.deleteMany,
@@ -135,7 +135,7 @@ describe("deleteApps integration", () => {
     // Verify app exists before deletion
     const appsBefore = await getApps({
       args: {
-        query: { groupId: defaultGroupId },
+        query: { orgId: defaultGroupId },
       },
       storage,
     });
@@ -145,7 +145,7 @@ describe("deleteApps integration", () => {
     await deleteApps({
       ...makeDeleteAppsArgs({
         query: {
-          groupId: defaultGroupId,
+          orgId: defaultGroupId,
           id: { eq: createdApp.app.id },
         },
       }),
@@ -157,7 +157,7 @@ describe("deleteApps integration", () => {
     // Verify app is deleted
     const appsAfter = await getApps({
       args: {
-        query: { groupId: defaultGroupId },
+        query: { orgId: defaultGroupId },
       },
       storage,
     });
@@ -194,7 +194,7 @@ describe("deleteApps integration", () => {
     // Verify apps exist before deletion
     const appsBefore = await getApps({
       args: {
-        query: { groupId: defaultGroupId },
+        query: { orgId: defaultGroupId },
       },
       storage,
     });
@@ -204,7 +204,7 @@ describe("deleteApps integration", () => {
     await deleteApps({
       ...makeDeleteAppsArgs({
         query: {
-          groupId: defaultGroupId,
+          orgId: defaultGroupId,
           name: { in: ["First App", "Second App"] },
         },
         deleteMany: true,
@@ -217,7 +217,7 @@ describe("deleteApps integration", () => {
     // Verify only specified apps are deleted
     const appsAfter = await getApps({
       args: {
-        query: { groupId: defaultGroupId },
+        query: { orgId: defaultGroupId },
       },
       storage,
     });
@@ -264,7 +264,7 @@ describe("deleteApps integration", () => {
     // Verify apps exist before deletion
     const appsBefore = await getApps({
       args: {
-        query: { groupId: "group-1" },
+        query: { orgId: "group-1" },
       },
       storage,
     });
@@ -274,7 +274,7 @@ describe("deleteApps integration", () => {
     await deleteApps({
       ...makeDeleteAppsArgs({
         query: {
-          groupId: "group-1",
+          orgId: "group-1",
         },
         deleteMany: true,
       }),
@@ -286,7 +286,7 @@ describe("deleteApps integration", () => {
     // Verify group-1 apps are deleted
     const group1AppsAfter = await getApps({
       args: {
-        query: { groupId: "group-1" },
+        query: { orgId: "group-1" },
       },
       storage,
     });
@@ -295,7 +295,7 @@ describe("deleteApps integration", () => {
     // Verify group-2 app still exists
     const group2AppsAfter = await getApps({
       args: {
-        query: { groupId: "group-2" },
+        query: { orgId: "group-2" },
       },
       storage,
     });
@@ -329,7 +329,7 @@ describe("deleteApps integration", () => {
     // Verify apps exist before deletion
     const appsBefore = await getApps({
       args: {
-        query: { groupId: defaultGroupId },
+        query: { orgId: defaultGroupId },
       },
       storage,
     });
@@ -354,7 +354,7 @@ describe("deleteApps integration", () => {
     // Verify apps are deleted
     const appsAfter = await getApps({
       args: {
-        query: { groupId: defaultGroupId },
+        query: { orgId: defaultGroupId },
       },
       storage,
     });
@@ -381,7 +381,7 @@ describe("deleteApps integration", () => {
     // Verify apps exist before deletion
     const appsBefore = await getApps({
       args: {
-        query: { groupId: defaultGroupId },
+        query: { orgId: defaultGroupId },
       },
       storage,
     });
@@ -403,7 +403,7 @@ describe("deleteApps integration", () => {
     // Verify only user-a app is deleted
     const appsAfter = await getApps({
       args: {
-        query: { groupId: defaultGroupId },
+        query: { orgId: defaultGroupId },
       },
       storage,
     });
@@ -428,7 +428,7 @@ describe("deleteApps integration", () => {
     // Verify app exists before deletion
     const appsBefore = await getApps({
       args: {
-        query: { groupId: defaultGroupId },
+        query: { orgId: defaultGroupId },
       },
       storage,
     });
@@ -438,7 +438,7 @@ describe("deleteApps integration", () => {
     await deleteApps({
       ...makeDeleteAppsArgs({
         query: {
-          groupId: defaultGroupId,
+          orgId: defaultGroupId,
           name: { eq: "App with special chars: !@#$%^&*()" },
         },
       }),
@@ -450,7 +450,7 @@ describe("deleteApps integration", () => {
     // Verify app is deleted
     const appsAfter = await getApps({
       args: {
-        query: { groupId: defaultGroupId },
+        query: { orgId: defaultGroupId },
       },
       storage,
     });
@@ -476,7 +476,7 @@ describe("deleteApps integration", () => {
     // Verify app exists before deletion
     const appsBefore = await getApps({
       args: {
-        query: { groupId: defaultGroupId },
+        query: { orgId: defaultGroupId },
       },
       storage,
     });
@@ -486,7 +486,7 @@ describe("deleteApps integration", () => {
     await deleteApps({
       ...makeDeleteAppsArgs({
         query: {
-          groupId: defaultGroupId,
+          orgId: defaultGroupId,
           name: { eq: longName },
         },
       }),
@@ -498,7 +498,7 @@ describe("deleteApps integration", () => {
     // Verify app is deleted
     const appsAfter = await getApps({
       args: {
-        query: { groupId: defaultGroupId },
+        query: { orgId: defaultGroupId },
       },
       storage,
     });
@@ -523,7 +523,7 @@ describe("deleteApps integration", () => {
     // Verify app exists before deletion
     const appsBefore = await getApps({
       args: {
-        query: { groupId: defaultGroupId },
+        query: { orgId: defaultGroupId },
       },
       storage,
     });
@@ -533,7 +533,7 @@ describe("deleteApps integration", () => {
     await deleteApps({
       ...makeDeleteAppsArgs({
         query: {
-          groupId: defaultGroupId,
+          orgId: defaultGroupId,
           name: { eq: "Many Fields App" },
         },
       }),
@@ -545,7 +545,7 @@ describe("deleteApps integration", () => {
     // Verify app is deleted
     const appsAfter = await getApps({
       args: {
-        query: { groupId: defaultGroupId },
+        query: { orgId: defaultGroupId },
       },
       storage,
     });
@@ -565,7 +565,7 @@ describe("deleteApps integration", () => {
     // Verify app exists before deletion
     const appsBefore = await getApps({
       args: {
-        query: { groupId: defaultGroupId },
+        query: { orgId: defaultGroupId },
       },
       storage,
     });
@@ -575,7 +575,7 @@ describe("deleteApps integration", () => {
     await deleteApps({
       ...makeDeleteAppsArgs({
         query: {
-          groupId: defaultGroupId,
+          orgId: defaultGroupId,
           name: { eq: "" },
         },
       }),
@@ -587,7 +587,7 @@ describe("deleteApps integration", () => {
     // Verify app is deleted
     const appsAfter = await getApps({
       args: {
-        query: { groupId: defaultGroupId },
+        query: { orgId: defaultGroupId },
       },
       storage,
     });
@@ -599,7 +599,7 @@ describe("deleteApps integration", () => {
     await deleteApps({
       ...makeDeleteAppsArgs({
         query: {
-          groupId: defaultGroupId,
+          orgId: defaultGroupId,
           name: { eq: "Non-existent App" },
         },
       }),
@@ -611,7 +611,7 @@ describe("deleteApps integration", () => {
     // Should not throw an error
     const appsAfter = await getApps({
       args: {
-        query: { groupId: defaultGroupId },
+        query: { orgId: defaultGroupId },
       },
       storage,
     });
@@ -638,7 +638,7 @@ describe("deleteApps integration", () => {
     // Verify apps exist before deletion
     const appsBefore = await getApps({
       args: {
-        query: { groupId: defaultGroupId },
+        query: { orgId: defaultGroupId },
       },
       storage,
     });
@@ -660,7 +660,7 @@ describe("deleteApps integration", () => {
     // Verify only user app is deleted
     const appsAfter = await getApps({
       args: {
-        query: { groupId: defaultGroupId },
+        query: { orgId: defaultGroupId },
       },
       storage,
     });
@@ -698,7 +698,7 @@ describe("deleteApps integration", () => {
     // Verify apps exist before deletion
     const appsBefore = await getApps({
       args: {
-        query: { groupId: defaultGroupId },
+        query: { orgId: defaultGroupId },
       },
       storage,
     });
@@ -743,7 +743,7 @@ describe("deleteApps integration", () => {
     // Verify all apps are deleted
     const appsAfter = await getApps({
       args: {
-        query: { groupId: defaultGroupId },
+        query: { orgId: defaultGroupId },
       },
       storage,
     });
@@ -788,7 +788,7 @@ describe("deleteApps integration", () => {
     // Verify apps exist before deletion
     const group1AppsBefore = await getApps({
       args: {
-        query: { groupId: "group-1" },
+        query: { orgId: "group-1" },
       },
       storage,
     });
@@ -796,7 +796,7 @@ describe("deleteApps integration", () => {
 
     const group2AppsBefore = await getApps({
       args: {
-        query: { groupId: "group-2" },
+        query: { orgId: "group-2" },
       },
       storage,
     });
@@ -806,7 +806,7 @@ describe("deleteApps integration", () => {
     await deleteApps({
       ...makeDeleteAppsArgs({
         query: {
-          groupId: "group-1",
+          orgId: "group-1",
         },
         deleteMany: true,
       }),
@@ -818,7 +818,7 @@ describe("deleteApps integration", () => {
     // Verify group-1 apps are deleted
     const group1AppsAfter = await getApps({
       args: {
-        query: { groupId: "group-1" },
+        query: { orgId: "group-1" },
       },
       storage,
     });
@@ -827,7 +827,7 @@ describe("deleteApps integration", () => {
     // Verify group-2 app still exists
     const group2AppsAfter = await getApps({
       args: {
-        query: { groupId: "group-2" },
+        query: { orgId: "group-2" },
       },
       storage,
     });

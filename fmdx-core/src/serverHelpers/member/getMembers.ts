@@ -162,11 +162,10 @@ export async function getMembersPermissions(params: {
 
 export async function getMembers(params: {
   args: GetMembersEndpointArgs;
-  includePermissions: boolean;
   storage?: IObjStorage;
 }) {
-  const { args, includePermissions, storage } = params;
-  const { page: inputPage, limit: inputLimit, sort } = args;
+  const { args, storage } = params;
+  const { page: inputPage, limit: inputLimit, sort, includePermissions } = args;
 
   // Convert 1-based pagination to 0-based for storage layer
   const pageNumber = inputPage ?? 1;

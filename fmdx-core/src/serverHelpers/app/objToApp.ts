@@ -8,7 +8,7 @@ export function objToApp(obj: IObj): IApp {
     updatedAt: obj.updatedAt,
     createdBy: obj.createdBy,
     updatedBy: obj.updatedBy,
-    groupId: obj.groupId,
+    orgId: obj.groupId,
     name: obj.objRecord.name,
     description:
       obj.objRecord.description === null

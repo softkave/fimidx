@@ -93,7 +93,6 @@ describe("getMemberRequests integration", () => {
       args: member1Args,
       by,
       byType,
-      memberId: member1Args.memberId,
       storage,
     });
 
@@ -101,7 +100,6 @@ describe("getMemberRequests integration", () => {
       args: member2Args,
       by,
       byType,
-      memberId: member2Args.memberId,
       storage,
     });
 
@@ -145,7 +143,6 @@ describe("getMemberRequests integration", () => {
       args: member1Args,
       by,
       byType,
-      memberId: member1Args.memberId,
       storage,
     });
 
@@ -153,7 +150,6 @@ describe("getMemberRequests integration", () => {
       args: member2Args,
       by,
       byType,
-      memberId: member2Args.memberId,
       storage,
     });
 
@@ -192,7 +188,6 @@ describe("getMemberRequests integration", () => {
         args: memberArgs,
         by,
         byType,
-        memberId: memberArgs.memberId,
         storage,
       });
       members.push(memberArgs);
@@ -301,7 +296,6 @@ describe("getMemberRequests integration", () => {
       args: member1Args,
       by,
       byType,
-      memberId: member1Args.memberId,
       storage,
     });
 
@@ -309,7 +303,6 @@ describe("getMemberRequests integration", () => {
       args: member2Args,
       by,
       byType,
-      memberId: member2Args.memberId,
       storage,
     });
 
@@ -363,7 +356,6 @@ describe("getMemberRequests integration", () => {
         args: memberArgs,
         by,
         byType,
-        memberId: memberArgs.memberId,
         storage,
       });
     }
@@ -401,7 +393,6 @@ describe("getMemberRequests integration", () => {
         args: memberArgs,
         by,
         byType,
-        memberId: memberArgs.memberId,
         storage,
       });
     }

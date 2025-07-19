@@ -6,7 +6,7 @@ import { useAppSession } from "./userHooks";
 
 /** `undefined` is returned if the permission is not loaded yet. */
 export function useHasPermission(opts: {
-  groupId: string;
+  orgId: string;
   permission: string | string[];
   op?: "any" | "all";
 }) {
@@ -14,7 +14,7 @@ export function useHasPermission(opts: {
   const { userId } = useAppSession();
   const getMemberByUserIdHook = useGetMemberByUserId({
     userId,
-    groupId: opts.groupId,
+    orgId: opts.orgId,
   });
 
   const checks = useMemo(() => {

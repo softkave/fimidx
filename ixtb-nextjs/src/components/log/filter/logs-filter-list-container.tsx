@@ -9,7 +9,7 @@ import { ILogsFilterListProps, LogsFilterList } from "./logs-filter-list";
 export interface ILogsFilterListContainerProps
   extends Pick<
     ILogsFilterListProps,
-    | "groupId"
+    | "orgId"
     | "appId"
     | "onChange"
     | "filters"
@@ -27,7 +27,7 @@ export interface ILogsFilterListContainerProps
 
 export function LogsFilterListContainer({
   className,
-  groupId,
+  orgId,
   appId,
   onChange,
   filters,
@@ -55,7 +55,7 @@ export function LogsFilterListContainer({
           ) : (
             <LogsFilterList
               fields={data.fields}
-              groupId={groupId}
+              orgId={orgId}
               appId={appId}
               onChange={onChange}
               filters={filters}

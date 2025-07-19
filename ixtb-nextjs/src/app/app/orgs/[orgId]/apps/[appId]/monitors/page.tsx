@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 type AppMonitorsPageProps = {
   params: Promise<{
-    groupId: string;
+    orgId: string;
     appId: string;
   }>;
 };
@@ -21,17 +21,17 @@ type AppMonitorsPageProps = {
 export default async function Page(
   props: AppMonitorsPageProps
 ): Promise<JSX.Element> {
-  const { groupId, appId } = await props.params;
+  const { orgId, appId } = await props.params;
   const session = await auth();
   if (!session) {
     return redirect(
       kClientPaths.withURL(
         kClientPaths.signinWithRedirect(
-          kClientPaths.app.group.app.monitors.index(groupId, appId)
+          kClientPaths.app.org.app.monitors.index(orgId, appId)
         )
       )
     );
   }
 
-  return <MonitorsPage groupId={groupId} appId={appId} />;
+  return <MonitorsPage orgId={orgId} appId={appId} />;
 }

@@ -111,7 +111,6 @@ describe("updateMemberSendEmailStatus integration", () => {
       args: memberArgs,
       by: defaultBy,
       byType: defaultByType,
-      memberId: memberArgs.memberId,
       storage,
     });
 
@@ -138,7 +137,6 @@ describe("updateMemberSendEmailStatus integration", () => {
           memberId: { eq: member.member.memberId },
         },
       },
-      includePermissions: false,
       storage,
     });
 
@@ -155,7 +153,6 @@ describe("updateMemberSendEmailStatus integration", () => {
       args: memberArgs,
       by: defaultBy,
       byType: defaultByType,
-      memberId: memberArgs.memberId,
       storage,
     });
 
@@ -182,7 +179,6 @@ describe("updateMemberSendEmailStatus integration", () => {
           memberId: { eq: member.member.memberId },
         },
       },
-      includePermissions: false,
       storage,
     });
 
@@ -199,7 +195,6 @@ describe("updateMemberSendEmailStatus integration", () => {
       args: memberArgs,
       by: defaultBy,
       byType: defaultByType,
-      memberId: memberArgs.memberId,
       storage,
     });
 
@@ -226,7 +221,6 @@ describe("updateMemberSendEmailStatus integration", () => {
           memberId: { eq: member.member.memberId },
         },
       },
-      includePermissions: false,
       storage,
     });
 
@@ -246,7 +240,6 @@ describe("updateMemberSendEmailStatus integration", () => {
       args: memberArgs,
       by: defaultBy,
       byType: defaultByType,
-      memberId: memberArgs.memberId,
       storage,
     });
 
@@ -273,7 +266,6 @@ describe("updateMemberSendEmailStatus integration", () => {
           memberId: { eq: member.member.memberId },
         },
       },
-      includePermissions: false,
       storage,
     });
 
@@ -293,7 +285,6 @@ describe("updateMemberSendEmailStatus integration", () => {
       args: memberArgs,
       by: defaultBy,
       byType: defaultByType,
-      memberId: memberArgs.memberId,
       storage,
     });
 
@@ -320,7 +311,6 @@ describe("updateMemberSendEmailStatus integration", () => {
           memberId: { eq: member.member.memberId },
         },
       },
-      includePermissions: false,
       storage,
     });
 
@@ -339,7 +329,6 @@ describe("updateMemberSendEmailStatus integration", () => {
       args: member1Args,
       by: defaultBy,
       byType: defaultByType,
-      memberId: member1Args.memberId,
       storage,
     });
 
@@ -347,7 +336,6 @@ describe("updateMemberSendEmailStatus integration", () => {
       args: member2Args,
       by: defaultBy,
       byType: defaultByType,
-      memberId: member2Args.memberId,
       storage,
     });
 
@@ -381,7 +369,6 @@ describe("updateMemberSendEmailStatus integration", () => {
           groupId: defaultGroupId,
         },
       },
-      includePermissions: false,
       storage,
     });
 
@@ -416,7 +403,6 @@ describe("updateMemberSendEmailStatus integration", () => {
       args: memberArgs,
       by: defaultBy,
       byType: defaultByType,
-      memberId: memberArgs.memberId,
       storage,
     });
 
@@ -443,7 +429,6 @@ describe("updateMemberSendEmailStatus integration", () => {
           memberId: { eq: member.member.memberId },
         },
       },
-      includePermissions: false,
       storage,
     });
 
@@ -464,7 +449,6 @@ describe("updateMemberSendEmailStatus integration", () => {
       args: memberArgs,
       by: defaultBy,
       byType: defaultByType,
-      memberId: memberArgs.memberId,
       storage,
     });
 
@@ -491,7 +475,6 @@ describe("updateMemberSendEmailStatus integration", () => {
           memberId: { eq: member.member.memberId },
         },
       },
-      includePermissions: false,
       storage,
     });
 
@@ -506,7 +489,6 @@ describe("updateMemberSendEmailStatus integration", () => {
       args: memberArgs,
       by: defaultBy,
       byType: defaultByType,
-      memberId: memberArgs.memberId,
       storage,
     });
 
@@ -533,7 +515,6 @@ describe("updateMemberSendEmailStatus integration", () => {
           memberId: { eq: member.member.memberId },
         },
       },
-      includePermissions: false,
       storage,
     });
 

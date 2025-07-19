@@ -24,8 +24,8 @@ export async function updateClientTokens(params: {
     const result = await getClientTokens({
       args: {
         query: args.query,
+        includePermissions: true,
       },
-      includePermissions: false,
       storage,
     });
     tokensToUpdate = result.clientTokens;

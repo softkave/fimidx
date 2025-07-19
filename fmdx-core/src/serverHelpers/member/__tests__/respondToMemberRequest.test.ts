@@ -75,7 +75,6 @@ describe("respondToMemberRequest integration", () => {
       args: memberArgs,
       by: by,
       byType: byType,
-      memberId: memberArgs.memberId,
       seed: { status: kMemberStatus.pending },
       storage,
     });
@@ -100,7 +99,6 @@ describe("respondToMemberRequest integration", () => {
           memberId: { eq: member.member.memberId },
         },
       },
-      includePermissions: false,
       storage,
     });
 
@@ -122,7 +120,6 @@ describe("respondToMemberRequest integration", () => {
       args: memberArgs,
       by: by,
       byType: byType,
-      memberId: memberArgs.memberId,
       seed: { status: kMemberStatus.pending },
       storage,
     });
@@ -147,7 +144,6 @@ describe("respondToMemberRequest integration", () => {
           memberId: { eq: member.member.memberId },
         },
       },
-      includePermissions: false,
       storage,
     });
 
@@ -182,7 +178,6 @@ describe("respondToMemberRequest integration", () => {
       args: memberArgs,
       by: by,
       byType: byType,
-      memberId: memberArgs.memberId,
       seed: { status: kMemberStatus.accepted },
       storage,
     });
@@ -214,7 +209,6 @@ describe("respondToMemberRequest integration", () => {
       args: memberArgs,
       by: by,
       byType: byType,
-      memberId: memberArgs.memberId,
       seed: { status: kMemberStatus.pending },
       storage,
     });
@@ -239,7 +233,6 @@ describe("respondToMemberRequest integration", () => {
           memberId: { eq: member.member.memberId },
         },
       },
-      includePermissions: false,
       storage,
     });
 
@@ -261,7 +254,6 @@ describe("respondToMemberRequest integration", () => {
       args: memberArgs,
       by: by,
       byType: byType,
-      memberId: memberArgs.memberId,
       seed: { status: kMemberStatus.pending },
       storage,
     });
@@ -286,7 +278,6 @@ describe("respondToMemberRequest integration", () => {
           memberId: { eq: member.member.memberId },
         },
       },
-      includePermissions: false,
       storage,
     });
 
@@ -307,7 +298,6 @@ describe("respondToMemberRequest integration", () => {
       args: memberArgs,
       by: by,
       byType: byType,
-      memberId: memberArgs.memberId,
       seed: { status: kMemberStatus.pending },
       storage,
     });
@@ -335,7 +325,6 @@ describe("respondToMemberRequest integration", () => {
           memberId: { eq: member.member.memberId },
         },
       },
-      includePermissions: false,
       storage,
     });
 
@@ -362,7 +351,6 @@ describe("respondToMemberRequest integration", () => {
       args: memberArgs,
       by: by,
       byType: byType,
-      memberId: memberArgs.memberId,
       seed: { status: kMemberStatus.pending },
       storage,
     });
@@ -387,7 +375,6 @@ describe("respondToMemberRequest integration", () => {
           memberId: { eq: member.member.memberId },
         },
       },
-      includePermissions: false,
       storage,
     });
 

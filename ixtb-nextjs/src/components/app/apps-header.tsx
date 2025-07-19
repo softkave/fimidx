@@ -9,13 +9,13 @@ import { useState } from "react";
 import { Button } from "../ui/button";
 import { AppFormSheet } from "./app-form-sheet";
 
-export function AppsHeader(props: { className?: string; groupId: string }) {
+export function AppsHeader(props: { className?: string; orgId: string }) {
   const [openForm, setOpenForm] = useState(false);
   const router = useRouter();
   const {
     checks: [canCreate],
   } = useHasPermission({
-    groupId: props.groupId,
+    orgId: props.orgId,
     permission: kPermissions.app.update,
   });
 
@@ -25,9 +25,9 @@ export function AppsHeader(props: { className?: string; groupId: string }) {
         isOpen={openForm}
         onOpenChange={setOpenForm}
         onSubmitComplete={(app) => {
-          router.push(kClientPaths.app.group.app.single(props.groupId, app.id));
+          router.push(kClientPaths.app.org.app.single(props.orgId, app.id));
         }}
-        groupId={props.groupId}
+        orgId={props.orgId}
       />
       <div className={cn("flex justify-between items-center", props.className)}>
         <h1 className="text-2xl font-bold">Apps</h1>

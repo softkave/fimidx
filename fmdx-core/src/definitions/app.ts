@@ -15,19 +15,19 @@ export interface IApp {
   createdByType: string;
   updatedBy: string;
   updatedByType: string;
-  groupId: string;
+  orgId: string;
   objFieldsToIndex: string[] | null;
 }
 
 export interface IAppObjRecord {
   name: string;
   description?: string | null;
-  groupId: string;
+  orgId: string;
   objFieldsToIndex: string[] | null;
 }
 
 export const addAppSchema = z.object({
-  groupId: z.string(),
+  orgId: z.string(),
   name: z.string(),
   description: z.string().optional(),
   objFieldsToIndex: z.array(z.string()).optional(),
@@ -35,7 +35,7 @@ export const addAppSchema = z.object({
 
 // TODO: appId shouldn't be optional for external use
 export const appQuerySchema = z.object({
-  groupId: z.string().optional(),
+  orgId: z.string().optional(),
   id: stringMetaQuerySchema.optional(),
   name: stringMetaQuerySchema.optional(),
   createdAt: numberMetaQuerySchema.optional(),
@@ -87,5 +87,5 @@ export interface GetAppEndpointResponse {
 }
 
 export interface UpdateAppEndpointResponse {
-  app: IApp;
+  success: boolean;
 }

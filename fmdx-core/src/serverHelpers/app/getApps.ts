@@ -15,8 +15,15 @@ import { objToApp } from "./objToApp.js";
 export function getAppsObjQuery(params: { args: GetAppsEndpointArgs }) {
   const { args } = params;
   const { query } = args;
-  const { groupId, id, name, createdAt, updatedAt, createdBy, updatedBy } =
-    query;
+  const {
+    orgId: groupId,
+    id,
+    name,
+    createdAt,
+    updatedAt,
+    createdBy,
+    updatedBy,
+  } = query;
 
   const filterArr: Array<IObjPartQueryItem> = [];
 

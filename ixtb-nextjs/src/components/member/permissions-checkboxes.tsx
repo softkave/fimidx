@@ -7,8 +7,8 @@ import { Checkbox } from "../ui/checkbox";
 
 const kPermissionsLabels = {
   [kPermissions.wildcard]: "Wildcard",
-  [kPermissions.group.update]: "Update Group",
-  [kPermissions.group.delete]: "Delete Group",
+  [kPermissions.org.update]: "Update Org",
+  [kPermissions.org.delete]: "Delete Org",
   [kPermissions.app.read]: "Read App",
   [kPermissions.app.update]: "Update App",
   [kPermissions.app.delete]: "Delete App",

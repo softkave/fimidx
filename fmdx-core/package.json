@@ -5,7 +5,8 @@
   "scripts": {
     "test": "env-cmd -f \".env.test\" vitest run --config ./vitest.config.ts",
     "test:pure": "env-cmd -f \".env.test\" vitest run --config ./vitest.config.pure.ts",
-    "compile": "tsc",
+    "clean": "rm -rf dist",
+    "compile": "pnpm clean && tsc",
     "type-check": "tsc --noEmit",
     "db:generate:sqlite": "env-cmd -f \".env.local\" npx drizzle-kit generate --config=fmdx.sqlite.drizzle.config.ts",
     "db:generate:postgres": "env-cmd -f \".env.local\" npx drizzle-kit generate --config=fmdx.postgres.drizzle.config.ts",

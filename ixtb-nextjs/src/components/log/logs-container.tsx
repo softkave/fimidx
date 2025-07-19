@@ -29,7 +29,7 @@ export interface ILogListContainerProps {
   showNoLogsMessage?: boolean;
   className?: string;
   logsContainerClassName?: string;
-  groupId: string;
+  orgId: string;
   appId: string;
   showFiltersAndSort?: boolean;
 }
@@ -39,7 +39,7 @@ export function LogListContainer({
   showNoLogsMessage = true,
   className,
   logsContainerClassName,
-  groupId,
+  orgId,
   appId,
   showFiltersAndSort,
 }: ILogListContainerProps) {
@@ -63,7 +63,7 @@ export function LogListContainer({
     return (
       <Logs
         logs={logs}
-        groupId={groupId}
+        orgId={orgId}
         appId={appId}
         filters={filters}
         onFiltersChange={setFilters}

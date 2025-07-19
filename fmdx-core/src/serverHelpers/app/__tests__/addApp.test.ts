@@ -30,7 +30,7 @@ function makeAddAppArgs(
   return {
     name: `Test App ${uniqueId}`,
     description: "Test description",
-    groupId: defaultGroupId,
+    orgId: defaultGroupId,
     objFieldsToIndex: ["field1", "field2"],
     ...overrides,
   };
@@ -155,7 +155,7 @@ describe("addApp integration", () => {
     expect(result.app.name).toBe("My Test App");
     expect(result.app.description).toBe("A test app description");
     expect(result.app.objFieldsToIndex).toEqual(["field1", "field2"]);
-    expect(result.app.groupId).toBe(defaultGroupId);
+    expect(result.app.orgId).toBe(defaultGroupId);
     expect(result.app.createdBy).toBe(defaultBy);
     expect(result.app.createdByType).toBe(defaultByType);
     expect(result.app.id).toBeDefined();
@@ -243,12 +243,12 @@ describe("addApp integration", () => {
   it("allows creating apps with same name in different groups", async () => {
     const args1 = makeAddAppArgs({
       name: "Same Name App",
-      groupId: "group-1",
+      orgId: "group-1",
     });
 
     const args2 = makeAddAppArgs({
       name: "Same Name App",
-      groupId: "group-2",
+      orgId: "group-2",
     });
 
     const result1 = await addApp({
@@ -267,10 +267,10 @@ describe("addApp integration", () => {
 
     expect(result1.app).toBeDefined();
     expect(result1.app.name).toBe("Same Name App");
-    expect(result1.app.groupId).toBe("group-1");
+    expect(result1.app.orgId).toBe("group-1");
     expect(result2.app).toBeDefined();
     expect(result2.app.name).toBe("Same Name App");
-    expect(result2.app.groupId).toBe("group-2");
+    expect(result2.app.orgId).toBe("group-2");
     expect(result1.app.id).not.toBe(result2.app.id);
   });
 

@@ -57,7 +57,6 @@ describe("addMember integration", () => {
       args,
       by,
       byType,
-      memberId: args.memberId,
       storage,
     });
 
@@ -92,7 +91,6 @@ describe("addMember integration", () => {
       args,
       by,
       byType,
-      memberId: args.memberId,
       storage,
     });
 
@@ -124,7 +122,6 @@ describe("addMember integration", () => {
       args,
       by,
       byType,
-      memberId: args.memberId,
       storage,
     });
 
@@ -143,7 +140,6 @@ describe("addMember integration", () => {
       args,
       by,
       byType,
-      memberId: args.memberId,
       storage,
     });
 
@@ -160,7 +156,6 @@ describe("addMember integration", () => {
       args,
       by,
       byType,
-      memberId: args.memberId,
       storage,
     });
 
@@ -172,7 +167,6 @@ describe("addMember integration", () => {
         args: duplicateArgs,
         by,
         byType,
-        memberId: duplicateArgs.memberId,
         storage,
       })
     ).rejects.toThrow();
@@ -186,7 +180,6 @@ describe("addMember integration", () => {
       args,
       by,
       byType,
-      memberId: args.memberId,
       storage,
     });
 
@@ -198,7 +191,6 @@ describe("addMember integration", () => {
         args: duplicateArgs,
         by,
         byType,
-        memberId: duplicateArgs.memberId,
         storage,
       })
     ).rejects.toThrow();
@@ -211,7 +203,6 @@ describe("addMember integration", () => {
       args,
       by,
       byType,
-      memberId: args.memberId,
       storage,
     });
 
@@ -224,7 +215,6 @@ describe("addMember integration", () => {
           memberId: { eq: args.memberId },
         },
       },
-      includePermissions: false,
       storage,
     });
 
@@ -250,7 +240,6 @@ describe("addMember integration", () => {
       args,
       by,
       byType,
-      memberId: args.memberId,
       storage,
     });
 

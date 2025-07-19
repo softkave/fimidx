@@ -25,7 +25,7 @@ export function MemberRequestItem(props: IMemberRequestItemProps) {
   >(null);
 
   const respondToMemberRequestHook = useRespondToMemberRequest({
-    groupId: props.item.groupId,
+    orgId: props.item.orgId,
     memberId: props.item.requestId,
     onSuccess: () => {
       toast.success("Member request responded to");
@@ -47,7 +47,7 @@ export function MemberRequestItem(props: IMemberRequestItemProps) {
   return (
     <div className="flex flex-col gap-2">
       <div>
-        <h3 className="font-medium">{props.item.groupName}</h3>
+        <h3 className="font-medium">{props.item.orgName}</h3>
         <p className="text-muted-foreground">
           Sent {formatDistanceToNow(props.item.createdAt)} ago
         </p>

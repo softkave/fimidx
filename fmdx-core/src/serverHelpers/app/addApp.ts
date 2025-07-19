@@ -2,6 +2,7 @@ import assert from "assert";
 import { kOwnServerErrorCodes, OwnServerError } from "../../common/error.js";
 import type {
   AddAppEndpointArgs,
+  AddAppEndpointResponse,
   IAppObjRecord,
 } from "../../definitions/app.js";
 import { kObjTags } from "../../definitions/obj.js";
@@ -15,13 +16,13 @@ export async function addApp(params: {
   by: string;
   byType: string;
   storage?: IObjStorage;
-}) {
+}): Promise<AddAppEndpointResponse> {
   const { args, by, byType, storage } = params;
-  const { name, description, groupId, objFieldsToIndex } = args;
+  const { name, description, orgId: groupId, objFieldsToIndex } = args;
   const objRecord: IAppObjRecord = {
     name,
     description,
-    groupId,
+    orgId: groupId,
     objFieldsToIndex: objFieldsToIndex
       ? Array.from(new Set(objFieldsToIndex))
       : null,
@@ -60,5 +61,9 @@ export async function addApp(params: {
   );
 
   const app = objToApp(newObjs[0]);
-  return { app };
+  const response: AddAppEndpointResponse = {
+    app,
+  };
+
+  return response;
 }

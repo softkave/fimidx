@@ -34,14 +34,14 @@ export function AppItemMenu(props: IAppItemMenuProps) {
   const {
     checks: [canDelete, canUpdate],
   } = useHasPermission({
-    groupId: app.groupId,
+    orgId: app.orgId,
     permission: [kPermissions.app.delete, kPermissions.app.update],
   });
 
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const deleteAppHook = useDeleteApp({
-    groupId: app.groupId,
+    orgId: app.orgId,
     appId: app.id,
     onSuccess: () => {
       toast.success("App deleted");
@@ -50,7 +50,7 @@ export function AppItemMenu(props: IAppItemMenuProps) {
         router.push(
           isString(routeAfterDelete)
             ? routeAfterDelete
-            : kClientPaths.app.group.app.index(app.groupId)
+            : kClientPaths.app.org.app.index(app.orgId)
         );
       }
     },
@@ -74,7 +74,7 @@ export function AppItemMenu(props: IAppItemMenuProps) {
       {deleteAppDialog.DeleteResourceDialog()}
       <AppFormSheet
         app={app}
-        groupId={app.groupId}
+        orgId={app.orgId}
         onOpenChange={setIsEditing}
         isOpen={isEditing}
       />

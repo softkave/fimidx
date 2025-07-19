@@ -1,6 +1,7 @@
 import assert from "assert";
 import { isArray, uniq } from "lodash-es";
 import { indexArray } from "softkave-js-utils";
+import { kOwnServerErrorCodes, OwnServerError } from "../../common/error.js";
 import type {
   GetMemberRequestsEndpointArgs,
   IMemberObjRecordMeta,
@@ -22,7 +23,7 @@ export function getMemberRequestsObjQuery(params: {
 }) {
   const { args } = params;
   const { query } = args;
-  const { appId, groupId, memberId } = query;
+  const { appId, groupId, memberId, status } = query;
 
   const filterArr: Array<IObjPartQueryItem> = [];
 
@@ -32,6 +33,14 @@ export function getMemberRequestsObjQuery(params: {
       op: "eq",
       field: "memberId",
       value: memberId,
+    });
+  }
+
+  if (status) {
+    filterArr.push({
+      op: "eq",
+      field: "status",
+      value: status,
     });
   }
 
@@ -78,12 +87,33 @@ export async function getMemberRequests(params: {
     };
   }
 
-  const { permissions: memberPermissions } = await getMembersPermissions({
-    appId: args.query.appId,
-    memberIds,
-    groupId: args.query.groupId,
-    storage,
-  });
+  if (args.includePermissions) {
+    assert(
+      args.query.appId,
+      new OwnServerError(
+        "App ID is required",
+        kOwnServerErrorCodes.InvalidRequest
+      )
+    );
+    assert(
+      args.query.groupId,
+      new OwnServerError(
+        "Group ID is required",
+        kOwnServerErrorCodes.InvalidRequest
+      )
+    );
+  }
+
+  const { permissions: memberPermissions } = args.includePermissions
+    ? await getMembersPermissions({
+        appId: args.query.appId,
+        memberIds,
+        groupId: args.query.groupId!,
+        storage,
+      })
+    : {
+        permissions: [],
+      };
 
   const memberPermissionsMap = indexArray<IPermission, IPermission[]>(
     memberPermissions,

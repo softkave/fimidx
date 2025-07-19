@@ -1,42 +1,42 @@
 "use client";
 
-import { useGetGroups } from "@/src/lib/clientApi/group.ts";
+import { GetOrgsEndpointArgs, IOrg } from "@/src/definitions/org.ts";
+import { useGetOrgs } from "@/src/lib/clientApi/org.ts";
 import { cn } from "@/src/lib/utils.ts";
-import { GetGroupsEndpointArgs, IGroup } from "fmdx-core/definitions/group";
 import { useState } from "react";
 import { OmitFrom } from "softkave-js-utils";
-import ListPagination from "../internal/list-pagination.tsx";
-import { PageMessage } from "../internal/page-message.tsx";
+import { ComponentListMessage } from "../internal/component-list/component-list-message.tsx";
+import UnknownCountListPagination from "../internal/unknown-count-list-pagination.tsx";
 import { WrapLoader } from "../internal/wrap-loader.tsx";
-import { Groups } from "./group-list.tsx";
+import { Orgs } from "./org-list.tsx";
 
-export type IGroupListContainerFilter = OmitFrom<
-  GetGroupsEndpointArgs,
+export type IOrgListContainerFilter = OmitFrom<
+  GetOrgsEndpointArgs,
   "page" | "limit"
 >;
 
-export interface IGroupListContainerProps {
-  render?: (groups: IGroup[]) => React.ReactNode;
-  showNoGroupsMessage?: boolean;
-  filter?: IGroupListContainerFilter;
+export interface IOrgListContainerProps {
+  render?: (orgs: IOrg[]) => React.ReactNode;
+  showNoOrgsMessage?: boolean;
+  filter?: IOrgListContainerFilter;
   className?: string;
-  groupsContainerClassName?: string;
+  orgsContainerClassName?: string;
 }
 
-export function GroupListContainer({
+export function OrgListContainer({
   render: inputRender,
-  showNoGroupsMessage = true,
+  showNoOrgsMessage = true,
   filter,
   className,
-  groupsContainerClassName,
-}: IGroupListContainerProps) {
+  orgsContainerClassName,
+}: IOrgListContainerProps) {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  const groupHooks = useGetGroups({ page, limit: pageSize, ...filter });
+  const orgHooks = useGetOrgs({ page, limit: pageSize, ...filter });
 
-  const defaultRender = (groups: IGroup[]) => {
-    return <Groups groups={groups} />;
+  const defaultRender = (orgs: IOrg[]) => {
+    return <Orgs orgs={orgs} />;
   };
 
   const render = inputRender ?? defaultRender;
@@ -44,29 +44,28 @@ export function GroupListContainer({
   return (
     <div className={cn("flex flex-col items-center w-full", className)}>
       <WrapLoader
-        isLoading={groupHooks.isLoading}
-        error={groupHooks.error}
-        data={groupHooks.data}
+        isLoading={orgHooks.isLoading}
+        error={orgHooks.error}
+        data={orgHooks.data}
         render={(data) =>
-          data.groups.length === 0 && showNoGroupsMessage ? (
-            <PageMessage
-              title="No groups"
-              message="No groups found"
-              className="px-4 flex flex-col items-center justify-center py-32"
+          data.orgs.length === 0 && showNoOrgsMessage ? (
+            <ComponentListMessage
+              title="No organizations found"
+              message="Add an organization to get started"
             />
           ) : (
             <div
               className={cn(
                 "flex flex-col items-center w-full",
-                groupsContainerClassName
+                orgsContainerClassName
               )}
             >
-              {render(data.groups)}
-              <ListPagination
-                count={data.total}
+              {render(data.orgs)}
+              <UnknownCountListPagination
+                hasMore={data.hasMore}
                 page={page}
                 pageSize={pageSize}
-                disabled={groupHooks.isLoading}
+                disabled={orgHooks.isLoading}
                 setPage={setPage}
                 setPageSize={setPageSize}
                 className="py-4"

@@ -101,8 +101,8 @@ describe("updateClientTokens integration", () => {
             eq: "Original Token",
           },
         },
+        includePermissions: true,
       },
-      includePermissions: true,
       storage,
     });
 
@@ -154,8 +154,8 @@ describe("updateClientTokens integration", () => {
             eq: "Updated Token",
           },
         },
+        includePermissions: true,
       },
-      includePermissions: true,
       storage,
     });
 
@@ -227,8 +227,8 @@ describe("updateClientTokens integration", () => {
             },
           ],
         },
+        includePermissions: true,
       },
-      includePermissions: true,
       storage,
     });
 
@@ -293,6 +293,7 @@ describe("updateClientTokens integration", () => {
             },
           ],
         },
+        includePermissions: true,
       },
       storage,
     });
@@ -334,6 +335,7 @@ describe("updateClientTokens integration", () => {
             eq: token.id,
           },
         },
+        includePermissions: true,
       },
       storage,
     });
@@ -380,8 +382,8 @@ describe("updateClientTokens integration", () => {
             },
           ],
         },
+        includePermissions: true,
       },
-      includePermissions: true,
       storage,
     });
 
@@ -434,8 +436,8 @@ describe("updateClientTokens integration", () => {
             eq: "Test Token",
           },
         },
+        includePermissions: true,
       },
-      includePermissions: true,
       storage,
     });
 
@@ -553,8 +555,8 @@ describe("updateClientTokens integration", () => {
             eq: "Test Token",
           },
         },
+        includePermissions: true,
       },
-      includePermissions: true,
       storage,
     });
 

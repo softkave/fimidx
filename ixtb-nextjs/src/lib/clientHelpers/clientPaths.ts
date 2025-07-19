@@ -8,39 +8,39 @@ export const kClientPaths = {
   app: {
     index: "/app",
     profile: "/app/profile",
-    group: {
-      index: "/app/groups",
-      single: (groupId: string) => `/app/groups/${groupId}`,
+    org: {
+      index: "/app/orgs",
+      single: (orgId: string) => `/app/orgs/${orgId}`,
       members: {
-        index: (groupId: string) => `/app/groups/${groupId}/members`,
-        single: (groupId: string, memberId: string) =>
-          `/app/groups/${groupId}/members/${memberId}`,
+        index: (orgId: string) => `/app/orgs/${orgId}/members`,
+        single: (orgId: string, memberId: string) =>
+          `/app/orgs/${orgId}/members/${memberId}`,
       },
       app: {
-        index: (groupId: string) => `/app/groups/${groupId}/apps`,
-        single: (groupId: string, appId: string) =>
-          `/app/groups/${groupId}/apps/${appId}`,
+        index: (orgId: string) => `/app/orgs/${orgId}/apps`,
+        single: (orgId: string, appId: string) =>
+          `/app/orgs/${orgId}/apps/${appId}`,
         clientToken: {
-          index: (groupId: string, appId: string) =>
-            `/app/groups/${groupId}/apps/${appId}/client-tokens`,
-          single: (groupId: string, appId: string, clientTokenId: string) =>
-            `/app/groups/${groupId}/apps/${appId}/client-tokens/${clientTokenId}`,
+          index: (orgId: string, appId: string) =>
+            `/app/orgs/${orgId}/apps/${appId}/client-tokens`,
+          single: (orgId: string, appId: string, clientTokenId: string) =>
+            `/app/orgs/${orgId}/apps/${appId}/client-tokens/${clientTokenId}`,
         },
         log: {
-          index: (groupId: string, appId: string) =>
-            `/app/groups/${groupId}/apps/${appId}/logs`,
+          index: (orgId: string, appId: string) =>
+            `/app/orgs/${orgId}/apps/${appId}/logs`,
         },
         monitors: {
-          index: (groupId: string, appId: string) =>
-            `/app/groups/${groupId}/apps/${appId}/monitors`,
-          single: (groupId: string, appId: string, monitorId: string) =>
-            `/app/groups/${groupId}/apps/${appId}/monitors/${monitorId}`,
+          index: (orgId: string, appId: string) =>
+            `/app/orgs/${orgId}/apps/${appId}/monitors`,
+          single: (orgId: string, appId: string, monitorId: string) =>
+            `/app/orgs/${orgId}/apps/${appId}/monitors/${monitorId}`,
         },
         callbacks: {
-          index: (groupId: string, appId: string) =>
-            `/app/groups/${groupId}/apps/${appId}/callbacks`,
-          single: (groupId: string, appId: string, callbackId: string) =>
-            `/app/groups/${groupId}/apps/${appId}/callbacks/${callbackId}`,
+          index: (orgId: string, appId: string) =>
+            `/app/orgs/${orgId}/apps/${appId}/callbacks`,
+          single: (orgId: string, appId: string, callbackId: string) =>
+            `/app/orgs/${orgId}/apps/${appId}/callbacks/${callbackId}`,
         },
       },
     },

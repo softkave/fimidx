@@ -12,8 +12,8 @@ export function CallbackItem(props: ICallbackItemProps) {
   return (
     <div className="flex justify-between items-center gap-2 hover:bg-muted/50 transition-colors rounded-md px-4 py-2">
       <Link
-        href={kClientPaths.app.group.app.callbacks.single(
-          props.item.groupId,
+        href={kClientPaths.app.org.app.callbacks.single(
+          props.item.orgId,
           props.item.appId,
           props.item.id
         )}

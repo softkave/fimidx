@@ -23,7 +23,7 @@ import { Input } from "../ui/input.tsx";
 import { Textarea } from "../ui/textarea.tsx";
 
 export interface IAddMonitorFormProps {
-  groupId: string;
+  orgId: string;
   appId: string;
   onSubmitComplete: (monitor: IMonitor) => void;
 }

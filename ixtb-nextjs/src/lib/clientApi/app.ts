@@ -39,13 +39,13 @@ export type AddAppOnSuccessParams = [
 
 export function useAddApp(
   opts: IUseMutationHandlerOpts<typeof addApp> & {
-    groupId: string;
+    orgId: string;
   }
 ) {
   const mutationHandler = useMutationHandler(addApp, {
     ...opts,
     invalidate: [
-      kAppSWRKeys.getApps({ groupId: opts.groupId }),
+      kAppSWRKeys.getApps({ orgId: opts.orgId }),
       ...convertToArray(opts.invalidate || []),
     ],
   });
@@ -71,11 +71,11 @@ export async function getApps(key: ReturnType<typeof kAppSWRKeys.getApps>) {
 export function useGetApps(opts: {
   page?: number;
   limit?: number;
-  groupId: string;
+  orgId: string;
 }) {
   const { data, error, isLoading, isValidating, mutate } = useSWR(
     kAppSWRKeys.getApps({
-      groupId: opts.groupId,
+      orgId: opts.orgId,
       page: opts.page,
       limit: opts.limit,
     }),
@@ -124,13 +124,13 @@ export type UpdateAppOnSuccessParams = [
 export function useUpdateApp(
   opts: IUseMutationHandlerOpts<typeof updateApp> & {
     appId: string;
-    groupId: string;
+    orgId: string;
   }
 ) {
   const mutationHandler = useMutationHandler(updateApp, {
     ...opts,
     invalidate: [
-      kAppSWRKeys.getApps({ groupId: opts.groupId }),
+      kAppSWRKeys.getApps({ orgId: opts.orgId }),
       kAppSWRKeys.getApp(opts.appId),
       ...convertToArray(opts.invalidate || []),
     ],
@@ -166,13 +166,13 @@ export type DeleteAppOnSuccessParams = [
 export function useDeleteApp(
   opts: IUseMutationHandlerOpts<typeof deleteApp> & {
     appId: string;
-    groupId: string;
+    orgId: string;
   }
 ) {
   const mutationHandler = useMutationHandler(deleteApp, {
     ...opts,
     invalidate: [
-      kAppSWRKeys.getApps({ groupId: opts.groupId }),
+      kAppSWRKeys.getApps({ orgId: opts.orgId }),
       kAppSWRKeys.getApp(opts.appId),
       ...convertToArray(opts.invalidate || []),
     ],

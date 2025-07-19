@@ -26,8 +26,8 @@ export async function updateClientTokenPermissions(params: {
           eq: query.id,
         },
       },
+      includePermissions: true,
     },
-    includePermissions: true,
     storage,
   });
 

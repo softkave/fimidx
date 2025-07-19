@@ -1,20 +1,15 @@
 import { GetAppsEndpointArgs } from "fmdx-core/definitions/app";
-import {
-  GetCallbackEndpointArgs,
-  GetCallbacksEndpointArgs,
-} from "fmdx-core/definitions/callback";
+import { GetCallbacksEndpointArgs } from "fmdx-core/definitions/callback";
 import { GetClientTokensEndpointArgs } from "fmdx-core/definitions/clientToken";
 import { GetGroupsEndpointArgs } from "fmdx-core/definitions/group";
 import {
   GetLogFieldsEndpointArgs,
-  GetLogFieldValuesEndpointArgs,
   GetLogsEndpointArgs,
 } from "fmdx-core/definitions/log";
 import {
-  GetMemberByUserIdEndpointArgs,
+  GetMemberRequestsEndpointArgs,
   GetMembersEndpointArgs,
-  GetUserRequestsEndpointArgs,
-} from "fmdx-core/definitions/members";
+} from "fmdx-core/definitions/member";
 import { GetMonitorsEndpointArgs } from "fmdx-core/definitions/monitor";
 import {
   kApiAppKeys,
@@ -24,7 +19,9 @@ import {
   kApiLogKeys,
   kApiMemberKeys,
   kApiMonitorKeys,
+  kApiOrgKeys,
 } from "./apikeys";
+import { GetOrgsEndpointArgs } from "@/src/definitions/org";
 
 export const kGroupSWRKeys = {
   getGroups: (params: GetGroupsEndpointArgs) =>
@@ -33,6 +30,15 @@ export const kGroupSWRKeys = {
   addGroup: () => kApiGroupKeys.addGroup(),
   deleteGroup: () => kApiGroupKeys.deleteGroup(),
   updateGroup: (groupId: string) => kApiGroupKeys.updateGroup(groupId),
+};
+
+export const kOrgSWRKeys = {
+  getOrgs: (params: GetOrgsEndpointArgs) =>
+    [kApiOrgKeys.getOrgs(), params] as const,
+  getOrg: (orgId: string) => kApiOrgKeys.getOrg(orgId),
+  addOrg: () => kApiOrgKeys.addOrg(),
+  deleteOrg: (orgId: string) => kApiOrgKeys.deleteOrg(orgId),
+  updateOrg: (orgId: string) => kApiOrgKeys.updateOrg(orgId),
 };
 
 export const kAppSWRKeys = {
@@ -65,8 +71,6 @@ export const kLogSWRKeys = {
   getLogFields: (params: GetLogFieldsEndpointArgs) =>
     [kApiLogKeys.getLogFields(), params] as const,
   getLogById: (logId: string) => kApiLogKeys.getLogById(logId),
-  getLogFieldValues: (params: GetLogFieldValuesEndpointArgs) =>
-    [kApiLogKeys.getLogFieldValues(), params] as const,
 };
 
 export const kMonitorSWRKeys = {
@@ -84,14 +88,12 @@ export const kMemberSWRKeys = {
   getMembers: (params: GetMembersEndpointArgs) =>
     [kApiMemberKeys.getMembers(), params] as const,
   addMember: () => kApiMemberKeys.addMember(),
-  getMemberByUserId: (params: GetMemberByUserIdEndpointArgs) =>
-    [kApiMemberKeys.getMemberByUserId(params.userId), params] as const,
   removeMember: () => kApiMemberKeys.removeMember(),
   getMemberById: (memberId: string) => kApiMemberKeys.getMemberById(memberId),
   updateMemberById: (memberId: string) =>
     kApiMemberKeys.updateMemberById(memberId),
-  getUserRequests: (params: GetUserRequestsEndpointArgs) =>
-    [kApiMemberKeys.getUserRequests(), params] as const,
+  getMemberRequests: (params: GetMemberRequestsEndpointArgs) =>
+    [kApiMemberKeys.getMemberRequests(), params] as const,
   respondToMemberRequest: (memberId: string) =>
     kApiMemberKeys.respondToMemberRequest(memberId),
 };
@@ -100,8 +102,7 @@ export const kCallbackSWRKeys = {
   getCallbacks: (params: GetCallbacksEndpointArgs) =>
     [kApiCallbackKeys.getCallbacks(), params] as const,
   addCallback: () => kApiCallbackKeys.addCallback(),
-  getCallback: (params: GetCallbackEndpointArgs) =>
-    [kApiCallbackKeys.getCallback(), params] as const,
+  getCallback: (callbackId: string) => kApiCallbackKeys.getCallback(callbackId),
   deleteCallback: () => kApiCallbackKeys.deleteCallback(),
   updateCallback: (callbackId: string) =>
     kApiCallbackKeys.updateCallback(callbackId),

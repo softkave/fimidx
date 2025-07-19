@@ -24,7 +24,7 @@ export interface IMonitorListContainerProps {
   filter?: IMonitorListContainerFilter;
   className?: string;
   monitorsContainerClassName?: string;
-  groupId: string;
+  orgId: string;
   appId: string;
 }
 

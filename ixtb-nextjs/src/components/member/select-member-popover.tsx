@@ -8,10 +8,10 @@ import { Button } from "../ui/button.tsx";
 import {
   Command,
   CommandEmpty,
-  CommandGroup,
   CommandInput,
   CommandItem,
   CommandList,
+  CommandOrg,
   CommandSeparator,
 } from "../ui/command.tsx";
 import { FormControl } from "../ui/form.tsx";
@@ -124,7 +124,7 @@ export function SelectMemberPopover({
                 </Button>
               </div>
             </CommandEmpty>
-            <CommandGroup>
+            <CommandOrg>
               {items.map((item) => (
                 <CommandItem
                   key={item.value}
@@ -145,7 +145,7 @@ export function SelectMemberPopover({
                 </CommandItem>
               ))}
               <CommandSeparator />
-              <CommandGroup>
+              <CommandOrg>
                 <CommandItem
                   onSelect={() => {
                     onOpenAddMemberForm?.(search);
@@ -155,8 +155,8 @@ export function SelectMemberPopover({
                   <PlusIcon className="w-4 h-4" />
                   <span className="truncate">Add member</span>
                 </CommandItem>
-              </CommandGroup>
-            </CommandGroup>
+              </CommandOrg>
+            </CommandOrg>
           </CommandList>
         </Command>
       </PopoverContent>

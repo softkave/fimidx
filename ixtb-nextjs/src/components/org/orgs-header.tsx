@@ -1,31 +1,39 @@
 "use client";
 
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
-import { cn } from "@/src/lib/utils";
+import { PlusIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { ComponentListHeader } from "../internal/component-list/component-list-header";
 import { Button } from "../ui/button";
-import { GroupFormSheet } from "./group-form-sheet";
+import { OrgFormSheet } from "./org-form-sheet";
 
-export function GroupsHeader(props: { className?: string }) {
+export function OrgsHeader(props: { className?: string }) {
   const [openForm, setOpenForm] = useState(false);
   const router = useRouter();
 
   return (
     <>
-      <GroupFormSheet
+      <OrgFormSheet
         isOpen={openForm}
         onOpenChange={setOpenForm}
-        onSubmitComplete={(group) => {
-          router.push(kClientPaths.app.group.single(group.id));
+        onSubmitComplete={(org) => {
+          if (org) {
+            router.push(kClientPaths.app.org.single(org.id));
+          }
         }}
       />
-      <div className={cn("flex justify-between items-center", props.className)}>
-        <h1 className="text-2xl font-bold">Groups</h1>
-        <Button onClick={() => setOpenForm(true)} variant="outline">
-          Create Group
-        </Button>
-      </div>
+      <ComponentListHeader
+        title="Organizations"
+        description="Manage your organizations."
+        button={
+          <Button onClick={() => setOpenForm(true)} variant="outline">
+            Create
+            <PlusIcon className="w-4 h-4 ml-1" />
+          </Button>
+        }
+        className={props.className}
+      />
     </>
   );
 }

@@ -34,8 +34,8 @@ export async function hasPermission(params: {
               memberId: { eq: memberId },
             },
             limit: 1,
+            includePermissions: true,
           },
-          includePermissions: true,
         })
       ).members
     );

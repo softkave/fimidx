@@ -1,14 +1,34 @@
+import type { AnyObject } from "softkave-js-utils";
 import { z } from "zod";
+import type { FieldType } from "../common/indexer.js";
 import {
   inputObjRecordArraySchema,
   objPartLogicalQuerySchema,
   objSortListSchema,
   stringMetaQuerySchema,
-  type IObj,
-  type IObjField,
 } from "./obj.js";
 
-export type ILog = IObj;
+export interface ILogField {
+  id: string;
+  path: string;
+  type: FieldType;
+  arrayTypes: FieldType[];
+  isArrayCompressed: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  appId: string;
+  groupId: string;
+}
+
+export interface ILog {
+  id: string;
+  createdAt: Date;
+  createdBy: string;
+  createdByType: string;
+  appId: string;
+  groupId: string;
+  data: AnyObject;
+}
 
 export const ingestLogsSchema = z.object({
   appId: z.string(),
@@ -18,7 +38,6 @@ export const ingestLogsSchema = z.object({
 export const logsMetaQuerySchema = z.object({
   id: stringMetaQuerySchema.optional(),
   createdBy: stringMetaQuerySchema.optional(),
-  updatedBy: stringMetaQuerySchema.optional(),
 });
 
 export const logQuerySchema = z.object({
@@ -62,7 +81,7 @@ export interface GetLogsEndpointResponse {
 }
 
 export interface GetLogFieldsEndpointResponse {
-  fields: IObjField[];
+  fields: ILogField[];
   page: number;
   limit: number;
   hasMore: boolean;

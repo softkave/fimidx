@@ -1,27 +1,28 @@
 import {
-  AddGroupEndpointResponse,
-  addGroupSchema,
-  deleteGroupSchema,
-  GetGroupEndpointResponse,
-  GetGroupsEndpointResponse,
-  UpdateGroupEndpointResponse,
-  updateGroupSchema,
-} from "fmdx-core/definitions/group";
+  AddOrgEndpointResponse,
+  addOrgSchema,
+  deleteOrgSchema,
+  GetOrgEndpointResponse,
+  GetOrgsEndpointResponse,
+  UpdateOrgEndpointResponse,
+  updateOrgSchema,
+} from "@/src/definitions/org.ts";
+import { first } from "lodash-es";
 import { convertToArray } from "softkave-js-utils";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
 import { z } from "zod";
-import { kGroupSWRKeys } from "./swrkeys.ts";
+import { kOrgSWRKeys } from "./swrkeys.ts";
 import {
   handleResponse,
   IUseMutationHandlerOpts,
   useMutationHandler,
 } from "./utils.ts";
 
-async function addGroup(
-  key: ReturnType<typeof kGroupSWRKeys.addGroup>,
+async function addOrg(
+  key: ReturnType<typeof kOrgSWRKeys.addOrg>,
   params: {
-    arg: z.infer<typeof addGroupSchema>;
+    arg: z.infer<typeof addOrgSchema>;
   }
 ) {
   const res = await fetch(key, {
@@ -29,75 +30,72 @@ async function addGroup(
     body: JSON.stringify(params.arg),
   });
 
-  return await handleResponse<AddGroupEndpointResponse>(res);
+  return await handleResponse<AddOrgEndpointResponse>(res);
 }
 
-export type AddGroupOnSuccessParams = [
-  params: Parameters<typeof addGroup>,
-  res: Awaited<ReturnType<typeof addGroup>>
+export type AddOrgOnSuccessParams = [
+  params: Parameters<typeof addOrg>,
+  res: Awaited<ReturnType<typeof addOrg>>
 ];
 
-export function useAddGroup(
-  opts: IUseMutationHandlerOpts<typeof addGroup> = {}
-) {
-  const mutationHandler = useMutationHandler(addGroup, {
+export function useAddOrg(opts: IUseMutationHandlerOpts<typeof addOrg> = {}) {
+  const mutationHandler = useMutationHandler(addOrg, {
     ...opts,
     invalidate: [
-      kGroupSWRKeys.getGroups({}),
+      // Use only the first key to invalidate the cache
+      first(kOrgSWRKeys.getOrgs({})),
       ...convertToArray(opts.invalidate || []),
     ],
   });
 
   const { trigger, data, error, isMutating, reset } = useSWRMutation(
-    kGroupSWRKeys.addGroup(),
+    kOrgSWRKeys.addOrg(),
     mutationHandler
   );
 
   return { trigger, data, error, isMutating, reset };
 }
 
-export async function getGroups(
-  key: ReturnType<typeof kGroupSWRKeys.getGroups>
-) {
+export async function getOrgs(key: ReturnType<typeof kOrgSWRKeys.getOrgs>) {
   const [url, args] = key;
   const res = await fetch(url, {
     method: "POST",
     body: JSON.stringify(args),
   });
 
-  return await handleResponse<GetGroupsEndpointResponse>(res);
+  return await handleResponse<GetOrgsEndpointResponse>(res);
 }
 
-export function useGetGroups(opts: { page?: number; limit?: number } = {}) {
+export function useGetOrgs(opts: { page?: number; limit?: number } = {}) {
   const { data, error, isLoading, isValidating, mutate } = useSWR(
-    kGroupSWRKeys.getGroups(opts),
-    getGroups
+    kOrgSWRKeys.getOrgs(opts),
+    getOrgs
   );
 
   return { data, error, isLoading, isValidating, mutate };
 }
 
-async function getGroup(key: ReturnType<typeof kGroupSWRKeys.getGroup>) {
+async function getOrg(key: ReturnType<typeof kOrgSWRKeys.getOrg>) {
   const res = await fetch(key, {
     method: "GET",
   });
 
-  return await handleResponse<GetGroupEndpointResponse>(res);
+  return await handleResponse<GetOrgEndpointResponse>(res);
 }
 
-export function useGetGroup(opts: { groupId: string }) {
+export function useGetOrg(opts: { orgId: string }) {
   const { data, error, isLoading, isValidating, mutate } = useSWR(
-    kGroupSWRKeys.getGroup(opts.groupId),
-    getGroup
+    kOrgSWRKeys.getOrg(opts.orgId),
+    getOrg
   );
 
   return { data, error, isLoading, isValidating, mutate };
 }
 
-async function updateGroup(
-  key: ReturnType<typeof kGroupSWRKeys.updateGroup>,
+async function updateOrg(
+  key: ReturnType<typeof kOrgSWRKeys.updateOrg>,
   params: {
-    arg: z.infer<typeof updateGroupSchema>;
+    arg: z.infer<typeof updateOrgSchema>;
   }
 ) {
   const res = await fetch(key, {
@@ -105,38 +103,39 @@ async function updateGroup(
     body: JSON.stringify(params.arg),
   });
 
-  return await handleResponse<UpdateGroupEndpointResponse>(res);
+  return await handleResponse<UpdateOrgEndpointResponse>(res);
 }
 
-export type UpdateGroupOnSuccessParams = [
-  params: Parameters<typeof updateGroup>,
-  res: Awaited<ReturnType<typeof updateGroup>>
+export type UpdateOrgOnSuccessParams = [
+  params: Parameters<typeof updateOrg>,
+  res: Awaited<ReturnType<typeof updateOrg>>
 ];
 
-export function useUpdateGroup(
-  opts: IUseMutationHandlerOpts<typeof updateGroup> & { groupId: string }
+export function useUpdateOrg(
+  opts: IUseMutationHandlerOpts<typeof updateOrg> & { orgId: string }
 ) {
-  const mutationHandler = useMutationHandler(updateGroup, {
+  const mutationHandler = useMutationHandler(updateOrg, {
     ...opts,
     invalidate: [
-      kGroupSWRKeys.getGroups({}),
-      kGroupSWRKeys.getGroup(opts.groupId),
+      // Use only the first key to invalidate the cache
+      first(kOrgSWRKeys.getOrgs({})),
+      kOrgSWRKeys.getOrg(opts.orgId),
       ...convertToArray(opts.invalidate || []),
     ],
   });
 
   const { trigger, data, error, isMutating, reset } = useSWRMutation(
-    kGroupSWRKeys.updateGroup(opts.groupId),
+    kOrgSWRKeys.updateOrg(opts.orgId),
     mutationHandler
   );
 
   return { trigger, data, error, isMutating, reset };
 }
 
-async function deleteGroup(
-  key: ReturnType<typeof kGroupSWRKeys.deleteGroup>,
+async function deleteOrg(
+  key: ReturnType<typeof kOrgSWRKeys.deleteOrg>,
   params: {
-    arg: z.infer<typeof deleteGroupSchema>;
+    arg: z.infer<typeof deleteOrgSchema>;
   }
 ) {
   const res = await fetch(key, {
@@ -147,25 +146,26 @@ async function deleteGroup(
   return await handleResponse(res);
 }
 
-export type DeleteGroupOnSuccessParams = [
-  params: Parameters<typeof deleteGroup>,
-  res: Awaited<ReturnType<typeof deleteGroup>>
+export type DeleteOrgOnSuccessParams = [
+  params: Parameters<typeof deleteOrg>,
+  res: Awaited<ReturnType<typeof deleteOrg>>
 ];
 
-export function useDeleteGroup(
-  opts: IUseMutationHandlerOpts<typeof deleteGroup> & { groupId: string }
+export function useDeleteOrg(
+  opts: IUseMutationHandlerOpts<typeof deleteOrg> & { orgId: string }
 ) {
-  const mutationHandler = useMutationHandler(deleteGroup, {
+  const mutationHandler = useMutationHandler(deleteOrg, {
     ...opts,
     invalidate: [
-      kGroupSWRKeys.getGroups({}),
-      kGroupSWRKeys.getGroup(opts.groupId),
+      // Use only the first key to invalidate the cache
+      first(kOrgSWRKeys.getOrgs({})),
+      kOrgSWRKeys.getOrg(opts.orgId),
       ...convertToArray(opts.invalidate || []),
     ],
   });
 
   const { trigger, data, error, isMutating, reset } = useSWRMutation(
-    kGroupSWRKeys.deleteGroup(),
+    kOrgSWRKeys.deleteOrg(opts.orgId),
     mutationHandler
   );
 

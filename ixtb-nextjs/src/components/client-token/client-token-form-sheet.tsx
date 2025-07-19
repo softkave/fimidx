@@ -14,7 +14,7 @@ import { AddClientTokenForm } from "./add-client-token-form.tsx";
 import { UpdateClientTokenForm } from "./update-client-token-form.tsx";
 
 export interface IClientTokenFormSheetProps {
-  groupId: string;
+  orgId: string;
   appId: string;
   clientToken?: IClientToken;
   isOpen: boolean;
@@ -23,14 +23,8 @@ export interface IClientTokenFormSheetProps {
 }
 
 export function ClientTokenFormSheet(props: IClientTokenFormSheetProps) {
-  const {
-    isOpen,
-    onOpenChange,
-    onSubmitComplete,
-    clientToken,
-    groupId,
-    appId,
-  } = props;
+  const { isOpen, onOpenChange, onSubmitComplete, clientToken, orgId, appId } =
+    props;
 
   const handleSubmitComplete = useCallback(
     (clientToken: IClientToken) => {
@@ -63,7 +57,7 @@ export function ClientTokenFormSheet(props: IClientTokenFormSheetProps) {
             ) : (
               <AddClientTokenForm
                 onSubmitComplete={handleSubmitComplete}
-                groupId={groupId}
+                orgId={orgId}
                 appId={appId}
               />
             )}

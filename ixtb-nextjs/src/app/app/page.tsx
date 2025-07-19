@@ -9,5 +9,5 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return redirect(kClientPaths.withURL(kClientPaths.app.group.index));
+  return redirect(kClientPaths.withURL(kClientPaths.app.org.index));
 }

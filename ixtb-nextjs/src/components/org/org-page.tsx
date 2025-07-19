@@ -1,16 +1,16 @@
 import { AppPage } from "../internal/app-page";
-import { GroupTab } from "./group";
-import { GroupContainer } from "./group-container";
+import { OrgTab } from "./org";
+import { OrgContainer } from "./org-container";
 
-export interface IGroupPageProps {
-  groupId: string;
-  defaultTab: GroupTab;
+export interface IOrgPageProps {
+  orgId: string;
+  defaultTab: OrgTab;
 }
 
-export function GroupPage(props: IGroupPageProps) {
+export function OrgPage(props: IOrgPageProps) {
   return (
     <AppPage>
-      <GroupContainer groupId={props.groupId} defaultTab={props.defaultTab} />
+      <OrgContainer orgId={props.orgId} defaultTab={props.defaultTab} />
     </AppPage>
   );
 }

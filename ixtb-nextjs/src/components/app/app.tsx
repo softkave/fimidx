@@ -33,8 +33,8 @@ export function App(props: IAppProps) {
         <TabsList className="w-full max-w-lg">
           <TabsTrigger value={kAppTabs.clientTokens}>
             <Link
-              href={kClientPaths.app.group.app.clientToken.index(
-                props.app.groupId,
+              href={kClientPaths.app.org.app.clientToken.index(
+                props.app.orgId,
                 props.app.id
               )}
             >
@@ -43,8 +43,8 @@ export function App(props: IAppProps) {
           </TabsTrigger>
           <TabsTrigger value={kAppTabs.logs}>
             <Link
-              href={kClientPaths.app.group.app.log.index(
-                props.app.groupId,
+              href={kClientPaths.app.org.app.log.index(
+                props.app.orgId,
                 props.app.id
               )}
             >
@@ -55,13 +55,13 @@ export function App(props: IAppProps) {
         <TabsContent value={kAppTabs.clientTokens} className="pt-3">
           <ClientTokensPage
             appId={props.app.id}
-            groupId={props.app.groupId}
+            orgId={props.app.orgId}
             className="gap-8"
           />
         </TabsContent>
         <TabsContent value={kAppTabs.logs} className="pt-3">
           <LogsPage
-            groupId={props.app.groupId}
+            orgId={props.app.orgId}
             appId={props.app.id}
             className="gap-8"
           />

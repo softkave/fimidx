@@ -81,7 +81,7 @@ export function UpdateMonitorFormP2(props: IUpdateMonitorFormP2Props) {
               <FormLabel>Filters</FormLabel>
               <FormControl>
                 <LogsFilterListContainer
-                  groupId={monitor.groupId}
+                  orgId={monitor.orgId}
                   appId={monitor.appId}
                   onChange={field.onChange}
                   filters={field.value ?? []}

@@ -27,8 +27,8 @@ export async function updateMemberPermissions(params: {
           eq: query.memberId,
         },
       },
+      includePermissions: true,
     },
-    includePermissions: true,
     storage,
   });
 

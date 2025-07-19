@@ -21,7 +21,6 @@ export async function addMember(params: {
   args: AddMemberEndpointArgs;
   by: string;
   byType: string;
-  memberId: string;
   seed?: Partial<IMemberObjRecord>;
   storage?: IObjStorage;
 }) {

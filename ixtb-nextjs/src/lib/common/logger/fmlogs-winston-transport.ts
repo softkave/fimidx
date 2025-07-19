@@ -6,7 +6,7 @@ import {
 
 export interface IFmLogsWinstonTransportOptions
   extends TransportStream.TransportStreamOptions {
-  groupId: string;
+  orgId: string;
   appId: string;
   clientToken: string;
   baseUrl: string;
@@ -17,7 +17,7 @@ interface IIngestLogsArgs {
 }
 
 async function sendLogToFmLogs(params: {
-  groupId: string;
+  orgId: string;
   appId: string;
   clientToken: string;
   logs: any[];
@@ -26,7 +26,7 @@ async function sendLogToFmLogs(params: {
   throwOnError?: boolean;
 }) {
   const {
-    groupId,
+    orgId,
     appId,
     clientToken,
     logs,
@@ -40,7 +40,7 @@ async function sendLogToFmLogs(params: {
   };
 
   const response = await fetch(
-    `${baseUrl}/api/groups/${groupId}/apps/${appId}/logs/ingest`,
+    `${baseUrl}/api/orgs/${orgId}/apps/${appId}/logs/ingest`,
     {
       method: "POST",
       headers: {
@@ -65,14 +65,14 @@ async function sendLogToFmLogs(params: {
 export const kFmLogsBaseUrl = "https://fmlogs.fimidara.com";
 
 export class FmLogsWinstonTransport extends Transport {
-  private readonly groupId: string;
+  private readonly orgId: string;
   private readonly appId: string;
   private readonly clientToken: string;
   private readonly baseUrl: string;
 
   constructor(opts: IFmLogsWinstonTransportOptions) {
     super(opts);
-    this.groupId = opts.groupId;
+    this.orgId = opts.orgId;
     this.appId = opts.appId;
     this.clientToken = opts.clientToken;
     this.baseUrl = opts.baseUrl;
@@ -85,7 +85,7 @@ export class FmLogsWinstonTransport extends Transport {
 
     // TODO: batch logs
     sendLogToFmLogs({
-      groupId: this.groupId,
+      orgId: this.orgId,
       appId: this.appId,
       clientToken: this.clientToken,
       logs: [info],

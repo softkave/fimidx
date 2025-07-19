@@ -49,7 +49,7 @@ export function UpdateMemberForm(props: IUpdateMemberFormProps) {
   const updateMemberHook = useUpdateMemberById({
     onSuccess: handleSuccess,
     memberId: member.id,
-    groupId: member.groupId,
+    orgId: member.orgId,
   });
 
   const onSubmit = useCallback(

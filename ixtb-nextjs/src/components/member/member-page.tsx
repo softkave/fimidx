@@ -2,7 +2,7 @@ import { AppPage } from "../internal/app-page";
 import { MemberContainer } from "./member-container";
 
 export interface IMemberPageProps {
-  groupId: string;
+  orgId: string;
   memberId: string;
 }
 

@@ -20,7 +20,7 @@ import { Input } from "../ui/input.tsx";
 import { Textarea } from "../ui/textarea.tsx";
 
 export interface IAddAppFormProps {
-  groupId: string;
+  orgId: string;
   onSubmitComplete: (app: IApp) => void;
 }
 
@@ -30,7 +30,7 @@ export const addAppFormSchema = z.object({
 });
 
 export function AddAppForm(props: IAddAppFormProps) {
-  const { groupId, onSubmitComplete } = props;
+  const { orgId, onSubmitComplete } = props;
 
   const form = useForm<z.infer<typeof addAppFormSchema>>({
     resolver: zodResolver(addAppFormSchema),
@@ -49,18 +49,18 @@ export function AddAppForm(props: IAddAppFormProps) {
 
   const addAppHook = useAddApp({
     onSuccess: handleSuccess,
-    groupId: groupId,
+    orgId: orgId,
   });
 
   const onSubmit = useCallback(
     async (values: z.infer<typeof addAppFormSchema>) => {
       await addAppHook.trigger({
-        groupId: groupId,
+        orgId: orgId,
         name: values.name,
         description: values.description,
       });
     },
-    [addAppHook, groupId]
+    [addAppHook, orgId]
   );
 
   return (

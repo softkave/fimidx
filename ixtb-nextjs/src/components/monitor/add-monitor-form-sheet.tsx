@@ -13,7 +13,7 @@ import {
 import { AddMonitorForm } from "./add-monitor-form.tsx";
 
 export interface IAddMonitorFormSheetProps {
-  groupId: string;
+  orgId: string;
   appId: string;
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
@@ -21,7 +21,7 @@ export interface IAddMonitorFormSheetProps {
 }
 
 export function AddMonitorFormSheet(props: IAddMonitorFormSheetProps) {
-  const { isOpen, onOpenChange, onSubmitComplete, groupId, appId } = props;
+  const { isOpen, onOpenChange, onSubmitComplete, orgId, appId } = props;
 
   const handleSubmitComplete = useCallback(
     (monitor: IMonitor) => {
@@ -44,7 +44,7 @@ export function AddMonitorFormSheet(props: IAddMonitorFormSheetProps) {
           <div className="mt-2 p-4">
             <AddMonitorForm
               onSubmitComplete={handleSubmitComplete}
-              groupId={groupId}
+              orgId={orgId}
               appId={appId}
             />
           </div>

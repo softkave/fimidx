@@ -28,7 +28,6 @@ export async function respondToMemberRequest(params: {
       },
       limit: 1,
     },
-    includePermissions: false,
     storage,
   });
 

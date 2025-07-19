@@ -13,8 +13,8 @@ export function ClientTokenItem(props: IClientTokenItemProps) {
   return (
     <div className="flex justify-between items-center gap-2 hover:bg-muted/50 transition-colors rounded-md px-4 py-2">
       <Link
-        href={kClientPaths.app.group.app.clientToken.single(
-          props.item.groupId,
+        href={kClientPaths.app.org.app.clientToken.single(
+          props.item.orgId,
           props.item.appId,
           props.item.id
         )}

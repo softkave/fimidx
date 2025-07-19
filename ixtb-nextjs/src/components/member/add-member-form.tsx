@@ -23,7 +23,7 @@ import { Input } from "../ui/input.tsx";
 import { PermissionsCheckboxes } from "./permissions-checkboxes.tsx";
 
 export interface IAddMemberFormProps {
-  groupId: string;
+  orgId: string;
   onSubmitComplete: (member: IMember) => void;
 }
 
@@ -33,7 +33,7 @@ export const addMemberFormSchema = z.object({
 });
 
 export function AddMemberForm(props: IAddMemberFormProps) {
-  const { groupId, onSubmitComplete } = props;
+  const { orgId, onSubmitComplete } = props;
 
   const form = useForm<z.infer<typeof addMemberFormSchema>>({
     resolver: zodResolver(addMemberFormSchema),
@@ -51,19 +51,19 @@ export function AddMemberForm(props: IAddMemberFormProps) {
   );
 
   const addMemberHook = useAddMember({
-    groupId,
+    orgId,
     onSuccess: handleSuccess,
   });
 
   const onSubmit = useCallback(
     async (values: z.infer<typeof addMemberFormSchema>) => {
       await addMemberHook.trigger({
-        groupId,
+        orgId,
         email: values.email,
         permissions: values.permissions,
       });
     },
-    [addMemberHook, groupId]
+    [addMemberHook, orgId]
   );
 
   return (

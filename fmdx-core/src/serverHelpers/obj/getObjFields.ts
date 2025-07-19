@@ -1,5 +1,9 @@
 import { and, desc, eq } from "drizzle-orm";
 import { db, objFields as objFieldsTable } from "../../db/fmdx.sqlite.js";
+import type {
+  IGetObjFieldsEndpointResponse,
+  IObjField,
+} from "../../definitions/obj.js";
 
 async function getFromDb(params: {
   appId: string;
@@ -22,7 +26,7 @@ export async function getObjFields(params: {
   page?: number;
   limit?: number;
   tag: string;
-}) {
+}): Promise<IGetObjFieldsEndpointResponse> {
   const { appId, page = 0, limit = 100, tag } = params;
   const fields = await getFromDb({ appId, page, limit, tag });
   let hasMore = false;
@@ -31,7 +35,7 @@ export async function getObjFields(params: {
     hasMore = nextPage.length > 0;
   }
   return {
-    fields,
+    fields: fields as IObjField[],
     page,
     limit,
     hasMore,

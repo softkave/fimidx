@@ -6,12 +6,12 @@ import {
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
 import { kAppConstants } from "fmdx-core/definitions/appConstants";
 import Link from "next/link";
-import { AppSidebarGroupContainer } from "./app-sidebar-group-container";
-import { GroupSidebarGroupContainer } from "./group-sidebar-group-container";
-import { HomeSidebarGroup } from "./home-sidebar-group";
+import { AppSidebarOrgContainer } from "./app-sidebar-org-container";
+import { HomeSidebarOrg } from "./home-sidebar-org";
+import { OrgSidebarOrgContainer } from "./org-sidebar-org-container";
 
-export function MainAppSidebar(props: { groupId?: string; appId?: string }) {
-  const { groupId, appId } = props;
+export function MainAppSidebar(props: { orgId?: string; appId?: string }) {
+  const { orgId, appId } = props;
 
   const sidebar = (
     <Sidebar>
@@ -21,10 +21,10 @@ export function MainAppSidebar(props: { groupId?: string; appId?: string }) {
         </div>
       </SidebarHeader>
       <SidebarContent>
-        <HomeSidebarGroup />
-        {groupId && <GroupSidebarGroupContainer groupId={groupId} />}
-        {groupId && appId && (
-          <AppSidebarGroupContainer groupId={groupId} appId={appId} />
+        <HomeSidebarOrg />
+        {orgId && <OrgSidebarOrgContainer orgId={orgId} />}
+        {orgId && appId && (
+          <AppSidebarOrgContainer orgId={orgId} appId={appId} />
         )}
       </SidebarContent>
     </Sidebar>

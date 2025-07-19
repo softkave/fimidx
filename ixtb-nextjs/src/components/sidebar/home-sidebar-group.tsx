@@ -1,10 +1,10 @@
 import {
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarOrg,
+  SidebarOrgContent,
+  SidebarOrgLabel,
 } from "@/src/components/ui/sidebar";
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
 import { BoxesIcon, UserPlus } from "lucide-react";
@@ -12,8 +12,8 @@ import { ISidebarItem } from "./types";
 
 const items: ISidebarItem[] = [
   {
-    title: "Groups",
-    url: kClientPaths.app.group.index,
+    title: "Orgs",
+    url: kClientPaths.app.org.index,
     icon: BoxesIcon,
   },
   {
@@ -23,11 +23,11 @@ const items: ISidebarItem[] = [
   },
 ];
 
-export function HomeSidebarGroup() {
+export function HomeSidebarOrg() {
   return (
-    <SidebarGroup>
-      <SidebarGroupLabel>Home</SidebarGroupLabel>
-      <SidebarGroupContent>
+    <SidebarOrg>
+      <SidebarOrgLabel>Home</SidebarOrgLabel>
+      <SidebarOrgContent>
         <SidebarMenu>
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
@@ -40,7 +40,7 @@ export function HomeSidebarGroup() {
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
-      </SidebarGroupContent>
-    </SidebarGroup>
+      </SidebarOrgContent>
+    </SidebarOrg>
   );
 }

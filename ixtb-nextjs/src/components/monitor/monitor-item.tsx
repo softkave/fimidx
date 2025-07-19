@@ -13,8 +13,8 @@ export function MonitorItem(props: IMonitorItemProps) {
   return (
     <div className="flex justify-between items-center gap-2 hover:bg-muted/50 transition-colors rounded-md px-4 py-2">
       <Link
-        href={kClientPaths.app.group.app.monitors.single(
-          props.item.groupId,
+        href={kClientPaths.app.org.app.monitors.single(
+          props.item.orgId,
           props.item.appId,
           props.item.id
         )}

@@ -1,8 +1,15 @@
-import type { GetLogFieldsEndpointArgs } from "../../definitions/log.js";
+import type { FieldType } from "../../common/indexer.js";
+import type {
+  GetLogFieldsEndpointArgs,
+  GetLogFieldsEndpointResponse,
+  ILogField,
+} from "../../definitions/log.js";
 import { kObjTags } from "../../definitions/obj.js";
 import { getObjFields } from "../obj/getObjFields.js";
 
-export async function getLogFields(params: { args: GetLogFieldsEndpointArgs }) {
+export async function getLogFields(params: {
+  args: GetLogFieldsEndpointArgs;
+}): Promise<GetLogFieldsEndpointResponse> {
   const { args } = params;
   const { appId, page, limit } = args;
 
@@ -24,7 +31,19 @@ export async function getLogFields(params: { args: GetLogFieldsEndpointArgs }) {
   });
 
   return {
-    fields,
+    fields: fields.map(
+      (field): ILogField => ({
+        appId,
+        groupId: field.groupId,
+        id: field.id,
+        path: field.path,
+        type: field.type as FieldType,
+        arrayTypes: field.arrayTypes,
+        isArrayCompressed: field.isArrayCompressed,
+        createdAt: field.createdAt,
+        updatedAt: field.updatedAt,
+      })
+    ),
     page: pageNumber, // Return 1-based page number
     limit: limitNumber,
     hasMore,

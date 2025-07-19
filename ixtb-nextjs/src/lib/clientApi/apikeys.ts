@@ -6,6 +6,14 @@ export const kApiGroupKeys = {
   updateGroup: (groupId: string) => `/api/groups/${groupId}`,
 };
 
+export const kApiOrgKeys = {
+  getOrgs: () => `/api/orgs/fetch`,
+  getOrg: (orgId: string) => `/api/orgs/${orgId}`,
+  addOrg: () => `/api/orgs`,
+  deleteOrg: (orgId: string) => `/api/orgs/${orgId}`,
+  updateOrg: (orgId: string) => `/api/orgs/${orgId}`,
+};
+
 export const kApiAppKeys = {
   getApps: () => `/api/apps/fetch`,
   getApp: (appId: string) => `/api/apps/${appId}`,
@@ -32,7 +40,6 @@ export const kApiLogKeys = {
   retrieve: () => `/api/logs/retrieve`,
   getLogFields: () => `/api/logs/fields`,
   getLogById: (logId: string) => `/api/logs/${logId}`,
-  getLogFieldValues: () => `/api/logs/fields/values`,
 };
 
 export const kApiMonitorKeys = {
@@ -46,12 +53,10 @@ export const kApiMonitorKeys = {
 export const kApiMemberKeys = {
   getMembers: () => `/api/members/fetch`,
   addMember: () => `/api/members`,
-  getMemberByUserId: (memberUserId: string) =>
-    `/api/members/user/${memberUserId}`,
   removeMember: () => `/api/members`,
   getMemberById: (memberId: string) => `/api/members/${memberId}`,
   updateMemberById: (memberId: string) => `/api/members/${memberId}`,
-  getUserRequests: () => `/api/members/requests`,
+  getMemberRequests: () => `/api/members/requests`,
   respondToMemberRequest: (memberId: string) =>
     `/api/members/${memberId}/respond`,
 };
@@ -59,7 +64,7 @@ export const kApiMemberKeys = {
 export const kApiCallbackKeys = {
   getCallbacks: () => `/api/callbacks/fetch`,
   addCallback: () => `/api/callbacks`,
-  getCallback: () => `/api/callbacks/fetchOne`,
+  getCallback: (callbackId: string) => `/api/callbacks/${callbackId}`,
   deleteCallback: () => `/api/callbacks`,
   updateCallback: (callbackId: string) => `/api/callbacks/${callbackId}`,
 };

@@ -1,11 +1,8 @@
 "use client";
 
-import {
-  AddGroupOnSuccessParams,
-  useAddGroup,
-} from "@/src/lib/clientApi/group.ts";
+import { IOrg } from "@/src/definitions/org.ts";
+import { AddOrgOnSuccessParams, useAddOrg } from "@/src/lib/clientApi/org.ts";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { IGroup } from "fmdx-core/definitions/group";
 import { useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -22,20 +19,20 @@ import {
 import { Input } from "../ui/input.tsx";
 import { Textarea } from "../ui/textarea.tsx";
 
-export interface IAddGroupFormProps {
-  onSubmitComplete: (group: IGroup) => void;
+export interface IAddOrgFormProps {
+  onSubmitComplete: (org: IOrg) => void;
 }
 
-export const addGroupFormSchema = z.object({
+export const addOrgFormSchema = z.object({
   name: z.string().min(1),
   description: z.string().optional(),
 });
 
-export function AddGroupForm(props: IAddGroupFormProps) {
+export function AddOrgForm(props: IAddOrgFormProps) {
   const { onSubmitComplete } = props;
 
-  const form = useForm<z.infer<typeof addGroupFormSchema>>({
-    resolver: zodResolver(addGroupFormSchema),
+  const form = useForm<z.infer<typeof addOrgFormSchema>>({
+    resolver: zodResolver(addOrgFormSchema),
     defaultValues: {
       name: "",
       description: "",
@@ -43,24 +40,24 @@ export function AddGroupForm(props: IAddGroupFormProps) {
   });
 
   const handleSuccess = useCallback(
-    (...args: AddGroupOnSuccessParams) => {
-      onSubmitComplete(args[1].group);
+    (...args: AddOrgOnSuccessParams) => {
+      onSubmitComplete(args[1].org);
     },
     [onSubmitComplete]
   );
 
-  const addGroupHook = useAddGroup({
+  const addOrgHook = useAddOrg({
     onSuccess: handleSuccess,
   });
 
   const onSubmit = useCallback(
-    async (values: z.infer<typeof addGroupFormSchema>) => {
-      await addGroupHook.trigger({
+    async (values: z.infer<typeof addOrgFormSchema>) => {
+      await addOrgHook.trigger({
         name: values.name,
         description: values.description,
       });
     },
-    [addGroupHook]
+    [addOrgHook]
   );
 
   return (
@@ -79,9 +76,11 @@ export function AddGroupForm(props: IAddGroupFormProps) {
             <FormItem>
               <FormLabel>Name</FormLabel>
               <FormControl>
-                <Input placeholder="my logs group" {...field} />
+                <Input placeholder="my logs org" {...field} />
               </FormControl>
-              <FormDescription>This is the name of the group.</FormDescription>
+              <FormDescription>
+                This is the name of the organization.
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -93,17 +92,17 @@ export function AddGroupForm(props: IAddGroupFormProps) {
             <FormItem>
               <FormLabel>Description</FormLabel>
               <FormControl>
-                <Textarea placeholder="my logs group" {...field} />
+                <Textarea placeholder="my logs org" {...field} />
               </FormControl>
               <FormDescription>
-                This is the description of the group.
+                This is the description of the organization.
               </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
         <Button type="submit" className="w-full">
-          Create Group
+          Create Organization
         </Button>
       </form>
     </Form>

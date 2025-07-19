@@ -9,14 +9,14 @@ import { useState } from "react";
 import { Button } from "../ui/button";
 import { MemberFormSheet } from "./member-form-sheet";
 
-export function MembersHeader(props: { className?: string; groupId: string }) {
+export function MembersHeader(props: { className?: string; orgId: string }) {
   const [openForm, setOpenForm] = useState(false);
   const router = useRouter();
 
   const {
     checks: [canCreate],
   } = useHasPermission({
-    groupId: props.groupId,
+    orgId: props.orgId,
     permission: kPermissions.member.invite,
   });
 
@@ -27,10 +27,10 @@ export function MembersHeader(props: { className?: string; groupId: string }) {
         onOpenChange={setOpenForm}
         onSubmitComplete={(member) => {
           router.push(
-            kClientPaths.app.group.members.single(member.groupId, member.id)
+            kClientPaths.app.org.members.single(member.orgId, member.id)
           );
         }}
-        groupId={props.groupId}
+        orgId={props.orgId}
       />
       <div className={cn("flex justify-between items-center", props.className)}>
         <h1 className="text-2xl font-bold">Members</h1>

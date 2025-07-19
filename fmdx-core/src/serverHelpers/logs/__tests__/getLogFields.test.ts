@@ -8,7 +8,6 @@ import {
   it,
 } from "vitest";
 import type { GetLogFieldsEndpointArgs } from "../../../definitions/log.js";
-import { kObjTags } from "../../../definitions/obj.js";
 import { indexObjs } from "../../obj/indexObjs.js";
 import { getLogFields } from "../getLogFields.js";
 import { ingestLogs } from "../ingestLogs.js";
@@ -217,7 +216,6 @@ describe("getLogFields integration", () => {
     expect(result.fields.length).toBeGreaterThan(0);
     result.fields.forEach((field) => {
       expect(field.appId).toBe(appId1);
-      expect(field.tag).toBe(kObjTags.log);
     });
   });
 

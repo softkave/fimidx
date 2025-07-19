@@ -223,8 +223,8 @@ describe("getLogs integration", () => {
     });
 
     expect(result.logs.length).toBe(1);
-    expect(result.logs[0].objRecord.level).toBe("error");
-    expect(result.logs[0].objRecord.message).toBe("Error log");
+    expect(result.logs[0].data.level).toBe("error");
+    expect(result.logs[0].data.message).toBe("Error log");
   });
 
   it("filters logs by multiple criteria", async () => {
@@ -273,9 +273,9 @@ describe("getLogs integration", () => {
     });
 
     expect(result.logs.length).toBe(1);
-    expect(result.logs[0].objRecord.level).toBe("info");
-    expect(result.logs[0].objRecord.source).toBe("api");
-    expect(result.logs[0].objRecord.userId).toBe("user1");
+    expect(result.logs[0].data.level).toBe("info");
+    expect(result.logs[0].data.source).toBe("api");
+    expect(result.logs[0].data.userId).toBe("user1");
   });
 
   it("filters logs by meta query", async () => {
@@ -378,9 +378,9 @@ describe("getLogs integration", () => {
     });
 
     expect(result.logs.length).toBe(3);
-    expect(result.logs[0].objRecord.message).toBe("Newest log");
-    expect(result.logs[1].objRecord.message).toBe("Middle log");
-    expect(result.logs[2].objRecord.message).toBe("Oldest log");
+    expect(result.logs[0].data.message).toBe("Newest log");
+    expect(result.logs[1].data.message).toBe("Middle log");
+    expect(result.logs[2].data.message).toBe("Oldest log");
   });
 
   it("sorts logs by level", async () => {
@@ -431,10 +431,10 @@ describe("getLogs integration", () => {
 
     expect(result.logs.length).toBe(4);
     // Should be sorted alphabetically: debug, error, info, warn
-    expect(result.logs[0].objRecord.level).toBe("debug");
-    expect(result.logs[1].objRecord.level).toBe("error");
-    expect(result.logs[2].objRecord.level).toBe("info");
-    expect(result.logs[3].objRecord.level).toBe("warn");
+    expect(result.logs[0].data.level).toBe("debug");
+    expect(result.logs[1].data.level).toBe("error");
+    expect(result.logs[2].data.level).toBe("info");
+    expect(result.logs[3].data.level).toBe("warn");
   });
 
   it("handles complex nested field queries", async () => {
@@ -491,8 +491,8 @@ describe("getLogs integration", () => {
     });
 
     expect(result.logs.length).toBe(1);
-    expect(result.logs[0].objRecord.metadata.user.role).toBe("admin");
-    expect(result.logs[0].objRecord.metadata.user.id).toBe("user1");
+    expect(result.logs[0].data.metadata.user.role).toBe("admin");
+    expect(result.logs[0].data.metadata.user.id).toBe("user1");
   });
 
   it("returns only logs for the specified appId", async () => {
@@ -537,7 +537,7 @@ describe("getLogs integration", () => {
     });
 
     expect(result.logs.length).toBe(1);
-    expect(result.logs[0].objRecord.message).toBe("App 1 log");
+    expect(result.logs[0].data.message).toBe("App 1 log");
     expect(result.logs[0].appId).toBe(appId1);
   });
 });

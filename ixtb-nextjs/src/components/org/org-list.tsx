@@ -1,43 +1,41 @@
-import { IGroup } from "fmdx-core/definitions/group";
-import { PageMessage } from "../internal/page-message";
-import { GroupItem, GroupItemSkeleton } from "./group-item";
+import { IOrg } from "@/src/definitions/org";
+import { ComponentList } from "../internal/component-list/component-list";
+import { ComponentListMessage } from "../internal/component-list/component-list-message";
+import { OrgItem, OrgItemSkeleton } from "./org-item";
 
-export interface IGroupsProps {
-  groups: IGroup[];
+export interface IOrgsProps {
+  orgs: IOrg[];
 }
 
-export function GroupItemEmpty() {
+export function OrgItemEmpty() {
   return (
-    <div className="w-full px-4">
-      <PageMessage
-        title="No groups found"
-        message="Add an group to get started"
-        variant="secondary"
-      />
-    </div>
+    <ComponentListMessage
+      title="No organizations found"
+      message="Add an organization to get started"
+    />
   );
 }
 
-export function Groups(props: IGroupsProps) {
-  if (props.groups.length === 0) {
-    return <GroupItemEmpty />;
+export function Orgs(props: IOrgsProps) {
+  if (props.orgs.length === 0) {
+    return <OrgItemEmpty />;
   }
 
   return (
-    <div className="w-full">
-      {props.groups.map((group) => (
-        <GroupItem key={group.id} item={group} />
-      ))}
-    </div>
+    <ComponentList
+      count={props.orgs.length}
+      renderItem={(index) => (
+        <OrgItem key={props.orgs[index].id} item={props.orgs[index]} />
+      )}
+    />
   );
 }
 
-export function GroupsSkeleton() {
+export function OrgsSkeleton() {
   return (
-    <div className="flex flex-col gap-4">
-      <GroupItemSkeleton className="w-full" />
-      <GroupItemSkeleton className="w-full" />
-      <GroupItemSkeleton className="w-full" />
-    </div>
+    <ComponentList
+      count={3}
+      renderItem={(index) => <OrgItemSkeleton key={index} />}
+    />
   );
 }

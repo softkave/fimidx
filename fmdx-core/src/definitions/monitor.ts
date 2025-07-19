@@ -110,6 +110,10 @@ export interface IAddMonitorEndpointResponse {
   monitor: IMonitor;
 }
 
+export interface IUpdateMonitorsEndpointResponse {
+  success: boolean;
+}
+
 export const kMonitorStatusLabels = {
   [kMonitorStatus.enabled]: "Enabled",
   [kMonitorStatus.disabled]: "Disabled",

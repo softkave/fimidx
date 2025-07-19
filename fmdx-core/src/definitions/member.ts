@@ -69,6 +69,7 @@ export interface IMemberRequest {
   groupName: string;
   status: MemberStatus;
   updatedAt: number | Date;
+  groupId: string;
 }
 
 export interface IMemberObjRecordMeta extends NonNullable<IPermissionMeta> {
@@ -148,16 +149,25 @@ export const getMembersSchema = z.object({
   page: z.number().min(1).optional(),
   limit: z.number().min(1).optional(),
   sort: objSortListSchema.optional(),
+  includePermissions: z.boolean().optional(),
 });
 
 export const getMemberRequestsSchema = z.object({
   query: z.object({
     memberId: z.string().min(1),
-    groupId: z.string(),
+    groupId: z.string().optional(),
     appId: z.string(),
+    status: z
+      .enum([
+        kMemberStatus.pending,
+        kMemberStatus.accepted,
+        kMemberStatus.rejected,
+      ])
+      .optional(),
   }),
   page: z.number().min(1).optional(),
   limit: z.number().min(1).optional(),
+  includePermissions: z.boolean().optional(),
 });
 
 export const checkMemberPermissionsSchema = z.object({
@@ -210,13 +220,17 @@ export interface IAddMemberEndpointResponse {
 }
 
 export interface IRespondToMemberRequestEndpointResponse {
-  member: IMemberRequest;
+  success: boolean;
 }
 
 export interface CheckMemberPermissionsEndpointResponse {
   results: {
     hasPermission: boolean;
   }[];
+}
+
+export interface IUpdateMembersEndpointResponse {
+  success: boolean;
 }
 
 export const kMemberStatusLabels: Record<MemberStatus, string> = {

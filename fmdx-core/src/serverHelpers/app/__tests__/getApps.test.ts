@@ -30,7 +30,7 @@ function makeGetAppsArgs(
 ): GetAppsEndpointArgs {
   return {
     query: {
-      groupId: defaultGroupId,
+      orgId: defaultGroupId,
       ...overrides.query,
     },
     page: overrides.page,
@@ -296,13 +296,13 @@ describe("getApps integration", () => {
     });
 
     const args = makeGetAppsArgs({
-      query: { groupId: "group-1" },
+      query: { orgId: "group-1" },
     });
 
     const result = await getApps({ args, storage });
 
     expect(result.apps).toHaveLength(2);
-    expect(result.apps.every((app) => app.groupId === "group-1")).toBe(true);
+    expect(result.apps.every((app) => app.orgId === "group-1")).toBe(true);
   });
 
   it("filters apps by name", async () => {
@@ -635,7 +635,7 @@ describe("getApps integration", () => {
     expect(app.id).toBe(testApp.app.id);
     expect(app.name).toBe("Test App");
     expect(app.description).toBe("Test Description");
-    expect(app.groupId).toBe(defaultGroupId);
+    expect(app.orgId).toBe(defaultGroupId);
     expect(app.objFieldsToIndex).toEqual(["field1", "field2"]);
     expect(app.createdAt).toBeInstanceOf(Date);
     expect(app.updatedAt).toBeInstanceOf(Date);

@@ -25,7 +25,7 @@ export interface SelectMemberProps {
   renderSuffix?: () => ReactNode;
   selectedItemsPosition?: "top" | "bottom";
   mainNodeClassName?: string;
-  groupId: string;
+  orgId: string;
   isForm?: boolean;
 }
 
@@ -53,13 +53,13 @@ export function SelectMember({
   renderSuffix,
   selectedItemsPosition = "bottom",
   mainNodeClassName,
-  groupId,
+  orgId,
   isForm = false,
 }: SelectMemberProps) {
   const {
     checks: [canInvite],
   } = useHasPermission({
-    groupId,
+    orgId,
     permission: kPermissions.member.invite,
   });
 
@@ -166,7 +166,7 @@ export function SelectMember({
   return (
     <Fragment>
       <MemberFormSheet
-        groupId={groupId}
+        orgId={orgId}
         isOpen={addMemberOpen.isOpen}
         onOpenChange={(isOpen) => {
           setAddMemberOpen({ isOpen });

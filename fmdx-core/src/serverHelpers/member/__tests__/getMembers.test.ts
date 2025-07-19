@@ -208,7 +208,6 @@ describe("getMembers integration", () => {
 
     const result = await getMembers({
       args,
-      includePermissions: false,
       storage,
     });
 
@@ -227,7 +226,6 @@ describe("getMembers integration", () => {
       args: member1Args,
       by: defaultBy,
       byType: defaultByType,
-      memberId: member1Args.memberId,
       storage,
     });
 
@@ -235,14 +233,12 @@ describe("getMembers integration", () => {
       args: member2Args,
       by: defaultBy,
       byType: defaultByType,
-      memberId: member2Args.memberId,
       storage,
     });
 
     const args = makeGetMembersArgs();
     const result = await getMembers({
       args,
-      includePermissions: false,
       storage,
     });
 
@@ -265,7 +261,6 @@ describe("getMembers integration", () => {
       args: member1Args,
       by: defaultBy,
       byType: defaultByType,
-      memberId: member1Args.memberId,
       storage,
     });
 
@@ -273,7 +268,6 @@ describe("getMembers integration", () => {
       args: member2Args,
       by: defaultBy,
       byType: defaultByType,
-      memberId: member2Args.memberId,
       storage,
     });
 
@@ -287,7 +281,6 @@ describe("getMembers integration", () => {
 
     const result = await getMembers({
       args,
-      includePermissions: false,
       storage,
     });
 
@@ -310,7 +303,6 @@ describe("getMembers integration", () => {
       args: member1Args,
       by: defaultBy,
       byType: defaultByType,
-      memberId: member1Args.memberId,
       storage,
     });
 
@@ -318,7 +310,6 @@ describe("getMembers integration", () => {
       args: member2Args,
       by: defaultBy,
       byType: defaultByType,
-      memberId: member2Args.memberId,
       storage,
     });
 
@@ -332,7 +323,6 @@ describe("getMembers integration", () => {
 
     const result = await getMembers({
       args,
-      includePermissions: false,
       storage,
     });
 
@@ -355,7 +345,6 @@ describe("getMembers integration", () => {
       args: member1Args,
       by: defaultBy,
       byType: defaultByType,
-      memberId: member1Args.memberId,
       storage,
     });
 
@@ -363,7 +352,6 @@ describe("getMembers integration", () => {
       args: member2Args,
       by: defaultBy,
       byType: defaultByType,
-      memberId: member2Args.memberId,
       storage,
     });
 
@@ -377,7 +365,6 @@ describe("getMembers integration", () => {
 
     const result = await getMembers({
       args,
-      includePermissions: false,
       storage,
     });
 
@@ -400,7 +387,6 @@ describe("getMembers integration", () => {
       args: member1Args,
       by: defaultBy,
       byType: defaultByType,
-      memberId: member1Args.memberId,
       storage,
     });
 
@@ -408,7 +394,6 @@ describe("getMembers integration", () => {
       args: member2Args,
       by: defaultBy,
       byType: defaultByType,
-      memberId: member2Args.memberId,
       storage,
     });
 
@@ -421,7 +406,6 @@ describe("getMembers integration", () => {
 
     const result = await getMembers({
       args,
-      includePermissions: false,
       storage,
     });
 
@@ -440,7 +424,6 @@ describe("getMembers integration", () => {
         args: memberArgs,
         by: defaultBy,
         byType: defaultByType,
-        memberId: memberArgs.memberId,
         storage,
       });
     }
@@ -449,7 +432,6 @@ describe("getMembers integration", () => {
     const args1 = makeGetMembersArgs({ page: 1, limit: 2 });
     const result1 = await getMembers({
       args: args1,
-      includePermissions: false,
       storage,
     });
 
@@ -462,7 +444,6 @@ describe("getMembers integration", () => {
     const args2 = makeGetMembersArgs({ page: 2, limit: 2 });
     const result2 = await getMembers({
       args: args2,
-      includePermissions: false,
       storage,
     });
 
@@ -475,7 +456,6 @@ describe("getMembers integration", () => {
     const args3 = makeGetMembersArgs({ page: 3, limit: 2 });
     const result3 = await getMembers({
       args: args3,
-      includePermissions: false,
       storage,
     });
 
@@ -502,7 +482,6 @@ describe("getMembers integration", () => {
       args: member1Args,
       by: defaultBy,
       byType: defaultByType,
-      memberId: member1Args.memberId,
       storage,
     });
 
@@ -510,7 +489,6 @@ describe("getMembers integration", () => {
       args: member2Args,
       by: defaultBy,
       byType: defaultByType,
-      memberId: member2Args.memberId,
       storage,
     });
 
@@ -518,7 +496,6 @@ describe("getMembers integration", () => {
       args: member3Args,
       by: defaultBy,
       byType: defaultByType,
-      memberId: member3Args.memberId,
       storage,
     });
 
@@ -528,7 +505,6 @@ describe("getMembers integration", () => {
     });
     const resultAsc = await getMembers({
       args: argsAsc,
-      includePermissions: false,
       storage,
     });
 
@@ -544,7 +520,6 @@ describe("getMembers integration", () => {
     });
     const resultDesc = await getMembers({
       args: argsDesc,
-      includePermissions: false,
       storage,
     });
 
@@ -571,14 +546,12 @@ describe("getMembers integration", () => {
       args: memberArgs,
       by: defaultBy,
       byType: defaultByType,
-      memberId: memberArgs.memberId,
       storage,
     });
 
     const args = makeGetMembersArgs();
     const result = await getMembers({
       args,
-      includePermissions: true,
       storage,
     });
 
@@ -608,14 +581,12 @@ describe("getMembers integration", () => {
       args: memberArgs,
       by: defaultBy,
       byType: defaultByType,
-      memberId: memberArgs.memberId,
       storage,
     });
 
     const args = makeGetMembersArgs();
     const result = await getMembers({
       args,
-      includePermissions: false,
       storage,
     });
 
@@ -638,7 +609,6 @@ describe("getMembers integration", () => {
       args: member1Args,
       by: defaultBy,
       byType: defaultByType,
-      memberId: member1Args.memberId,
       storage,
     });
 
@@ -646,7 +616,6 @@ describe("getMembers integration", () => {
       args: member2Args,
       by: defaultBy,
       byType: defaultByType,
-      memberId: member2Args.memberId,
       storage,
     });
 
@@ -666,7 +635,6 @@ describe("getMembers integration", () => {
 
     const result = await getMembers({
       args,
-      includePermissions: false,
       storage,
     });
 
@@ -694,7 +662,6 @@ describe("getMembers integration", () => {
       args: args1,
       by: defaultBy,
       byType: defaultByType,
-      memberId: member1Args.memberId,
       seed: seed1,
       storage,
     });
@@ -703,7 +670,6 @@ describe("getMembers integration", () => {
       args: args2,
       by: defaultBy,
       byType: defaultByType,
-      memberId: member2Args.memberId,
       seed: seed2,
       storage,
     });
@@ -711,7 +677,6 @@ describe("getMembers integration", () => {
     // Debug: Check what members exist before filtering
     const allMembers = await getMembers({
       args: makeGetMembersArgs(),
-      includePermissions: false,
       storage,
     });
 
@@ -725,7 +690,6 @@ describe("getMembers integration", () => {
 
     const result = await getMembers({
       args,
-      includePermissions: false,
       storage,
     });
 

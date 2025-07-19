@@ -1,36 +1,36 @@
 import {
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarOrg,
+  SidebarOrgContent,
+  SidebarOrgLabel,
 } from "@/src/components/ui/sidebar";
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
 import { GitCompareArrowsIcon, KeyIcon, LogsIcon } from "lucide-react";
 import { useMemo } from "react";
 import { ISidebarItem } from "./types";
 
-function getItems(groupId: string, appId: string) {
+function getItems(orgId: string, appId: string) {
   const items: ISidebarItem[] = [
     {
       title: "Client Tokens",
-      url: kClientPaths.app.group.app.clientToken.index(groupId, appId),
+      url: kClientPaths.app.org.app.clientToken.index(orgId, appId),
       icon: KeyIcon,
     },
     {
       title: "Logs",
-      url: kClientPaths.app.group.app.log.index(groupId, appId),
+      url: kClientPaths.app.org.app.log.index(orgId, appId),
       icon: LogsIcon,
     },
     {
       title: "Callbacks",
-      url: kClientPaths.app.group.app.callbacks.index(groupId, appId),
+      url: kClientPaths.app.org.app.callbacks.index(orgId, appId),
       icon: GitCompareArrowsIcon,
     },
     // {
     //   title: "Monitors",
-    //   url: kClientPaths.app.group.app.monitors.index(groupId, appId),
+    //   url: kClientPaths.app.org.app.monitors.index(orgId, appId),
     //   icon: MonitorCogIcon,
     // },
   ];
@@ -38,20 +38,20 @@ function getItems(groupId: string, appId: string) {
   return items;
 }
 
-export function AppSidebarGroup(props: {
-  groupId: string;
+export function AppSidebarOrg(props: {
+  orgId: string;
   appId: string;
   name: string;
 }) {
   const items = useMemo(
-    () => getItems(props.groupId, props.appId),
-    [props.groupId, props.appId]
+    () => getItems(props.orgId, props.appId),
+    [props.orgId, props.appId]
   );
 
   return (
-    <SidebarGroup>
-      <SidebarGroupLabel>{props.name}</SidebarGroupLabel>
-      <SidebarGroupContent>
+    <SidebarOrg>
+      <SidebarOrgLabel>{props.name}</SidebarOrgLabel>
+      <SidebarOrgContent>
         <SidebarMenu>
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
@@ -64,7 +64,7 @@ export function AppSidebarGroup(props: {
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
-      </SidebarGroupContent>
-    </SidebarGroup>
+      </SidebarOrgContent>
+    </SidebarOrg>
   );
 }

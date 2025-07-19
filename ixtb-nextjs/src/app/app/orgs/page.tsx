@@ -1,5 +1,5 @@
 import { auth } from "@/auth";
-import { GroupsPage } from "@/src/components/group/groups-page";
+import { OrgsPage } from "@/src/components/org/orgs-page";
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
 import { kAppConstants } from "fmdx-core/definitions/appConstants";
 import { Metadata } from "next";
@@ -15,10 +15,10 @@ export default async function Page() {
   if (!session) {
     return redirect(
       kClientPaths.withURL(
-        kClientPaths.signinWithRedirect(kClientPaths.app.group.index)
+        kClientPaths.signinWithRedirect(kClientPaths.app.org.index)
       )
     );
   }
 
-  return <GroupsPage />;
+  return <OrgsPage />;
 }

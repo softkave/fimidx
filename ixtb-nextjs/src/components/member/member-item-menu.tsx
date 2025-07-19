@@ -41,14 +41,14 @@ export function MemberItemMenu(props: IMemberItemMenuProps) {
   const {
     checks: [canUpdate, canDelete],
   } = useHasPermission({
-    groupId: member.groupId,
+    orgId: member.orgId,
     permission: [kPermissions.member.update, kPermissions.member.remove],
   });
 
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const deleteMemberHook = useDeleteMemberById({
-    groupId: member.groupId,
+    orgId: member.orgId,
     memberId: member.id,
     onSuccess: () => {
       toast.success("Member removed");
@@ -57,7 +57,7 @@ export function MemberItemMenu(props: IMemberItemMenuProps) {
         router.push(
           isString(routeAfterDelete)
             ? routeAfterDelete
-            : kClientPaths.app.group.members.index(member.groupId)
+            : kClientPaths.app.org.members.index(member.orgId)
         );
       }
     },
@@ -83,7 +83,7 @@ export function MemberItemMenu(props: IMemberItemMenuProps) {
       {deleteMemberDialog.DeleteResourceDialog()}
       <MemberFormSheet
         member={member}
-        groupId={member.groupId}
+        orgId={member.orgId}
         onOpenChange={setIsEditing}
         isOpen={isEditing}
       />

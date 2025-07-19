@@ -32,7 +32,7 @@ function makeUpdateAppsArgs(
     .substr(2, 9)}`;
   return {
     query: {
-      groupId: defaultGroupId,
+      orgId: defaultGroupId,
       ...overrides.query,
     },
     update: {
@@ -143,7 +143,7 @@ describe("updateApps integration", () => {
 
     const args = makeUpdateAppsArgs({
       query: {
-        groupId: defaultGroupId,
+        orgId: defaultGroupId,
         name: { eq: "Original App Name" },
       },
       update: {
@@ -162,7 +162,7 @@ describe("updateApps integration", () => {
     // Verify the update
     const result = await getApps({
       args: {
-        query: { groupId: defaultGroupId },
+        query: { orgId: defaultGroupId },
       },
       storage,
     });
@@ -190,7 +190,7 @@ describe("updateApps integration", () => {
 
     const args = makeUpdateAppsArgs({
       query: {
-        groupId: defaultGroupId,
+        orgId: defaultGroupId,
         name: { eq: "Partial Update App" },
       },
       update: {
@@ -208,7 +208,7 @@ describe("updateApps integration", () => {
     // Verify only name was updated
     const result = await getApps({
       args: {
-        query: { groupId: defaultGroupId },
+        query: { orgId: defaultGroupId },
       },
       storage,
     });
@@ -256,7 +256,7 @@ describe("updateApps integration", () => {
 
     const args = makeUpdateAppsArgs({
       query: {
-        groupId: "group-1",
+        orgId: "group-1",
       },
       update: {
         description: "Updated for group-1",
@@ -274,7 +274,7 @@ describe("updateApps integration", () => {
     // Verify updates
     const result = await getApps({
       args: {
-        query: { groupId: "group-1" },
+        query: { orgId: "group-1" },
       },
       storage,
     });
@@ -282,13 +282,13 @@ describe("updateApps integration", () => {
     expect(result.apps).toHaveLength(2);
     result.apps.forEach((app) => {
       expect(app.description).toBe("Updated for group-1");
-      expect(app.groupId).toBe("group-1");
+      expect(app.orgId).toBe("group-1");
     });
 
     // Verify app in group-2 was not updated
     const group2Result = await getApps({
       args: {
-        query: { groupId: "group-2" },
+        query: { orgId: "group-2" },
       },
       storage,
     });
@@ -385,7 +385,7 @@ describe("updateApps integration", () => {
     // Verify updates
     const result = await getApps({
       args: {
-        query: { groupId: defaultGroupId },
+        query: { orgId: defaultGroupId },
       },
       storage,
     });
@@ -433,7 +433,7 @@ describe("updateApps integration", () => {
     // Verify updates
     const result = await getApps({
       args: {
-        query: { groupId: defaultGroupId },
+        query: { orgId: defaultGroupId },
       },
       storage,
     });
@@ -827,7 +827,7 @@ describe("updateApps integration", () => {
     // Verify updates
     const result = await getApps({
       args: {
-        query: { groupId: defaultGroupId },
+        query: { orgId: defaultGroupId },
       },
       storage,
     });

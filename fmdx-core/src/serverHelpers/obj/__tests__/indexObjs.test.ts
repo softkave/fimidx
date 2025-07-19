@@ -63,7 +63,7 @@ function makeApp(overrides: Partial<IAppObjRecord> = {}): IAppObjRecord {
   return {
     name: "Test App " + uuidv7(),
     description: "Test app for indexObjs",
-    groupId: TEST_GROUP_ID,
+    orgId: TEST_GROUP_ID,
     objFieldsToIndex: ["name", "value", "nested.deep.field"],
     ...overrides,
   };
@@ -205,7 +205,7 @@ describe.each(backends)("indexObjs integration (%s)", (backend) => {
         args: {
           name: appWithFields.name + "-specific",
           description: appWithFields.description || undefined,
-          groupId: appWithFields.groupId,
+          orgId: appWithFields.orgId,
           objFieldsToIndex: appWithFields.objFieldsToIndex || undefined,
         },
         by: "tester",

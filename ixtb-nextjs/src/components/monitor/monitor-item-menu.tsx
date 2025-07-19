@@ -39,7 +39,7 @@ export function MonitorItemMenu(props: IMonitorItemMenuProps) {
   const {
     checks: [canDelete],
   } = useHasPermission({
-    groupId: monitor.groupId,
+    orgId: monitor.orgId,
     permission: kPermissions.monitor.delete,
   });
 
@@ -54,7 +54,7 @@ export function MonitorItemMenu(props: IMonitorItemMenuProps) {
         router.push(
           isString(routeAfterDelete)
             ? routeAfterDelete
-            : kClientPaths.app.group.app.monitors.index(monitor.groupId, appId)
+            : kClientPaths.app.org.app.monitors.index(monitor.orgId, appId)
         );
       }
     },

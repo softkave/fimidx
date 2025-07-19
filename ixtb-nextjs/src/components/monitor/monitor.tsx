@@ -19,7 +19,7 @@ export function Monitor(props: IMonitorProps) {
   const {
     checks: [canEdit],
   } = useHasPermission({
-    groupId: props.monitor.groupId,
+    orgId: props.monitor.orgId,
     permission: kPermissions.monitor.update,
   });
 

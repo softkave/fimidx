@@ -10,7 +10,7 @@ export async function checkAppExists(params: {
   const { apps } = await getApps({
     args: {
       query: {
-        groupId: params.groupId,
+        orgId: params.groupId,
         name: {
           eq: params.name,
         },

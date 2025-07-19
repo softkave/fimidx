@@ -14,7 +14,7 @@ import { AddAppForm } from "./add-app-form.tsx";
 import { UpdateAppForm } from "./update-app-form.tsx";
 
 export interface IAppFormSheetProps {
-  groupId: string;
+  orgId: string;
   app?: IApp;
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
@@ -22,7 +22,7 @@ export interface IAppFormSheetProps {
 }
 
 export function AppFormSheet(props: IAppFormSheetProps) {
-  const { isOpen, onOpenChange, onSubmitComplete, app, groupId } = props;
+  const { isOpen, onOpenChange, onSubmitComplete, app, orgId } = props;
 
   const handleSubmitComplete = useCallback(
     (app: IApp) => {
@@ -53,7 +53,7 @@ export function AppFormSheet(props: IAppFormSheetProps) {
             ) : (
               <AddAppForm
                 onSubmitComplete={handleSubmitComplete}
-                groupId={groupId}
+                orgId={orgId}
               />
             )}
           </div>

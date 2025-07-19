@@ -11,7 +11,7 @@ import { AddMonitorFormSheet } from "./add-monitor-form-sheet";
 
 export function MonitorsHeader(props: {
   className?: string;
-  groupId: string;
+  orgId: string;
   appId: string;
 }) {
   const [openForm, setOpenForm] = useState(false);
@@ -20,7 +20,7 @@ export function MonitorsHeader(props: {
   const {
     checks: [canCreate],
   } = useHasPermission({
-    groupId: props.groupId,
+    orgId: props.orgId,
     permission: kPermissions.monitor.update,
   });
 
@@ -31,14 +31,14 @@ export function MonitorsHeader(props: {
         onOpenChange={setOpenForm}
         onSubmitComplete={(monitor) => {
           router.push(
-            kClientPaths.app.group.app.monitors.single(
-              monitor.groupId,
+            kClientPaths.app.org.app.monitors.single(
+              monitor.orgId,
               props.appId,
               monitor.id
             )
           );
         }}
-        groupId={props.groupId}
+        orgId={props.orgId}
         appId={props.appId}
       />
       <div className={cn("flex justify-between items-center", props.className)}>

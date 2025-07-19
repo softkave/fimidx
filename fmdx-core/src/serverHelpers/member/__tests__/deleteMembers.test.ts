@@ -118,7 +118,6 @@ describe("deleteMembers integration", () => {
       args: memberArgs,
       by: defaultBy,
       byType: defaultByType,
-      memberId: memberArgs.memberId,
       storage,
     });
 
@@ -130,8 +129,8 @@ describe("deleteMembers integration", () => {
           groupId: defaultGroupId,
           memberId: { eq: memberArgs.memberId },
         },
+        includePermissions: false,
       },
-      includePermissions: false,
       storage,
     });
     expect(result.members).toHaveLength(1);
@@ -156,8 +155,8 @@ describe("deleteMembers integration", () => {
           groupId: defaultGroupId,
           memberId: { eq: memberArgs.memberId },
         },
+        includePermissions: false,
       },
-      includePermissions: false,
       storage,
     });
     expect(result.members).toHaveLength(0);
@@ -170,7 +169,6 @@ describe("deleteMembers integration", () => {
       args: memberArgs,
       by: defaultBy,
       byType: defaultByType,
-      memberId: memberArgs.memberId,
       storage,
     });
 
@@ -182,8 +180,8 @@ describe("deleteMembers integration", () => {
           groupId: defaultGroupId,
           name: { eq: "Member to Delete" },
         },
+        includePermissions: false,
       },
-      includePermissions: false,
       storage,
     });
     expect(result.members).toHaveLength(1);
@@ -208,8 +206,8 @@ describe("deleteMembers integration", () => {
           groupId: defaultGroupId,
           name: { eq: "Member to Delete" },
         },
+        includePermissions: false,
       },
-      includePermissions: false,
       storage,
     });
     expect(result.members).toHaveLength(0);
@@ -222,7 +220,6 @@ describe("deleteMembers integration", () => {
       args: memberArgs,
       by: defaultBy,
       byType: defaultByType,
-      memberId: memberArgs.memberId,
       storage,
     });
 
@@ -234,8 +231,8 @@ describe("deleteMembers integration", () => {
           groupId: defaultGroupId,
           email: { eq: "delete@example.com" },
         },
+        includePermissions: false,
       },
-      includePermissions: false,
       storage,
     });
     expect(result.members).toHaveLength(1);
@@ -260,8 +257,8 @@ describe("deleteMembers integration", () => {
           groupId: defaultGroupId,
           email: { eq: "delete@example.com" },
         },
+        includePermissions: false,
       },
-      includePermissions: false,
       storage,
     });
     expect(result.members).toHaveLength(0);
@@ -277,7 +274,6 @@ describe("deleteMembers integration", () => {
       args: member1Args,
       by: defaultBy,
       byType: defaultByType,
-      memberId: member1Args.memberId,
       storage,
     });
 
@@ -285,7 +281,6 @@ describe("deleteMembers integration", () => {
       args: member2Args,
       by: defaultBy,
       byType: defaultByType,
-      memberId: member2Args.memberId,
       storage,
     });
 
@@ -293,7 +288,6 @@ describe("deleteMembers integration", () => {
       args: member3Args,
       by: defaultBy,
       byType: defaultByType,
-      memberId: member3Args.memberId,
       storage,
     });
 
@@ -304,8 +298,8 @@ describe("deleteMembers integration", () => {
           appId: defaultAppId,
           groupId: defaultGroupId,
         },
+        includePermissions: false,
       },
-      includePermissions: false,
       storage,
     });
     expect(result.members).toHaveLength(3);
@@ -329,8 +323,8 @@ describe("deleteMembers integration", () => {
           appId: defaultAppId,
           groupId: defaultGroupId,
         },
+        includePermissions: false,
       },
-      includePermissions: false,
       storage,
     });
     expect(result.members).toHaveLength(0);
@@ -345,7 +339,6 @@ describe("deleteMembers integration", () => {
       args: member1Args,
       by: defaultBy,
       byType: defaultByType,
-      memberId: member1Args.memberId,
       storage,
     });
 
@@ -353,7 +346,6 @@ describe("deleteMembers integration", () => {
       args: member2Args,
       by: defaultBy,
       byType: defaultByType,
-      memberId: member2Args.memberId,
       storage,
     });
 
@@ -364,8 +356,8 @@ describe("deleteMembers integration", () => {
           appId: defaultAppId,
           groupId: defaultGroupId,
         },
+        includePermissions: false,
       },
-      includePermissions: false,
       storage,
     });
     expect(result.members).toHaveLength(2);
@@ -389,8 +381,8 @@ describe("deleteMembers integration", () => {
           appId: defaultAppId,
           groupId: defaultGroupId,
         },
+        includePermissions: false,
       },
-      includePermissions: false,
       storage,
     });
     expect(result.members).toHaveLength(1);
@@ -411,7 +403,6 @@ describe("deleteMembers integration", () => {
       args: member1Args,
       by: defaultBy,
       byType: defaultByType,
-      memberId: member1Args.memberId,
       storage,
     });
 
@@ -419,7 +410,6 @@ describe("deleteMembers integration", () => {
       args: member2Args,
       by: defaultBy,
       byType: defaultByType,
-      memberId: member2Args.memberId,
       storage,
     });
 
@@ -430,8 +420,8 @@ describe("deleteMembers integration", () => {
           appId: defaultAppId,
           groupId: defaultGroupId,
         },
+        includePermissions: false,
       },
-      includePermissions: false,
       storage,
     });
     expect(result.members).toHaveLength(2);
@@ -461,8 +451,8 @@ describe("deleteMembers integration", () => {
           appId: defaultAppId,
           groupId: defaultGroupId,
         },
+        includePermissions: false,
       },
-      includePermissions: false,
       storage,
     });
     expect(result.members).toHaveLength(1);
@@ -489,7 +479,6 @@ describe("deleteMembers integration", () => {
       args: args1,
       by: defaultBy,
       byType: defaultByType,
-      memberId: member1Args.memberId,
       seed: seed1,
       storage,
     });
@@ -498,7 +487,6 @@ describe("deleteMembers integration", () => {
       args: args2,
       by: defaultBy,
       byType: defaultByType,
-      memberId: member2Args.memberId,
       seed: seed2,
       storage,
     });
@@ -510,8 +498,8 @@ describe("deleteMembers integration", () => {
           appId: defaultAppId,
           groupId: defaultGroupId,
         },
+        includePermissions: false,
       },
-      includePermissions: false,
       storage,
     });
     expect(result.members).toHaveLength(2);
@@ -535,8 +523,8 @@ describe("deleteMembers integration", () => {
           appId: defaultAppId,
           groupId: defaultGroupId,
         },
+        includePermissions: false,
       },
-      includePermissions: false,
       storage,
     });
     expect(result.members).toHaveLength(1);
@@ -559,7 +547,6 @@ describe("deleteMembers integration", () => {
       args: member1Args,
       by: defaultBy,
       byType: defaultByType,
-      memberId: member1Args.memberId,
       storage,
     });
 
@@ -567,7 +554,6 @@ describe("deleteMembers integration", () => {
       args: member2Args,
       by: defaultBy,
       byType: defaultByType,
-      memberId: member2Args.memberId,
       storage,
     });
 
@@ -578,8 +564,8 @@ describe("deleteMembers integration", () => {
           appId: defaultAppId,
           groupId: "group-1",
         },
+        includePermissions: false,
       },
-      includePermissions: false,
       storage,
     });
     expect(result.members).toHaveLength(1);
@@ -590,8 +576,8 @@ describe("deleteMembers integration", () => {
           appId: defaultAppId,
           groupId: "group-2",
         },
+        includePermissions: false,
       },
-      includePermissions: false,
       storage,
     });
     expect(result.members).toHaveLength(1);
@@ -614,8 +600,8 @@ describe("deleteMembers integration", () => {
           appId: defaultAppId,
           groupId: "group-1",
         },
+        includePermissions: false,
       },
-      includePermissions: false,
       storage,
     });
     expect(result.members).toHaveLength(0);
@@ -626,8 +612,8 @@ describe("deleteMembers integration", () => {
           appId: defaultAppId,
           groupId: "group-2",
         },
+        includePermissions: false,
       },
-      includePermissions: false,
       storage,
     });
     expect(result.members).toHaveLength(1);
@@ -649,7 +635,6 @@ describe("deleteMembers integration", () => {
       args: member1Args,
       by: defaultBy,
       byType: defaultByType,
-      memberId: member1Args.memberId,
       storage,
     });
 
@@ -657,7 +642,6 @@ describe("deleteMembers integration", () => {
       args: member2Args,
       by: defaultBy,
       byType: defaultByType,
-      memberId: member2Args.memberId,
       storage,
     });
 
@@ -668,8 +652,8 @@ describe("deleteMembers integration", () => {
           appId: "app-1",
           groupId: defaultGroupId,
         },
+        includePermissions: false,
       },
-      includePermissions: false,
       storage,
     });
     expect(result.members).toHaveLength(1);
@@ -680,8 +664,8 @@ describe("deleteMembers integration", () => {
           appId: "app-2",
           groupId: defaultGroupId,
         },
+        includePermissions: false,
       },
-      includePermissions: false,
       storage,
     });
     expect(result.members).toHaveLength(1);
@@ -704,8 +688,8 @@ describe("deleteMembers integration", () => {
           appId: "app-1",
           groupId: defaultGroupId,
         },
+        includePermissions: false,
       },
-      includePermissions: false,
       storage,
     });
     expect(result.members).toHaveLength(0);
@@ -716,8 +700,8 @@ describe("deleteMembers integration", () => {
           appId: "app-2",
           groupId: defaultGroupId,
         },
+        includePermissions: false,
       },
-      includePermissions: false,
       storage,
     });
     expect(result.members).toHaveLength(1);

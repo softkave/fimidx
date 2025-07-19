@@ -264,6 +264,8 @@ export const updateManyObjsSchema = z.object({
    * {@see IObjField.path}
    */
   fieldsToIndex: z.array(z.string()).optional(),
+  shouldIndex: z.boolean().optional(),
+  count: z.number().optional(),
 });
 
 export const deleteManyObjsSchema = z.object({
@@ -326,7 +328,6 @@ export interface ISetManyObjsEndpointResponse {
 
 export interface IGetManyObjsEndpointResponse {
   objs: IObj[];
-  // total: number;
   page: number;
   limit: number;
   hasMore: boolean;
@@ -334,7 +335,6 @@ export interface IGetManyObjsEndpointResponse {
 
 export interface IGetObjFieldsEndpointResponse {
   fields: IObjField[];
-  // total: number;
   page: number;
   limit: number;
   hasMore: boolean;
@@ -342,11 +342,11 @@ export interface IGetObjFieldsEndpointResponse {
 
 export interface IGetObjFieldValuesEndpointResponse {
   values: { value: string; type: string }[];
-  // total: number;
   page: number;
   limit: number;
   hasMore: boolean;
 }
 
-// NOTE: For Postgres, meta query keys (createdAt, updatedBy, etc.) are mapped
-// to snake_case columns (created_at, updated_by, etc.) in SQL.
+export interface IUpdateManyObjsEndpointResponse {
+  success: boolean;
+}

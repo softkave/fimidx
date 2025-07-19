@@ -461,8 +461,8 @@ describe("deleteClientTokens integration", () => {
         query: {
           appId: appId,
         },
+        includePermissions: true,
       },
-      includePermissions: true,
       storage,
     });
 

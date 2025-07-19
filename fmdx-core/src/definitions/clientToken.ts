@@ -105,6 +105,7 @@ export const getClientTokensSchema = z.object({
   page: z.number().optional(),
   limit: z.number().optional(),
   sort: objSortListSchema.optional(),
+  includePermissions: z.boolean().optional(),
 });
 
 export const encodeClientTokenJWTSchema = z.object({
@@ -181,4 +182,8 @@ export interface CheckClientTokenPermissionsEndpointResponse {
   results: {
     hasPermission: boolean;
   }[];
+}
+
+export interface UpdateClientTokensEndpointResponse {
+  success: boolean;
 }
