@@ -1,5 +1,5 @@
-import { addAppEndpoint } from "@/src/lib/endpoints/apps/addAppEndpoint";
-import { deleteAppEndpoint } from "@/src/lib/endpoints/apps/deleteAppEndpoint";
+import { addAppEndpoint } from "@/src/lib/endpoints/internal/apps/addAppEndpoint";
+import { deleteAppEndpoint } from "@/src/lib/endpoints/internal/apps/deleteAppEndpoint";
 import { wrapUserAuthenticated } from "@/src/lib/serverHelpers/wrapAuthenticated.ts";
 import { IRouteContext } from "@/src/lib/serverHelpers/wrapRoute.ts";
 import { NextRequest } from "next/server";
