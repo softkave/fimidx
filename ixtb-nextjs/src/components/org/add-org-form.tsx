@@ -79,7 +79,7 @@ export function AddOrgForm(props: IAddOrgFormProps) {
                 <Input placeholder="my logs org" {...field} />
               </FormControl>
               <FormDescription>
-                This is the name of the organization.
+                What is the name of the organization?
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -95,7 +95,7 @@ export function AddOrgForm(props: IAddOrgFormProps) {
                 <Textarea placeholder="my logs org" {...field} />
               </FormControl>
               <FormDescription>
-                This is the description of the organization.
+                What is the description of the organization?
               </FormDescription>
               <FormMessage />
             </FormItem>

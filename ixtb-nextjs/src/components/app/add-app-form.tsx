@@ -81,7 +81,7 @@ export function AddAppForm(props: IAddAppFormProps) {
               <FormControl>
                 <Input placeholder="my logs app" {...field} />
               </FormControl>
-              <FormDescription>This is the name of the app.</FormDescription>
+              <FormDescription>What is the name of the app?</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -96,7 +96,7 @@ export function AddAppForm(props: IAddAppFormProps) {
                 <Textarea placeholder="my logs app" {...field} />
               </FormControl>
               <FormDescription>
-                This is the description of the app.
+                What is the description of the app?
               </FormDescription>
               <FormMessage />
             </FormItem>

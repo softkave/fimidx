@@ -2,7 +2,7 @@
 
 import { IApp } from "fmdx-core/definitions/app";
 import { useCallback } from "react";
-import { MaybeScroll } from "../ui/scroll-area.tsx";
+import { MaybeScroll } from "../internal/maybe-scroll.tsx";
 import {
   Sheet,
   SheetContent,
@@ -18,14 +18,14 @@ export interface IAppFormSheetProps {
   app?: IApp;
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
-  onSubmitComplete?: (app: IApp) => void;
+  onSubmitComplete?: (app?: IApp) => void;
 }
 
 export function AppFormSheet(props: IAppFormSheetProps) {
   const { isOpen, onOpenChange, onSubmitComplete, app, orgId } = props;
 
   const handleSubmitComplete = useCallback(
-    (app: IApp) => {
+    (app?: IApp) => {
       onOpenChange(false);
       onSubmitComplete?.(app);
     },

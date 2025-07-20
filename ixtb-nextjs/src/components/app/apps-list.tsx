@@ -1,5 +1,6 @@
 import { IApp } from "fmdx-core/definitions/app";
-import { PageMessage } from "../internal/page-message";
+import { ComponentList } from "../internal/component-list/component-list";
+import { ComponentListMessage } from "../internal/component-list/component-list-message";
 import { AppItem, AppItemSkeleton } from "./app-item";
 
 export interface IAppsProps {
@@ -8,13 +9,10 @@ export interface IAppsProps {
 
 export function AppItemEmpty() {
   return (
-    <div className="w-full px-4">
-      <PageMessage
-        title="No apps found"
-        message="Add a app to get started"
-        variant="secondary"
-      />
-    </div>
+    <ComponentListMessage
+      title="No apps found"
+      message="Add an app to get started"
+    />
   );
 }
 
@@ -24,20 +22,20 @@ export function Apps(props: IAppsProps) {
   }
 
   return (
-    <div className="w-full">
-      {props.apps.map((app) => (
-        <AppItem key={app.id} item={app} />
-      ))}
-    </div>
+    <ComponentList
+      count={props.apps.length}
+      renderItem={(index) => (
+        <AppItem key={props.apps[index].id} item={props.apps[index]} />
+      )}
+    />
   );
 }
 
 export function AppsSkeleton() {
   return (
-    <div className="flex flex-col gap-4">
-      <AppItemSkeleton className="w-full" />
-      <AppItemSkeleton className="w-full" />
-      <AppItemSkeleton className="w-full" />
-    </div>
+    <ComponentList
+      count={3}
+      renderItem={(index) => <AppItemSkeleton key={index} />}
+    />
   );
 }

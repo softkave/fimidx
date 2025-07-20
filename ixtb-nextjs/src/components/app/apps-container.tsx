@@ -5,8 +5,8 @@ import { cn } from "@/src/lib/utils.ts";
 import { GetAppsEndpointArgs, IApp } from "fmdx-core/definitions/app";
 import { useState } from "react";
 import { OmitFrom } from "softkave-js-utils";
-import ListPagination from "../internal/list-pagination.tsx";
-import { PageMessage } from "../internal/page-message.tsx";
+import { ComponentListMessage } from "../internal/component-list/component-list-message.tsx";
+import UnknownCountListPagination from "../internal/unknown-count-list-pagination.tsx";
 import { WrapLoader } from "../internal/wrap-loader.tsx";
 import { Apps } from "./apps-list.tsx";
 
@@ -58,10 +58,9 @@ export function AppListContainer({
         loadingClassName="px-4"
         render={(data) =>
           data.apps.length === 0 && showNoAppsMessage ? (
-            <PageMessage
-              title="No apps"
-              message="No apps found"
-              className="px-4 flex flex-col items-center justify-center py-32"
+            <ComponentListMessage
+              title="No apps found"
+              message="Add an app to get started"
             />
           ) : (
             <div
@@ -71,8 +70,8 @@ export function AppListContainer({
               )}
             >
               {render(data.apps)}
-              <ListPagination
-                count={data.total}
+              <UnknownCountListPagination
+                hasMore={data.hasMore}
                 page={page}
                 pageSize={pageSize}
                 disabled={appHooks.isLoading}

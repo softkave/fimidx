@@ -2,10 +2,10 @@
 
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
 import { useHasPermission } from "@/src/lib/clientHooks/permissionHooks";
-import { cn } from "@/src/lib/utils";
-import { kPermissions } from "fmdx-core/definitions/permissions";
+import { PlusIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { ComponentListHeader } from "../internal/component-list/component-list-header";
 import { Button } from "../ui/button";
 import { AppFormSheet } from "./app-form-sheet";
 
@@ -25,20 +25,23 @@ export function AppsHeader(props: { className?: string; orgId: string }) {
         isOpen={openForm}
         onOpenChange={setOpenForm}
         onSubmitComplete={(app) => {
-          router.push(kClientPaths.app.org.app.single(props.orgId, app.id));
+          if (app) {
+            router.push(kClientPaths.app.org.app.single(props.orgId, app.id));
+          }
         }}
         orgId={props.orgId}
       />
-      <div className={cn("flex justify-between items-center", props.className)}>
-        <h1 className="text-2xl font-bold">Apps</h1>
-        <Button
-          onClick={() => setOpenForm(true)}
-          variant="outline"
-          disabled={!canCreate}
-        >
-          Create App
-        </Button>
-      </div>
+      <ComponentListHeader
+        title="Apps"
+        description="Manage your apps."
+        button={
+          <Button onClick={() => setOpenForm(true)} variant="outline">
+            Create
+            <PlusIcon className="w-4 h-4 ml-1" />
+          </Button>
+        }
+        className={props.className}
+      />
     </>
   );
 }

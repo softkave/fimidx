@@ -24,7 +24,7 @@ import { Textarea } from "../ui/textarea.tsx";
 
 export interface IUpdateAppFormProps {
   app: IApp;
-  onSubmitComplete: (app: IApp) => void;
+  onSubmitComplete: (app?: IApp) => void;
 }
 
 export const addAppFormSchema = z.object({
@@ -45,7 +45,7 @@ export function UpdateAppForm(props: IUpdateAppFormProps) {
 
   const handleSuccess = useCallback(
     (...args: UpdateAppOnSuccessParams) => {
-      onSubmitComplete(args[1].app);
+      onSubmitComplete(undefined);
     },
     [onSubmitComplete]
   );
@@ -85,7 +85,7 @@ export function UpdateAppForm(props: IUpdateAppFormProps) {
               <FormControl>
                 <Input placeholder="my logs app" {...field} />
               </FormControl>
-              <FormDescription>This is the name of the app.</FormDescription>
+              <FormDescription>What is the name of the app?</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -100,7 +100,7 @@ export function UpdateAppForm(props: IUpdateAppFormProps) {
                 <Textarea placeholder="my logs app" {...field} />
               </FormControl>
               <FormDescription>
-                This is the description of the app.
+                What is the description of the app?
               </FormDescription>
               <FormMessage />
             </FormItem>

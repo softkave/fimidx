@@ -87,7 +87,7 @@ export function UpdateOrgForm(props: IUpdateOrgFormProps) {
                 <Input placeholder="my logs org" {...field} />
               </FormControl>
               <FormDescription>
-                This is the name of the organization.
+                What is the name of the organization?
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -103,7 +103,7 @@ export function UpdateOrgForm(props: IUpdateOrgFormProps) {
                 <Textarea placeholder="my logs org" {...field} />
               </FormControl>
               <FormDescription>
-                This is the description of the organization.
+                What is the description of the organization?
               </FormDescription>
               <FormMessage />
             </FormItem>
