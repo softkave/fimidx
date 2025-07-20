@@ -1,3 +1,4 @@
+import { GetOrgsEndpointArgs } from "@/src/definitions/org";
 import { GetAppsEndpointArgs } from "fmdx-core/definitions/app";
 import { GetCallbacksEndpointArgs } from "fmdx-core/definitions/callback";
 import { GetClientTokensEndpointArgs } from "fmdx-core/definitions/clientToken";
@@ -21,7 +22,6 @@ import {
   kApiMonitorKeys,
   kApiOrgKeys,
 } from "./apikeys";
-import { GetOrgsEndpointArgs } from "@/src/definitions/org";
 
 export const kGroupSWRKeys = {
   getGroups: (params: GetGroupsEndpointArgs) =>
@@ -70,7 +70,6 @@ export const kLogSWRKeys = {
     [kApiLogKeys.retrieve(), params] as const,
   getLogFields: (params: GetLogFieldsEndpointArgs) =>
     [kApiLogKeys.getLogFields(), params] as const,
-  getLogById: (logId: string) => kApiLogKeys.getLogById(logId),
 };
 
 export const kMonitorSWRKeys = {

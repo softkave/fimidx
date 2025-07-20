@@ -39,7 +39,6 @@ export const kApiLogKeys = {
   ingest: () => `/api/logs/ingest`,
   retrieve: () => `/api/logs/retrieve`,
   getLogFields: () => `/api/logs/fields`,
-  getLogById: (logId: string) => `/api/logs/${logId}`,
 };
 
 export const kApiMonitorKeys = {

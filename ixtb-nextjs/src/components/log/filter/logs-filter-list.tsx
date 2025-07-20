@@ -1,9 +1,9 @@
 import assert from "assert";
+import { ILogField } from "fmdx-core/definitions/log";
 import {
-  ILogField,
-  LogPartFilterItem,
-  LogPartFilterList,
-} from "fmdx-core/definitions/log";
+  IObjPartQueryItem,
+  IObjPartQueryList,
+} from "fmdx-core/definitions/obj";
 import { Loader2, PlusIcon, XIcon } from "lucide-react";
 import { ComponentProps, useMemo, useState } from "react";
 import { Button } from "../../ui/button";
@@ -13,8 +13,8 @@ import { IWorkingLogPartFilterItem } from "./types";
 export interface ILogsFilterListProps {
   orgId: string;
   appId: string;
-  onChange: (filters: LogPartFilterList) => void;
-  filters?: LogPartFilterList;
+  onChange: (filters: IObjPartQueryList) => void;
+  filters?: IObjPartQueryList;
   fields: ILogField[];
   applyButtonText?: string;
   applyButtonClassName?: string;
@@ -29,22 +29,22 @@ export interface ILogsFilterListProps {
 function validateFilter(
   filter: IWorkingLogPartFilterItem
 ): IWorkingLogPartFilterItem {
-  switch (filter.op) {
+  switch (filter.item.op) {
     case "eq":
     case "neq":
     case "gt":
     case "gte":
     case "lt":
     case "lte": {
-      if (filter.value?.length === 0) {
+      if (filter.item.value === "") {
         return {
           ...filter,
           error: "Value is required",
         };
       }
 
-      assert(filter.value);
-      const value = Number(filter.value[0]);
+      assert(filter.item.value);
+      const value = Number(filter.item.value);
       if (isNaN(value)) {
         return {
           ...filter,
@@ -58,8 +58,7 @@ function validateFilter(
       };
     }
     case "like":
-    case "ilike":
-      if (filter.value?.length === 0) {
+      if (filter.item.value === "") {
         return {
           ...filter,
           error: "Value is required",
@@ -71,7 +70,7 @@ function validateFilter(
       };
     case "in":
     case "not_in":
-      if (filter.value?.length === 0) {
+      if (filter.item.value.length === 0) {
         return {
           ...filter,
           error: "At least one value is required",
@@ -82,15 +81,15 @@ function validateFilter(
         error: undefined,
       };
     case "between":
-      if (filter.value?.length !== 2) {
+      if (filter.item.value.length !== 2) {
         return {
           ...filter,
           error: "Both values are required",
         };
       }
 
-      assert(filter.value);
-      const value1 = Number(filter.value[0]);
+      assert(filter.item.value);
+      const value1 = Number(filter.item.value);
       if (isNaN(value1)) {
         return {
           ...filter,
@@ -98,7 +97,7 @@ function validateFilter(
         };
       }
 
-      const value2 = Number(filter.value[1]);
+      const value2 = Number(filter.item.value);
       if (isNaN(value2)) {
         return {
           ...filter,
@@ -120,14 +119,14 @@ function validateFilter(
 
 function workingFilterToFilter(
   filter: IWorkingLogPartFilterItem
-): LogPartFilterItem {
-  assert(filter.name, "Name is required");
-  assert(filter.op, "Op is required");
-  assert(filter.value, "Value is required");
+): IObjPartQueryItem {
+  assert(filter.item.field, "Field is required");
+  assert(filter.item.op, "Op is required");
+  assert(filter.item.value, "Value is required");
   return {
-    name: filter.name,
-    op: filter.op,
-    value: filter.value,
+    field: filter.item.field,
+    op: filter.item.op,
+    value: filter.item.value as any,
   };
 }
 
@@ -148,7 +147,13 @@ export function LogsFilterList(props: ILogsFilterListProps) {
     hijackApplyButtonOnClick,
   } = props;
   const [filters, setFilters] = useState<IWorkingLogPartFilterItem[]>(
-    initialFilters?.map(validateFilter) ?? []
+    initialFilters?.map((filter) => ({
+      item: {
+        field: filter.field,
+        op: filter.op,
+        value: filter.value as any,
+      },
+    })) ?? []
   );
 
   const hasFilters = useMemo(() => {
@@ -181,7 +186,7 @@ export function LogsFilterList(props: ILogsFilterListProps) {
   const itemsNode = filters.map((filter, index) => {
     return (
       <LogsFilterItem
-        key={filter.name}
+        key={filter.item.field}
         item={filter}
         onChange={(value) => handleChange(value, index)}
         onRemove={() => handleRemoveFilter(index)}
@@ -194,7 +199,10 @@ export function LogsFilterList(props: ILogsFilterListProps) {
   });
 
   const handleAddFilter = () => {
-    setFilters((prev) => [...prev, { name: "", value: [], op: "eq" }]);
+    setFilters((prev) => [
+      ...prev,
+      { item: { field: "", op: "eq", value: "" } },
+    ]);
   };
 
   const handleClearFilters = () => {

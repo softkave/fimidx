@@ -1,10 +1,10 @@
-import { getLogFieldsEndpoint } from "@/src/lib/endpoints/logs/getLogFieldsEndpoint";
-import { wrapUserAuthenticated } from "@/src/lib/serverHelpers/wrapAuthenticated";
+import { getLogFieldsEndpoint } from "@/src/lib/endpoints/external/logs/getLogFieldsEndpoint";
+import { wrapMaybeAuthenticated } from "@/src/lib/serverHelpers/wrapAuthenticated";
 import { IRouteContext } from "@/src/lib/serverHelpers/wrapRoute";
 import { NextRequest } from "next/server";
 import { AnyFn } from "softkave-js-utils";
 
-const getEndpointFn = wrapUserAuthenticated(async (req, ctx, session) => {
+const getEndpointFn = wrapMaybeAuthenticated(async (req, ctx, session) => {
   return getLogFieldsEndpoint({ req, ctx, session });
 });
 

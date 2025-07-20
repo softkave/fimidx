@@ -1,5 +1,6 @@
 import { cn } from "@/src/lib/utils.ts";
-import { useMemo, useState } from "react";
+import { ILog } from "fmdx-core/definitions/log";
+import { useState } from "react";
 import { Badge } from "../ui/badge.tsx";
 import { Skeleton } from "../ui/skeleton.tsx";
 import {
@@ -11,25 +12,17 @@ import {
   TableRow,
 } from "../ui/table.tsx";
 import { LogSheet } from "./log-sheet.tsx";
-import { IFetchedLog } from "fmdx-core/definitions/log";
 
 export interface ILogsTableProps {
-  logs: IFetchedLog[];
+  logs: ILog[];
   className?: string;
 }
 
-const kLevelPartName = "level";
-const kMessagePartName = "message";
-
-export function LogsTableRow(props: { log: IFetchedLog }) {
+export function LogsTableRow(props: { log: ILog }) {
   const { log } = props;
-  const timestamp = log.timestamp.toLocaleString();
-  const level = useMemo(() => {
-    return log.parts.find((part) => part.name === kLevelPartName)?.value;
-  }, [log.parts]);
-  const message = useMemo(() => {
-    return log.parts.find((part) => part.name === kMessagePartName)?.value;
-  }, [log.parts]);
+  const timestamp = log.createdAt.toLocaleString();
+  const level = log.data.level ?? "unknown";
+  const message = log.data.message ?? "unknown";
 
   const [isOpen, setIsOpen] = useState(false);
 
@@ -47,15 +40,9 @@ export function LogsTableRow(props: { log: IFetchedLog }) {
           {timestamp}
         </TableCell>
         <TableCell className="w-[100px] cursor-pointer">
-          {level ? (
-            <Badge variant="outline">{level}</Badge>
-          ) : (
-            <span className="text-muted-foreground">unknown</span>
-          )}
+          <Badge variant="outline">{level}</Badge>
         </TableCell>
-        <TableCell className="pr-4 cursor-pointer">
-          {message || <span className="text-muted-foreground">unknown</span>}
-        </TableCell>
+        <TableCell className="pr-4 cursor-pointer">{message}</TableCell>
       </TableRow>
     </>
   );

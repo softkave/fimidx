@@ -1,4 +1,4 @@
-import { ingestLogsEndpoint } from "@/src/lib/endpoints/logs/ingestLogsEndpoint";
+import { ingestLogsEndpoint } from "@/src/lib/endpoints/external/logs/ingestLogsEndpoint";
 import { wrapClientTokenAuthenticated } from "@/src/lib/serverHelpers/wrapAuthenticated.ts";
 import { IRouteContext } from "@/src/lib/serverHelpers/wrapRoute.ts";
 import { NextRequest } from "next/server";

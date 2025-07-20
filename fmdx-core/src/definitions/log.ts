@@ -59,19 +59,9 @@ export const getLogFieldsSchema = z.object({
   limit: z.number().optional(),
 });
 
-export const getLogFieldValuesSchema = z.object({
-  appId: z.string(),
-  field: z.string(),
-  page: z.number().optional(),
-  limit: z.number().optional(),
-});
-
 export type IngestLogsEndpointArgs = z.infer<typeof ingestLogsSchema>;
 export type GetLogsEndpointArgs = z.infer<typeof getLogsSchema>;
 export type GetLogFieldsEndpointArgs = z.infer<typeof getLogFieldsSchema>;
-export type GetLogFieldValuesEndpointArgs = z.infer<
-  typeof getLogFieldValuesSchema
->;
 
 export interface GetLogsEndpointResponse {
   logs: ILog[];
@@ -82,13 +72,6 @@ export interface GetLogsEndpointResponse {
 
 export interface GetLogFieldsEndpointResponse {
   fields: ILogField[];
-  page: number;
-  limit: number;
-  hasMore: boolean;
-}
-
-export interface GetLogFieldValuesEndpointResponse {
-  values: { value: string; type: string }[];
   page: number;
   limit: number;
   hasMore: boolean;

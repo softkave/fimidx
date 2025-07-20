@@ -1,6 +1,7 @@
-import { IFetchedLog, LogPartFilterList } from "fmdx-core/definitions/log";
+import { ILog } from "fmdx-core/definitions/log";
+import { IObjPartQueryList } from "fmdx-core/definitions/obj";
 import { useMemo } from "react";
-import { PageMessage } from "../internal/page-message.tsx";
+import { ComponentListMessage } from "../internal/component-list/component-list-message.tsx";
 import {
   Accordion,
   AccordionContent,
@@ -11,9 +12,9 @@ import { LogsFilterListContainer } from "./filter/logs-filter-list-container.tsx
 import { LogsTable } from "./logs-table.tsx";
 
 export interface ILogsProps {
-  logs: IFetchedLog[];
-  filters?: LogPartFilterList;
-  onFiltersChange?: (filters: LogPartFilterList) => void;
+  logs: ILog[];
+  filters?: IObjPartQueryList;
+  onFiltersChange?: (filters: IObjPartQueryList) => void;
   showFiltersAndSort?: boolean;
   orgId: string;
   appId: string;
@@ -24,9 +25,11 @@ export function LogItemsEmpty(props: { title?: string; message?: string }) {
     props;
 
   return (
-    <div className="w-full max-w-lg pt-0 mx-auto">
-      <PageMessage title={title} message={message} variant="secondary" />
-    </div>
+    <ComponentListMessage
+      title={title}
+      message={message}
+      className="w-full max-w-lg pt-0 mx-auto"
+    />
   );
 }
 

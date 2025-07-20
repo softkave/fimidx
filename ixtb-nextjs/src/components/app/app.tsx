@@ -23,7 +23,7 @@ export function App(props: IAppProps) {
   if (defaultTab === kAppTabs.clientTokens) {
     contentNode = <ClientTokensPage appId={props.app.id} />;
   } else if (defaultTab === kAppTabs.logs) {
-    contentNode = <LogsPage appId={props.app.id} />;
+    contentNode = <LogsPage appId={props.app.id} orgId={props.app.orgId} />;
   }
 
   return (

@@ -2,7 +2,7 @@
 
 import { useGetLogFields } from "@/src/lib/clientApi/log.ts";
 import { cn } from "@/src/lib/utils.ts";
-import { PageMessage } from "../../internal/page-message";
+import { ComponentListMessage } from "../../internal/component-list/component-list-message";
 import { WrapLoader } from "../../internal/wrap-loader";
 import { ILogsFilterListProps, LogsFilterList } from "./logs-filter-list";
 
@@ -47,10 +47,10 @@ export function LogsFilterListContainer({
         data={getLogFieldsHook.data}
         render={(data) =>
           data.fields.length === 0 ? (
-            <PageMessage
+            <ComponentListMessage
               title="No log fields"
-              message="No log fields found"
-              className="px-0 flex flex-col items-center justify-center py-32"
+              message="Ingest logs to get started"
+              className="flex flex-col max-w-lg mx-auto"
             />
           ) : (
             <LogsFilterList
