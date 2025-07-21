@@ -1,11 +1,10 @@
 "use client";
 
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
-import { useHasPermission } from "@/src/lib/clientHooks/permissionHooks";
-import { cn } from "@/src/lib/utils";
-import { kPermissions } from "fmdx-core/definitions/permissions";
+import { PlusIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { ComponentListHeader } from "../internal/component-list/component-list-header";
 import { Button } from "../ui/button";
 import { ClientTokenFormSheet } from "./client-token-form-sheet";
 
@@ -13,16 +12,11 @@ export function ClientTokensHeader(props: {
   className?: string;
   orgId: string;
   appId: string;
+  title?: string;
+  description?: string;
 }) {
   const [openForm, setOpenForm] = useState(false);
   const router = useRouter();
-
-  const {
-    checks: [canCreate],
-  } = useHasPermission({
-    orgId: props.orgId,
-    permission: kPermissions.clientToken.update,
-  });
 
   return (
     <>
@@ -30,9 +24,13 @@ export function ClientTokensHeader(props: {
         isOpen={openForm}
         onOpenChange={setOpenForm}
         onSubmitComplete={(clientToken) => {
+          if (!clientToken) {
+            return;
+          }
+
           router.push(
             kClientPaths.app.org.app.clientToken.single(
-              clientToken.orgId,
+              clientToken.groupId,
               clientToken.appId,
               clientToken.id
             )
@@ -41,16 +39,17 @@ export function ClientTokensHeader(props: {
         orgId={props.orgId}
         appId={props.appId}
       />
-      <div className={cn("flex justify-between items-center", props.className)}>
-        <h1 className="text-2xl font-bold">Client Tokens</h1>
-        <Button
-          onClick={() => setOpenForm(true)}
-          variant="outline"
-          disabled={!canCreate}
-        >
-          Create Client Token
-        </Button>
-      </div>
+      <ComponentListHeader
+        title={props.title ?? "Client Tokens"}
+        description={props.description ?? "Manage your client tokens."}
+        button={
+          <Button onClick={() => setOpenForm(true)} variant="outline">
+            Create
+            <PlusIcon className="w-4 h-4 ml-1" />
+          </Button>
+        }
+        className={props.className}
+      />
     </>
   );
 }

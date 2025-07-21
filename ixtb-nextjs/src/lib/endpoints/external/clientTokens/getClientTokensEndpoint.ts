@@ -3,9 +3,9 @@ import {
   getClientTokensSchema,
 } from "fmdx-core/definitions/clientToken";
 import { getClientTokens } from "fmdx-core/serverHelpers/index";
-import { NextClientTokenAuthenticatedEndpointFn } from "../../types";
+import { NextMaybeAuthenticatedEndpointFn } from "../../types";
 
-export const getClientTokensEndpoint: NextClientTokenAuthenticatedEndpointFn<
+export const getClientTokensEndpoint: NextMaybeAuthenticatedEndpointFn<
   GetClientTokensEndpointResponse
 > = async (params) => {
   const { req } = params;

@@ -21,7 +21,9 @@ export function App(props: IAppProps) {
   let contentNode: React.ReactNode = null;
 
   if (defaultTab === kAppTabs.clientTokens) {
-    contentNode = <ClientTokensPage appId={props.app.id} />;
+    contentNode = (
+      <ClientTokensPage appId={props.app.id} orgId={props.app.orgId} />
+    );
   } else if (defaultTab === kAppTabs.logs) {
     contentNode = <LogsPage appId={props.app.id} orgId={props.app.orgId} />;
   }

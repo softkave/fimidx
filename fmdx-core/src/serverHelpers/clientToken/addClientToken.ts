@@ -18,11 +18,17 @@ export async function addClientToken(params: {
   args: AddClientTokenEndpointArgs;
   by: string;
   byType: string;
-  groupId: string;
   storage?: IObjStorage;
 }) {
-  const { args, by, byType, groupId, storage } = params;
-  const { name: inputName, description, appId, meta, permissions } = args;
+  const { args, by, byType, storage } = params;
+  const {
+    name: inputName,
+    description,
+    appId,
+    meta,
+    permissions,
+    groupId,
+  } = args;
   const date = new Date();
   const name =
     inputName ??

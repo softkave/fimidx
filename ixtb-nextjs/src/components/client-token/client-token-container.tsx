@@ -1,8 +1,12 @@
 "use client";
 
-import { useGetClientToken } from "@/src/lib/clientApi/clientToken";
-import { IClientToken } from "fmdx-core/definitions/clientToken";
+import { useGetClientTokens } from "@/src/lib/clientApi/clientToken";
+import {
+  getClientTokensSchema,
+  IClientToken,
+} from "fmdx-core/definitions/clientToken";
 import { useCallback, useMemo } from "react";
+import { z } from "zod";
 import { WrapLoader } from "../internal/wrap-loader";
 import { ClientToken } from "./client-token";
 
@@ -11,6 +15,7 @@ export interface IClientTokenContainerRenderProps {
 }
 
 export interface IClientTokenContainerProps {
+  appId: string;
   clientTokenId: string;
   render?: (response: IClientTokenContainerRenderProps) => React.ReactNode;
   renderLoading?: () => React.ReactNode;
@@ -18,18 +23,33 @@ export interface IClientTokenContainerProps {
 }
 
 export function ClientTokenContainer(props: IClientTokenContainerProps) {
-  const { clientTokenId, renderLoading, renderError } = props;
-  const getClientTokenHook = useGetClientToken({ clientTokenId });
+  const { appId, clientTokenId, renderLoading, renderError } = props;
 
-  const error = getClientTokenHook.error;
-  const isLoading = getClientTokenHook.isLoading;
+  const args = useMemo(
+    (): z.infer<typeof getClientTokensSchema> => ({
+      page: 1,
+      limit: 1,
+      query: {
+        appId,
+        id: {
+          eq: clientTokenId,
+        },
+      },
+    }),
+    [clientTokenId, appId]
+  );
+
+  const clientTokenHook = useGetClientTokens(args);
+
+  const error = clientTokenHook.error;
+  const isLoading = clientTokenHook.isLoading;
   const data = useMemo((): IClientTokenContainerRenderProps | undefined => {
-    if (getClientTokenHook.data) {
+    if (clientTokenHook.data) {
       return {
-        clientToken: getClientTokenHook.data.clientToken,
+        clientToken: clientTokenHook.data.clientTokens[0],
       };
     }
-  }, [getClientTokenHook.data]);
+  }, [clientTokenHook.data]);
 
   const defaultRender = useCallback(
     (response: IClientTokenContainerRenderProps) => (

@@ -6,7 +6,6 @@ import {
   getJWTSecret,
   IEncodeClientTokenJWTContent,
 } from "fmdx-core/serverHelpers/clientToken/encodeClientTokenJWT";
-import { getClientToken } from "fmdx-core/serverHelpers/clientToken/getClientToken";
 import jwt from "jsonwebtoken";
 import { isString } from "lodash-es";
 import { Session } from "next-auth";

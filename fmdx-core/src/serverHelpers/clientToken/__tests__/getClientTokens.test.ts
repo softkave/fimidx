@@ -42,6 +42,7 @@ describe("getClientTokens integration", () => {
         },
       ],
       appId: overrides.appId || appId,
+      groupId,
       ...overrides,
     };
   }
@@ -56,7 +57,6 @@ describe("getClientTokens integration", () => {
       args,
       by,
       byType,
-      groupId,
       storage,
     });
 

@@ -1,14 +1,16 @@
 import {
   AddClientTokenEndpointResponse,
   addClientTokenSchema,
-  deleteClientTokenSchema,
+  DeleteClientTokensEndpointArgs,
+  deleteClientTokensSchema,
   EncodeClientTokenJWTEndpointResponse,
   encodeClientTokenJWTSchema,
-  GetClientTokenEndpointResponse,
+  GetClientTokensEndpointArgs,
   GetClientTokensEndpointResponse,
-  UpdateClientTokenEndpointResponse,
-  updateClientTokenSchema,
+  UpdateClientTokensEndpointResponse,
+  updateClientTokensSchema,
 } from "fmdx-core/definitions/clientToken";
+import { first } from "lodash-es";
 import { convertToArray } from "softkave-js-utils";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
@@ -47,9 +49,9 @@ export function useAddClientToken(
   const mutationHandler = useMutationHandler(addClientToken, {
     ...opts,
     invalidate: [
-      kClientTokenSWRKeys.getClientTokens({
-        appId: opts.appId,
-      }),
+      // TODO: We need to implement a partial match for the invalidate key.
+      // @ts-expect-error
+      first(kClientTokenSWRKeys.getClientTokens()),
       ...convertToArray(opts.invalidate || []),
     ],
   });
@@ -74,46 +76,19 @@ export async function getClientTokens(
   return await handleResponse<GetClientTokensEndpointResponse>(res);
 }
 
-export function useGetClientTokens(opts: {
-  appId: string;
-  page?: number;
-  limit?: number;
-}) {
+export function useGetClientTokens(opts: GetClientTokensEndpointArgs) {
   const { data, error, isLoading, isValidating, mutate } = useSWR(
-    kClientTokenSWRKeys.getClientTokens({
-      appId: opts.appId,
-      page: opts.page,
-      limit: opts.limit,
-    }),
+    kClientTokenSWRKeys.getClientTokens(opts),
     getClientTokens
   );
 
   return { data, error, isLoading, isValidating, mutate };
 }
 
-async function getClientToken(
-  key: ReturnType<typeof kClientTokenSWRKeys.getClientToken>
-) {
-  const res = await fetch(key, {
-    method: "GET",
-  });
-
-  return await handleResponse<GetClientTokenEndpointResponse>(res);
-}
-
-export function useGetClientToken(opts: { clientTokenId: string }) {
-  const { data, error, isLoading, isValidating, mutate } = useSWR(
-    kClientTokenSWRKeys.getClientToken(opts.clientTokenId),
-    getClientToken
-  );
-
-  return { data, error, isLoading, isValidating, mutate };
-}
-
-async function updateClientToken(
-  key: ReturnType<typeof kClientTokenSWRKeys.updateClientToken>,
+async function updateClientTokens(
+  key: ReturnType<typeof kClientTokenSWRKeys.updateClientTokens>,
   params: {
-    arg: z.infer<typeof updateClientTokenSchema>;
+    arg: z.infer<typeof updateClientTokensSchema>;
   }
 ) {
   const res = await fetch(key, {
@@ -121,41 +96,39 @@ async function updateClientToken(
     body: JSON.stringify(params.arg),
   });
 
-  return await handleResponse<UpdateClientTokenEndpointResponse>(res);
+  return await handleResponse<UpdateClientTokensEndpointResponse>(res);
 }
 
-export type UpdateClientTokenOnSuccessParams = [
-  params: Parameters<typeof updateClientToken>,
-  res: Awaited<ReturnType<typeof updateClientToken>>
+export type UpdateClientTokensOnSuccessParams = [
+  params: Parameters<typeof updateClientTokens>,
+  res: Awaited<ReturnType<typeof updateClientTokens>>
 ];
 
-export function useUpdateClientToken(
-  opts: IUseMutationHandlerOpts<typeof updateClientToken> & {
-    appId: string;
-    clientTokenId: string;
-  }
+export function useUpdateClientTokens(
+  opts: IUseMutationHandlerOpts<typeof updateClientTokens>
 ) {
-  const mutationHandler = useMutationHandler(updateClientToken, {
+  const mutationHandler = useMutationHandler(updateClientTokens, {
     ...opts,
     invalidate: [
-      kClientTokenSWRKeys.getClientTokens({ appId: opts.appId }),
-      kClientTokenSWRKeys.getClientToken(opts.clientTokenId),
+      // TODO: We need to implement a partial match for the invalidate key.
+      // @ts-expect-error
+      first(kClientTokenSWRKeys.getClientTokens()),
       ...convertToArray(opts.invalidate || []),
     ],
   });
 
   const { trigger, data, error, isMutating, reset } = useSWRMutation(
-    kClientTokenSWRKeys.updateClientToken(opts.clientTokenId),
+    kClientTokenSWRKeys.updateClientTokens(),
     mutationHandler
   );
 
   return { trigger, data, error, isMutating, reset };
 }
 
-async function deleteClientToken(
-  key: ReturnType<typeof kClientTokenSWRKeys.deleteClientToken>,
+async function deleteClientTokens(
+  key: ReturnType<typeof kClientTokenSWRKeys.deleteClientTokens>,
   params: {
-    arg: z.infer<typeof deleteClientTokenSchema>;
+    arg: z.infer<typeof deleteClientTokensSchema>;
   }
 ) {
   const res = await fetch(key, {
@@ -166,28 +139,28 @@ async function deleteClientToken(
   return await handleResponse(res);
 }
 
-export type DeleteClientTokenOnSuccessParams = [
-  params: Parameters<typeof deleteClientToken>,
-  res: Awaited<ReturnType<typeof deleteClientToken>>
+export type DeleteClientTokensOnSuccessParams = [
+  params: Parameters<typeof deleteClientTokens>,
+  res: Awaited<ReturnType<typeof deleteClientTokens>>
 ];
 
-export function useDeleteClientToken(
-  opts: IUseMutationHandlerOpts<typeof deleteClientToken> & {
-    appId: string;
-    clientTokenId: string;
+export function useDeleteClientTokens(
+  opts: IUseMutationHandlerOpts<typeof deleteClientTokens> & {
+    args: DeleteClientTokensEndpointArgs;
   }
 ) {
-  const mutationHandler = useMutationHandler(deleteClientToken, {
+  const mutationHandler = useMutationHandler(deleteClientTokens, {
     ...opts,
     invalidate: [
-      kClientTokenSWRKeys.getClientTokens({ appId: opts.appId }),
-      kClientTokenSWRKeys.getClientToken(opts.clientTokenId),
+      // TODO: We need to implement a partial match for the invalidate key.
+      // @ts-expect-error
+      first(kClientTokenSWRKeys.getClientTokens()),
       ...convertToArray(opts.invalidate || []),
     ],
   });
 
   const { trigger, data, error, isMutating, reset } = useSWRMutation(
-    kClientTokenSWRKeys.deleteClientToken(),
+    kClientTokenSWRKeys.deleteClientTokens(),
     mutationHandler
   );
 

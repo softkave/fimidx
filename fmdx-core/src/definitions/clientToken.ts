@@ -45,6 +45,7 @@ export interface IClientTokenObjRecordMeta
 }
 
 export const addClientTokenSchema = z.object({
+  groupId: z.string(),
   appId: z.string(),
   name: z.string().optional(),
   description: z.string().optional(),

@@ -53,12 +53,9 @@ export const kAppSWRKeys = {
 export const kClientTokenSWRKeys = {
   getClientTokens: (params: GetClientTokensEndpointArgs) =>
     [kApiClientTokenKeys.getClientTokens(), params] as const,
-  getClientToken: (clientTokenId: string) =>
-    kApiClientTokenKeys.getClientToken(clientTokenId),
   addClientToken: () => kApiClientTokenKeys.addClientToken(),
-  deleteClientToken: () => kApiClientTokenKeys.deleteClientToken(),
-  updateClientToken: (clientTokenId: string) =>
-    kApiClientTokenKeys.updateClientToken(clientTokenId),
+  deleteClientTokens: () => kApiClientTokenKeys.deleteClientTokens(),
+  updateClientTokens: () => kApiClientTokenKeys.updateClientTokens(),
   encodeClientTokenJWT: (clientTokenId: string) =>
     kApiClientTokenKeys.encodeClientTokenJWT(clientTokenId),
   refreshClientTokenJWT: () => kApiClientTokenKeys.refreshClientTokenJWT(),

@@ -1,5 +1,6 @@
 import { IClientToken } from "fmdx-core/definitions/clientToken";
-import { PageMessage } from "../internal/page-message.tsx";
+import { ComponentListMessage } from "../internal/component-list/component-list-message.tsx";
+import { ComponentList } from "../internal/component-list/component-list.tsx";
 import {
   ClientTokenItem,
   ClientTokenItemSkeleton,
@@ -7,40 +8,50 @@ import {
 
 export interface IClientTokensProps {
   clientTokens: IClientToken[];
+  emptyTitle?: string;
+  emptyMessage?: string;
 }
 
-export function ClientTokenItemEmpty() {
+export function ClientTokenItemEmpty(props: {
+  title?: string;
+  message?: string;
+}) {
   return (
-    <div className="w-full px-4">
-      <PageMessage
-        title="No client tokens found"
-        message="Add a client token to get started"
-        variant="secondary"
-      />
-    </div>
+    <ComponentListMessage
+      title={props.title ?? "No client tokens found"}
+      message={props.message ?? "Add a client token to get started"}
+    />
   );
 }
 
 export function ClientTokens(props: IClientTokensProps) {
   if (props.clientTokens.length === 0) {
-    return <ClientTokenItemEmpty />;
+    return (
+      <ClientTokenItemEmpty
+        title={props.emptyTitle}
+        message={props.emptyMessage}
+      />
+    );
   }
 
   return (
-    <div className="w-full">
-      {props.clientTokens.map((clientToken) => (
-        <ClientTokenItem key={clientToken.id} item={clientToken} />
-      ))}
-    </div>
+    <ComponentList
+      count={props.clientTokens.length}
+      renderItem={(index) => (
+        <ClientTokenItem
+          key={props.clientTokens[index].id}
+          item={props.clientTokens[index]}
+        />
+      )}
+    />
   );
 }
 
 export function ClientTokensSkeleton() {
   return (
-    <div className="flex flex-col gap-4">
-      <ClientTokenItemSkeleton className="w-full" />
-      <ClientTokenItemSkeleton className="w-full" />
-      <ClientTokenItemSkeleton className="w-full" />
-    </div>
+    <ComponentList
+      count={3}
+      renderItem={(index) => <ClientTokenItemSkeleton key={index} />}
+    />
   );
 }

@@ -23,6 +23,7 @@ describe("addClientToken integration", () => {
   ): AddClientTokenEndpointArgs {
     const testData = makeTestData({ testName: "token" });
     return {
+      groupId,
       name: testData.tokenName,
       description: "Test description",
       appId,
@@ -98,7 +99,6 @@ describe("addClientToken integration", () => {
       args,
       by,
       byType,
-      groupId,
       storage,
     });
 
@@ -111,7 +111,6 @@ describe("addClientToken integration", () => {
         args,
         by,
         byType,
-        groupId,
         storage,
       })
     ).rejects.toThrow("Failed to add client token");
@@ -144,7 +143,6 @@ describe("addClientToken integration", () => {
       args,
       by,
       byType,
-      groupId,
       storage,
     });
 
@@ -175,7 +173,6 @@ describe("addClientToken integration", () => {
       args,
       by,
       byType,
-      groupId,
       storage,
     });
 
@@ -196,7 +193,6 @@ describe("addClientToken integration", () => {
       args,
       by: by,
       byType: byType,
-      groupId: groupId,
       storage,
     });
 
@@ -209,7 +205,6 @@ describe("addClientToken integration", () => {
         args,
         by: by,
         byType: byType,
-        groupId: groupId,
         storage,
       })
     ).rejects.toThrow("Failed to add client token");
@@ -231,7 +226,6 @@ describe("addClientToken integration", () => {
       args: args1,
       by: by,
       byType: byType,
-      groupId: groupId,
       storage,
     });
 
@@ -239,7 +233,6 @@ describe("addClientToken integration", () => {
       args: args2,
       by: by,
       byType: byType,
-      groupId: groupId,
       storage,
     });
 
@@ -258,7 +251,6 @@ describe("addClientToken integration", () => {
       args,
       by: by,
       byType: byType,
-      groupId: groupId,
       storage,
     });
 
@@ -280,7 +272,6 @@ describe("addClientToken integration", () => {
       args,
       by: by,
       byType: byType,
-      groupId: groupId,
       storage,
     });
 
@@ -314,7 +305,6 @@ describe("addClientToken integration", () => {
       args,
       by: by,
       byType: byType,
-      groupId: groupId,
       storage,
     });
 
@@ -333,7 +323,6 @@ describe("addClientToken integration", () => {
       args,
       by: by,
       byType: byType,
-      groupId: groupId,
       storage,
     });
 

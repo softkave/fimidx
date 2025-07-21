@@ -2,7 +2,7 @@
 
 import { IClientToken } from "fmdx-core/definitions/clientToken";
 import { useCallback } from "react";
-import { MaybeScroll } from "../ui/scroll-area.tsx";
+import { MaybeScroll } from "../internal/maybe-scroll.tsx";
 import {
   Sheet,
   SheetContent,
@@ -19,15 +19,29 @@ export interface IClientTokenFormSheetProps {
   clientToken?: IClientToken;
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
-  onSubmitComplete?: (clientToken: IClientToken) => void;
+  onSubmitComplete?: (clientToken?: IClientToken) => void;
+  addMessage?: string;
+  updateMessage?: string;
+  addTitle?: string;
+  updateTitle?: string;
 }
 
 export function ClientTokenFormSheet(props: IClientTokenFormSheetProps) {
-  const { isOpen, onOpenChange, onSubmitComplete, clientToken, orgId, appId } =
-    props;
+  const {
+    isOpen,
+    onOpenChange,
+    onSubmitComplete,
+    clientToken,
+    orgId,
+    appId,
+    addMessage = "Create a new client token to start adding logs.",
+    updateMessage = "Update the client token to change the name or description.",
+    addTitle = "New Client Token",
+    updateTitle = "Update Client Token",
+  } = props;
 
   const handleSubmitComplete = useCallback(
-    (clientToken: IClientToken) => {
+    (clientToken?: IClientToken) => {
       onOpenChange(false);
       onSubmitComplete?.(clientToken);
     },
@@ -39,13 +53,9 @@ export function ClientTokenFormSheet(props: IClientTokenFormSheetProps) {
       <SheetContent className="w-full max:w-[440px] p-0">
         <MaybeScroll className="h-[calc(100vh)]">
           <SheetHeader>
-            <SheetTitle>
-              {clientToken ? "Update Client Token" : "New Client Token"}
-            </SheetTitle>
+            <SheetTitle>{clientToken ? updateTitle : addTitle}</SheetTitle>
             <SheetDescription>
-              {clientToken
-                ? "Update the client token to change the name or description."
-                : "Create a new client token to start adding logs."}
+              {clientToken ? updateMessage : addMessage}
             </SheetDescription>
           </SheetHeader>
           <div className="mt-2 p-4">

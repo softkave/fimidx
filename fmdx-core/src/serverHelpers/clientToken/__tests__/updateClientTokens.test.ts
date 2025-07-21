@@ -23,6 +23,7 @@ describe("updateClientTokens integration", () => {
   function makeAddClientTokenArgs(overrides: any = {}) {
     const testData = makeTestData({ testName: "token" });
     return {
+      groupId,
       name: testData.tokenName,
       description: "Test description",
       meta: { key: "value" },
@@ -53,7 +54,6 @@ describe("updateClientTokens integration", () => {
       args,
       by,
       byType,
-      groupId,
       storage,
     });
 

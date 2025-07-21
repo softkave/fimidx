@@ -22,6 +22,7 @@ describe("checkClientTokenPermissions integration", () => {
   function makeAddClientTokenArgs(overrides: any = {}) {
     const testData = makeTestData({ testName: "token" });
     return {
+      groupId,
       name: testData.tokenName,
       description: "Test description",
       appId,
@@ -90,7 +91,6 @@ describe("checkClientTokenPermissions integration", () => {
       args: tokenArgs,
       by: by,
       byType: byType,
-      groupId: groupId,
       storage,
     });
 
@@ -147,7 +147,6 @@ describe("checkClientTokenPermissions integration", () => {
       args: tokenArgs,
       by: by,
       byType: byType,
-      groupId: groupId,
       storage,
     });
 
@@ -199,7 +198,6 @@ describe("checkClientTokenPermissions integration", () => {
       args: tokenArgs,
       by: by,
       byType: byType,
-      groupId: groupId,
       storage,
     });
 
@@ -281,7 +279,6 @@ describe("checkClientTokenPermissions integration", () => {
       args: tokenArgs,
       by: by,
       byType: byType,
-      groupId: groupId,
       storage,
     });
 
@@ -333,7 +330,6 @@ describe("checkClientTokenPermissions integration", () => {
       args: tokenArgs,
       by: by,
       byType: byType,
-      groupId: groupId,
       storage,
     });
 

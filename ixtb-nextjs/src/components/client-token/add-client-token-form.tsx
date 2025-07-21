@@ -90,7 +90,7 @@ export function AddClientTokenForm(props: IAddClientTokenFormProps) {
                 <Input placeholder="my logs client token" {...field} />
               </FormControl>
               <FormDescription>
-                This is the name of the client token.
+                What should this client token be called?
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -106,7 +106,7 @@ export function AddClientTokenForm(props: IAddClientTokenFormProps) {
                 <Textarea placeholder="my logs client token" {...field} />
               </FormControl>
               <FormDescription>
-                This is the description of the client token.
+                What is this client token used for?
               </FormDescription>
               <FormMessage />
             </FormItem>

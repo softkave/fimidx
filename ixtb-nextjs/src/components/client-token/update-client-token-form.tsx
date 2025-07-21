@@ -1,8 +1,8 @@
 "use client";
 
 import {
-  UpdateClientTokenOnSuccessParams,
-  useUpdateClientToken,
+  UpdateClientTokensOnSuccessParams,
+  useUpdateClientTokens,
 } from "@/src/lib/clientApi/clientToken.ts";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { IClientToken } from "fmdx-core/definitions/clientToken";
@@ -24,7 +24,7 @@ import { Textarea } from "../ui/textarea.tsx";
 
 export interface IUpdateClientTokenFormProps {
   clientToken: IClientToken;
-  onSubmitComplete: (clientToken: IClientToken) => void;
+  onSubmitComplete: (clientToken?: IClientToken) => void;
 }
 
 export const addClientTokenFormSchema = z.object({
@@ -44,27 +44,32 @@ export function UpdateClientTokenForm(props: IUpdateClientTokenFormProps) {
   });
 
   const handleSuccess = useCallback(
-    (...args: UpdateClientTokenOnSuccessParams) => {
-      onSubmitComplete(args[1].clientToken);
+    (...args: UpdateClientTokensOnSuccessParams) => {
+      onSubmitComplete(undefined);
     },
     [onSubmitComplete]
   );
 
-  const updateClientTokenHook = useUpdateClientToken({
+  const updateClientTokenHook = useUpdateClientTokens({
     onSuccess: handleSuccess,
-    clientTokenId: clientToken.id,
-    appId: clientToken.appId,
   });
 
   const onSubmit = useCallback(
     async (values: z.infer<typeof addClientTokenFormSchema>) => {
       await updateClientTokenHook.trigger({
-        id: clientToken.id,
-        name: values.name,
-        description: values.description,
+        query: {
+          appId: clientToken.appId,
+          id: {
+            eq: clientToken.id,
+          },
+        },
+        update: {
+          name: values.name,
+          description: values.description,
+        },
       });
     },
-    [updateClientTokenHook, clientToken.id]
+    [updateClientTokenHook, clientToken.id, clientToken.appId]
   );
 
   return (
@@ -86,7 +91,7 @@ export function UpdateClientTokenForm(props: IUpdateClientTokenFormProps) {
                 <Input placeholder="my logs client token" {...field} />
               </FormControl>
               <FormDescription>
-                This is the name of the client token.
+                What should this client token be called?
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -102,7 +107,7 @@ export function UpdateClientTokenForm(props: IUpdateClientTokenFormProps) {
                 <Textarea placeholder="my logs client token" {...field} />
               </FormControl>
               <FormDescription>
-                This is the description of the client token.
+                What is this client token used for?
               </FormDescription>
               <FormMessage />
             </FormItem>

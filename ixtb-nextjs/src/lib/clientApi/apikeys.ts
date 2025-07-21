@@ -24,12 +24,9 @@ export const kApiAppKeys = {
 
 export const kApiClientTokenKeys = {
   getClientTokens: () => `/api/client-tokens/fetch`,
-  getClientToken: (clientTokenId: string) =>
-    `/api/client-tokens/${clientTokenId}`,
   addClientToken: () => `/api/client-tokens`,
-  deleteClientToken: () => `/api/client-tokens`,
-  updateClientToken: (clientTokenId: string) =>
-    `/api/client-tokens/${clientTokenId}`,
+  deleteClientTokens: () => `/api/client-tokens`,
+  updateClientTokens: () => `/api/client-tokens`,
   encodeClientTokenJWT: (clientTokenId: string) =>
     `/api/client-tokens/${clientTokenId}/encode`,
   refreshClientTokenJWT: () => `/api/client-tokens/refresh`,

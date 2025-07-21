@@ -57,7 +57,7 @@ export const addCallbackEndpoint: NextClientTokenAuthenticatedEndpointFn<
     input.idempotencyKey ?? `__fmdx_generated_${uuidv7()}_${Date.now()}`;
   const callback = await callNodeServerAddCallback({
     item: input,
-    orgId: clientToken.orgId,
+    orgId: clientToken.groupId,
     clientTokenId: clientToken.id,
     idempotencyKey,
   });

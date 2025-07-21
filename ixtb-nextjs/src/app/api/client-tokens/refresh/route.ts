@@ -1,4 +1,4 @@
-import { refreshClientTokenEndpoint } from "@/src/lib/endpoints/clientTokens/refreshClientTokenEndpoint";
+import { refreshClientTokenEndpoint } from "@/src/lib/endpoints/external/clientTokens/refreshClientTokenEndpoint";
 import { wrapClientTokenAuthenticated } from "@/src/lib/serverHelpers/wrapAuthenticated";
 import { IRouteContext } from "@/src/lib/serverHelpers/wrapRoute";
 import { NextRequest } from "next/server";

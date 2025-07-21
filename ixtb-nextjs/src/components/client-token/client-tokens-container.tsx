@@ -8,8 +8,8 @@ import {
 } from "fmdx-core/definitions/clientToken";
 import { useState } from "react";
 import { OmitFrom } from "softkave-js-utils";
-import ListPagination from "../internal/list-pagination.tsx";
-import { PageMessage } from "../internal/page-message.tsx";
+import { ComponentListMessage } from "../internal/component-list/component-list-message.tsx";
+import UnknownCountListPagination from "../internal/unknown-count-list-pagination.tsx";
 import { WrapLoader } from "../internal/wrap-loader.tsx";
 import { ClientTokens } from "./client-tokens-list.tsx";
 
@@ -39,10 +39,12 @@ export function ClientTokenListContainer({
   const [pageSize, setPageSize] = useState(10);
 
   const clientTokenHooks = useGetClientTokens({
-    appId: appId,
     page,
     limit: pageSize,
-    ...filter,
+    query: {
+      appId,
+      ...filter,
+    },
   });
 
   const defaultRender = (clientTokens: IClientToken[]) => {
@@ -59,10 +61,9 @@ export function ClientTokenListContainer({
         data={clientTokenHooks.data}
         render={(data) =>
           data.clientTokens.length === 0 && showNoClientTokensMessage ? (
-            <PageMessage
-              title="No clientTokens"
-              message="No clientTokens found"
-              className="px-4 flex flex-col items-center justify-center py-32"
+            <ComponentListMessage
+              title="No client tokens"
+              message="Add client tokens to get started"
             />
           ) : (
             <div
@@ -72,8 +73,8 @@ export function ClientTokenListContainer({
               )}
             >
               {render(data.clientTokens)}
-              <ListPagination
-                count={data.total}
+              <UnknownCountListPagination
+                hasMore={data.hasMore}
                 page={page}
                 pageSize={pageSize}
                 disabled={clientTokenHooks.isLoading}
