@@ -36,7 +36,9 @@ export function AppListContainer({
   const [pageSize, setPageSize] = useState(10);
 
   const appHooks = useGetApps({
-    orgId: orgId,
+    query: {
+      orgId: orgId,
+    },
     page,
     limit: pageSize,
     ...filter,

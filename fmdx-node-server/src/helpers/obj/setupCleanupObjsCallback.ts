@@ -3,6 +3,7 @@ import {getCallbacks} from 'fmdx-core/serverHelpers/index';
 import {first} from 'lodash-es';
 import {addCallbackEndpointImpl} from '../../httpEndpoints/cbs/addCallbackEndpoint.js';
 import {getConfig} from '../../utils/config.js';
+import {kInternalAccessKeyHeader} from '../../httpServer.js';
 
 export async function setupCleanupObjsCallback() {
   const name = '__fmdx_cleanupObjs_callback';
@@ -24,27 +25,23 @@ export async function setupCleanupObjsCallback() {
     return;
   }
 
-  const {
-    cleanupObjsApiKey,
-    cleanupObjsApiKeyHeader,
-    cleanupObjsIntervalMs,
-    cleanupObjsUrl,
-  } = getConfig();
+  const {internalAccessKey, cleanupObjsIntervalMs, cleanupObjsUrl} =
+    getConfig();
 
   await addCallbackEndpointImpl({
     clientTokenId: kId0,
     groupId: kId0,
-    idempotencyKey: name,
     item: {
       appId: kId0,
       url: cleanupObjsUrl,
       method: 'POST',
       requestHeaders: {
-        [cleanupObjsApiKeyHeader]: cleanupObjsApiKey,
-        'Content-Type': 'application/json',
+        [kInternalAccessKeyHeader]: internalAccessKey,
       },
       intervalFrom: new Date().toISOString(),
       intervalMs: cleanupObjsIntervalMs,
+      idempotencyKey: name,
+      name,
     },
   });
 }

@@ -3,6 +3,7 @@ import {getCallbacks} from 'fmdx-core/serverHelpers/index';
 import {first} from 'lodash-es';
 import {addCallbackEndpointImpl} from '../../httpEndpoints/cbs/addCallbackEndpoint.js';
 import {getConfig} from '../../utils/config.js';
+import {kInternalAccessKeyHeader} from '../../httpServer.js';
 
 export async function setupIndexObjsCallback() {
   const name = '__fmdx_indexObjs_callback';
@@ -24,27 +25,22 @@ export async function setupIndexObjsCallback() {
     return;
   }
 
-  const {
-    indexObjsApiKey,
-    indexObjsApiKeyHeader,
-    indexObjsIntervalMs,
-    indexObjsUrl,
-  } = getConfig();
+  const {internalAccessKey, indexObjsIntervalMs, indexObjsUrl} = getConfig();
 
   await addCallbackEndpointImpl({
     clientTokenId: kId0,
     groupId: kId0,
-    idempotencyKey: name,
     item: {
       appId: kId0,
       url: indexObjsUrl,
       method: 'POST',
       requestHeaders: {
-        [indexObjsApiKeyHeader]: indexObjsApiKey,
-        'Content-Type': 'application/json',
+        [kInternalAccessKeyHeader]: internalAccessKey,
       },
       intervalFrom: new Date().toISOString(),
       intervalMs: indexObjsIntervalMs,
+      idempotencyKey: name,
+      name,
     },
   });
 }

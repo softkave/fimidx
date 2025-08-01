@@ -6,6 +6,7 @@ import {
 } from "@/src/lib/clientApi/clientToken.ts";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { IClientToken } from "fmdx-core/definitions/clientToken";
+import { kId0 } from "fmdx-core/definitions/system";
 import { useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -38,7 +39,7 @@ function generateClientTokenName() {
 }
 
 export function AddClientTokenForm(props: IAddClientTokenFormProps) {
-  const { appId, onSubmitComplete } = props;
+  const { appId, orgId, onSubmitComplete } = props;
 
   const form = useForm<z.infer<typeof addClientTokenFormSchema>>({
     resolver: zodResolver(addClientTokenFormSchema),
@@ -63,9 +64,14 @@ export function AddClientTokenForm(props: IAddClientTokenFormProps) {
   const onSubmit = useCallback(
     async (values: z.infer<typeof addClientTokenFormSchema>) => {
       await addClientTokenHook.trigger({
-        appId: appId,
+        appId: kId0,
+        groupId: kId0,
         name: values.name,
         description: values.description,
+        meta: {
+          appId: appId,
+          orgId: orgId,
+        },
       });
     },
     [addClientTokenHook, appId]

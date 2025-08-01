@@ -27,11 +27,14 @@ export const getOrgsEndpoint: NextUserAuthenticatedEndpointFn<
   });
 
   const groupIds = requests.requests.map((request) => request.groupId);
-  const { groups } = await getGroups({
-    args: {
-      query: { id: { in: groupIds }, appId: kId0 },
-    },
-  });
+  const { groups } =
+    groupIds.length > 0
+      ? await getGroups({
+          args: {
+            query: { id: { in: groupIds }, appId: kId0 },
+          },
+        })
+      : { groups: [] };
 
   const response: GetOrgsEndpointResponse = {
     orgs: groups.map(groupToOrg),

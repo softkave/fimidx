@@ -6,9 +6,9 @@ import {
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
 import { kAppConstants } from "fmdx-core/definitions/appConstants";
 import Link from "next/link";
-import { AppSidebarOrgContainer } from "./app-sidebar-org-container";
-import { HomeSidebarOrg } from "./home-sidebar-org";
-import { OrgSidebarOrgContainer } from "./org-sidebar-org-container";
+import { AppSidebarGroupContainer } from "./app-sidebar-group-container";
+import { HomeSidebarGroup } from "./home-sidebar-group";
+import { OrgSidebarGroupContainer } from "./org-sidebar-group-container";
 
 export function MainAppSidebar(props: { orgId?: string; appId?: string }) {
   const { orgId, appId } = props;
@@ -21,10 +21,10 @@ export function MainAppSidebar(props: { orgId?: string; appId?: string }) {
         </div>
       </SidebarHeader>
       <SidebarContent>
-        <HomeSidebarOrg />
-        {orgId && <OrgSidebarOrgContainer orgId={orgId} />}
+        <HomeSidebarGroup />
+        {orgId && <OrgSidebarGroupContainer orgId={orgId} />}
         {orgId && appId && (
-          <AppSidebarOrgContainer orgId={orgId} appId={appId} />
+          <AppSidebarGroupContainer orgId={orgId} appId={appId} />
         )}
       </SidebarContent>
     </Sidebar>

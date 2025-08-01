@@ -1,8 +1,8 @@
-import {objModel} from 'fmdx-core/db/mongo';
+import {getObjModel} from 'fmdx-core/db/fmdx.mongo';
 import {ICallback} from 'fmdx-core/definitions/callback';
 import {kObjTags} from 'fmdx-core/definitions/obj';
-import {addCallbackToStore} from './addCallbackToStore.js';
 import {objToCallback} from 'fmdx-core/serverHelpers/index';
+import {addCallbackToStore} from './addCallbackToStore.js';
 
 export async function loadCallbacks() {
   let batch: ICallback[] = [];
@@ -10,11 +10,11 @@ export async function loadCallbacks() {
   const batchSize = 100;
 
   do {
-    const objs = await objModel
+    const objs = await getObjModel()
       .find({
         tag: kObjTags.callback,
         deletedAt: {
-          $exists: false,
+          $eq: null,
         },
       })
       .skip(page * batchSize)

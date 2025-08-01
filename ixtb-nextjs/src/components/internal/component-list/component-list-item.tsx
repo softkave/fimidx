@@ -8,7 +8,7 @@ export function ComponentListItem(props: {
   return (
     <div
       className={cn(
-        "flex justify-between items-center gap-2 py-4 px-4",
+        "flex justify-between items-center gap-2 py-4 px-4 w-full",
         props.className
       )}
     >

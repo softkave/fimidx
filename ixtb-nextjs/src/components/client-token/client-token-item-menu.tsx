@@ -4,6 +4,7 @@ import { useDeleteClientTokens } from "@/src/lib/clientApi/clientToken";
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
 import { cn } from "@/src/lib/utils";
 import { IClientToken } from "fmdx-core/definitions/clientToken";
+import { kId0 } from "fmdx-core/definitions/system";
 import { isString } from "lodash-es";
 import { Ellipsis, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -39,25 +40,21 @@ export function ClientTokenItemMenu(props: IClientTokenItemMenuProps) {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const deleteClientTokenHook = useDeleteClientTokens({
-    args: {
-      query: {
-        appId,
-        id: {
-          eq: clientToken.id,
-        },
-      },
-    },
     onSuccess: () => {
       toast.success("ClientToken deleted");
       onDeleted?.();
       if (routeAfterDelete) {
+        const orgId = clientToken.meta?.orgId;
+        const appId = clientToken.meta?.appId;
+
+        if (!orgId || !appId) {
+          return;
+        }
+
         router.push(
           isString(routeAfterDelete)
             ? routeAfterDelete
-            : kClientPaths.app.org.app.clientToken.index(
-                clientToken.groupId,
-                appId
-              )
+            : kClientPaths.app.org.app.clientToken.index(orgId, appId)
         );
       }
     },
@@ -67,7 +64,7 @@ export function ClientTokenItemMenu(props: IClientTokenItemMenuProps) {
     onDeleting?.();
     deleteClientTokenHook.trigger({
       query: {
-        appId,
+        appId: kId0,
         id: {
           eq: clientToken.id,
         },

@@ -28,10 +28,17 @@ export function ClientTokensHeader(props: {
             return;
           }
 
+          const orgId = clientToken.meta?.orgId;
+          const appId = clientToken.meta?.appId;
+
+          if (!orgId || !appId) {
+            return;
+          }
+
           router.push(
             kClientPaths.app.org.app.clientToken.single(
-              clientToken.groupId,
-              clientToken.appId,
+              orgId,
+              appId,
               clientToken.id
             )
           );

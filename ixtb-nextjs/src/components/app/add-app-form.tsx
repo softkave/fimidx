@@ -49,7 +49,6 @@ export function AddAppForm(props: IAddAppFormProps) {
 
   const addAppHook = useAddApp({
     onSuccess: handleSuccess,
-    orgId: orgId,
   });
 
   const onSubmit = useCallback(

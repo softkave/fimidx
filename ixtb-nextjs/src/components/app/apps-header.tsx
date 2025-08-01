@@ -1,7 +1,6 @@
 "use client";
 
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
-import { useHasPermission } from "@/src/lib/clientHooks/permissionHooks";
 import { PlusIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -12,12 +11,6 @@ import { AppFormSheet } from "./app-form-sheet";
 export function AppsHeader(props: { className?: string; orgId: string }) {
   const [openForm, setOpenForm] = useState(false);
   const router = useRouter();
-  const {
-    checks: [canCreate],
-  } = useHasPermission({
-    orgId: props.orgId,
-    permission: kPermissions.app.update,
-  });
 
   return (
     <>

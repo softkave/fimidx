@@ -52,6 +52,7 @@ export function OrgListContainer({
             <ComponentListMessage
               title="No organizations found"
               message="Add an organization to get started"
+              className="w-full"
             />
           ) : (
             <div

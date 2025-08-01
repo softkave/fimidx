@@ -1,3 +1,4 @@
+import {randomUUID} from 'crypto';
 import {Request, Response} from 'express';
 import {kOwnServerErrorCodes, OwnServerError} from 'fmdx-core/common/error';
 import {
@@ -39,7 +40,6 @@ async function processNextCallbacksBatch() {
     batch.map(item => [item.item.idempotencyKey, item]),
   );
   const newUniqueBatch = Array.from(uniqueMap.values());
-
   const addCallbacksResults = await Promise.all(
     newUniqueBatch.map(async item => {
       try {
@@ -92,18 +92,10 @@ async function processNextCallbacksBatch() {
   kPromiseStore.callAndForget(processNextCallbacksBatch);
 }
 
-const inputSchema = z.object({
-  item: addCallbackSchema,
-  groupId: z.string(),
-  clientTokenId: z.string(),
-  idempotencyKey: z.string(),
-});
-
 export async function addCallbackEndpointImpl(params: {
   item: AddCallbackEndpointArgs;
   groupId: string;
   clientTokenId: string;
-  idempotencyKey: string;
 }) {
   const promise = getDeferredPromise<ICallback>();
   kAddCallbackQueue.push({
@@ -112,11 +104,12 @@ export async function addCallbackEndpointImpl(params: {
     item: params.item,
     resolve: promise.resolve,
     reject: promise.reject,
-    fmdxIdempotencyKey: params.idempotencyKey,
+    fmdxIdempotencyKey:
+      params.item.idempotencyKey ||
+      `__fmdx_generated_${randomUUID()}_${Date.now()}`,
   });
 
   kPromiseStore.callAndForget(processNextCallbacksBatch);
-
   const callback = await promise.promise;
   addCallbackToStore({
     id: callback.id,
@@ -129,6 +122,12 @@ export async function addCallbackEndpointImpl(params: {
 
   return callback;
 }
+
+const inputSchema = z.object({
+  item: addCallbackSchema,
+  groupId: z.string(),
+  clientTokenId: z.string(),
+});
 
 export async function addCallbackEndpoint(req: Request, res: Response) {
   const params = inputSchema.parse(req.body);

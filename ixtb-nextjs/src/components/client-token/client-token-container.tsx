@@ -5,6 +5,7 @@ import {
   getClientTokensSchema,
   IClientToken,
 } from "fmdx-core/definitions/clientToken";
+import { kId0 } from "fmdx-core/definitions/system";
 import { useCallback, useMemo } from "react";
 import { z } from "zod";
 import { WrapLoader } from "../internal/wrap-loader";
@@ -30,7 +31,7 @@ export function ClientTokenContainer(props: IClientTokenContainerProps) {
       page: 1,
       limit: 1,
       query: {
-        appId,
+        appId: kId0,
         id: {
           eq: clientTokenId,
         },

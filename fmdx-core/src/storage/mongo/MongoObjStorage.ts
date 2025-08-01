@@ -75,6 +75,8 @@ export class MongoObjStorage implements IObjStorage {
       filter.deletedAt = null;
     }
 
+    console.log("read params");
+    console.dir(params, { depth: null });
     console.log("read filter");
     console.dir(filter, { depth: null });
     console.log("read sort");

@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "fmdx-core": "workspace:*",
-    "mfdoc": "^0.2.0",
-    "softkave-js-utils": "^0.17.0"
+    "mfdoc": "^0.4.1",
+    "softkave-js-utils": "^0.17.1"
   }
 }

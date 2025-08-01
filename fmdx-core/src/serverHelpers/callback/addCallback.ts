@@ -8,6 +8,7 @@ import type {
 import { kObjTags } from "../../definitions/obj.js";
 import type { IObjStorage } from "../../storage/types.js";
 import { setManyObjs } from "../obj/setObjs.js";
+import { objToCallback } from "./objToCallback.js";
 
 export async function addCallback(params: {
   args: AddCallbackEndpointArgs;
@@ -86,7 +87,7 @@ export async function addCallback(params: {
     });
 
     if (existingCallback && existingCallback.objs.length > 0) {
-      return existingCallback.objs[0];
+      return objToCallback(existingCallback.objs[0]);
     }
   }
 
@@ -114,5 +115,5 @@ export async function addCallback(params: {
     callback.objRecord.intervalFrom = new Date(callback.objRecord.intervalFrom);
   }
 
-  return callback;
+  return objToCallback(callback);
 }

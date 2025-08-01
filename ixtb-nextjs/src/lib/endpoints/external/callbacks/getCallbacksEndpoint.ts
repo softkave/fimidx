@@ -3,9 +3,9 @@ import {
   IGetCallbacksEndpointResponse,
 } from "fmdx-core/definitions/index";
 import { getCallbacks } from "fmdx-core/serverHelpers/index";
-import { NextUserAuthenticatedEndpointFn } from "../../types";
+import { NextMaybeAuthenticatedEndpointFn } from "../../types";
 
-export const getCallbacksEndpoint: NextUserAuthenticatedEndpointFn<
+export const getCallbacksEndpoint: NextMaybeAuthenticatedEndpointFn<
   IGetCallbacksEndpointResponse
 > = async (params) => {
   const { req } = params;

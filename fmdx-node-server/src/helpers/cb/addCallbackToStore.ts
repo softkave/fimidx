@@ -11,6 +11,7 @@ export function addCallbackToStore(params: {
   // TODO: implement timeout packing
 
   if (kCallbackStore[params.id]) {
+    console.log('Callback already exists', params.id);
     return;
   }
 
@@ -36,6 +37,12 @@ export function addCallbackToStore(params: {
         }, params.intervalMs!),
       };
     };
+
+    console.log('Adding callback to store', {
+      id: params.id,
+      intervalFrom: params.intervalFrom,
+      now,
+    });
 
     if (params.intervalFrom > now) {
       setTimeout(adder, params.intervalFrom.getTime() - now.getTime());

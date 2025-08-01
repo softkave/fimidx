@@ -1,9 +1,9 @@
 import assert from "assert";
-import { Connection, createConnection, Schema } from "mongoose";
+import { createConnection, Schema } from "mongoose";
 import type { IObj } from "../definitions/obj.js";
 
-let connection: Connection | null = null;
-let promise: Promise<Connection> | null = null;
+let connection: ReturnType<typeof createConnection> | null = null;
+let promise: Promise<ReturnType<typeof createConnection>> | null = null;
 
 export function getMongoConnection() {
   if (!connection) {

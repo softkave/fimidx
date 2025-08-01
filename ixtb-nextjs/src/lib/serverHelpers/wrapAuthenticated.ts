@@ -2,6 +2,7 @@ import { auth, NextAuthRequest } from "@/auth";
 import assert from "assert";
 import { OwnServerError } from "fmdx-core/common/error";
 import { IClientToken } from "fmdx-core/definitions/clientToken";
+import { kByTypes } from "fmdx-core/definitions/other";
 import {
   getJWTSecret,
   IEncodeClientTokenJWTContent,
@@ -11,6 +12,7 @@ import { isString } from "lodash-es";
 import { Session } from "next-auth";
 import { NextRequest } from "next/server";
 import { AnyFn, AnyObject } from "softkave-js-utils";
+import { getClientToken } from "./clientToken/getClientToken";
 import { IRouteContext, wrapRoute } from "./wrapRoute";
 
 export interface IUserAuthenticatedRequest {
@@ -23,7 +25,7 @@ export interface IUserAuthenticatedRequest {
 export interface IClientTokenAuthenticatedRequest {
   clientToken: IClientToken;
   jwtContent: IEncodeClientTokenJWTContent;
-  checkorgId: (orgId: string) => void;
+  checkOrgId: (orgId: string) => void;
 }
 
 export type IMaybeAuthenticatedRequest = Partial<
@@ -81,22 +83,24 @@ async function tryGetClientTokenAuthenticatedRequest(
       getJWTSecret()
     ) as IEncodeClientTokenJWTContent;
 
-    const clientToken = await getClientToken({ id: decodedToken.id });
+    const { clientToken } = await getClientToken({
+      input: { clientTokenId: decodedToken.id },
+    });
     assert(
       clientToken.appId === decodedToken.appId,
       new OwnServerError("Unauthorized", 401)
     );
     assert(
-      clientToken.orgId === decodedToken.orgId,
+      clientToken.groupId === decodedToken.groupId,
       new OwnServerError("Unauthorized", 401)
     );
 
     return {
       clientToken,
       jwtContent: decodedToken,
-      checkorgId: (orgId: string) => {
+      checkOrgId: (orgId: string) => {
         assert.ok(
-          orgId === clientToken.orgId,
+          orgId === clientToken.groupId,
           new OwnServerError("Unauthorized", 401)
         );
       },
@@ -170,6 +174,21 @@ export const wrapMaybeAuthenticated = (
       return routeFn(req, ctx, {
         ...userAuthenticatedRequest,
         ...clientTokenAuthenticatedRequest,
+        getBy: () => {
+          if (userAuthenticatedRequest) {
+            return {
+              by: userAuthenticatedRequest.userId,
+              byType: kByTypes.user,
+            };
+          }
+          if (clientTokenAuthenticatedRequest) {
+            return {
+              by: clientTokenAuthenticatedRequest.clientToken.groupId,
+              byType: kByTypes.clientToken,
+            };
+          }
+          throw new OwnServerError("Unauthorized", 401);
+        },
       });
     })
   );

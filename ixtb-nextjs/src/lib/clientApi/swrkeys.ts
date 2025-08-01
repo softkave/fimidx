@@ -1,3 +1,7 @@
+// TODO: implement a better fine-grained SWR key matcher, so that we can invalidate
+// the SWR cache when the user changes the query params. But for now, we'll just
+// invalidate the SWR cache using the api path.
+
 import { GetOrgsEndpointArgs } from "@/src/definitions/org";
 import { GetAppsEndpointArgs } from "fmdx-core/definitions/app";
 import { GetCallbacksEndpointArgs } from "fmdx-core/definitions/callback";
@@ -44,10 +48,9 @@ export const kOrgSWRKeys = {
 export const kAppSWRKeys = {
   getApps: (params: GetAppsEndpointArgs) =>
     [kApiAppKeys.getApps(), params] as const,
-  getApp: (appId: string) => kApiAppKeys.getApp(appId),
   addApp: () => kApiAppKeys.addApp(),
   deleteApp: () => kApiAppKeys.deleteApp(),
-  updateApp: (appId: string) => kApiAppKeys.updateApp(appId),
+  updateApp: () => kApiAppKeys.updateApp(),
 };
 
 export const kClientTokenSWRKeys = {

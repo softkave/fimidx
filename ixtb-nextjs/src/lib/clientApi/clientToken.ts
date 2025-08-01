@@ -1,7 +1,6 @@
 import {
   AddClientTokenEndpointResponse,
   addClientTokenSchema,
-  DeleteClientTokensEndpointArgs,
   deleteClientTokensSchema,
   EncodeClientTokenJWTEndpointResponse,
   encodeClientTokenJWTSchema,
@@ -145,9 +144,7 @@ export type DeleteClientTokensOnSuccessParams = [
 ];
 
 export function useDeleteClientTokens(
-  opts: IUseMutationHandlerOpts<typeof deleteClientTokens> & {
-    args: DeleteClientTokensEndpointArgs;
-  }
+  opts: IUseMutationHandlerOpts<typeof deleteClientTokens>
 ) {
   const mutationHandler = useMutationHandler(deleteClientTokens, {
     ...opts,

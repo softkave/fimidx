@@ -1,7 +1,6 @@
 import { useEncodeClientTokenJWT } from "@/src/lib/clientApi/clientToken";
 import { IClientToken } from "fmdx-core/definitions/clientToken";
 import { useCallback } from "react";
-import { Copyable } from "../internal/copyable";
 import { ObfuscateText } from "../internal/obfuscate-text";
 import { Button } from "../ui/button";
 import { Separator } from "../ui/separator";
@@ -23,6 +22,13 @@ export function ClientToken(props: IClientTokenProps) {
 
   const { data } = encodeClientTokenJWT;
 
+  const orgId = props.clientToken.meta?.orgId;
+  const appId = props.clientToken.meta?.appId;
+
+  if (!orgId || !appId) {
+    return null;
+  }
+
   return (
     <div className="flex flex-col gap-4 p-4 pt-0">
       <div className="flex justify-between items-center gap-2">
@@ -31,10 +37,7 @@ export function ClientToken(props: IClientTokenProps) {
             {props.clientToken.name}
           </h1>
         </div>
-        <ClientTokenItemMenu
-          clientToken={props.clientToken}
-          appId={props.clientToken.appId}
-        />
+        <ClientTokenItemMenu clientToken={props.clientToken} appId={appId} />
       </div>
       <div className="flex flex-col gap-4">
         {props.clientToken.description && (
@@ -42,29 +45,6 @@ export function ClientToken(props: IClientTokenProps) {
             {props.clientToken.description}
           </p>
         )}
-        <Separator />
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-2">
-            <h3 className="text-sm font-medium text-muted-foreground">
-              Org ID
-            </h3>
-            <Copyable produceText={() => props.clientToken.groupId}>
-              <pre className="text-sm text-muted-foreground bg-muted p-2 rounded-md whitespace-pre-wrap break-all">
-                <code>{props.clientToken.groupId}</code>
-              </pre>
-            </Copyable>
-          </div>
-          <div className="flex flex-col gap-2">
-            <h3 className="text-sm font-medium text-muted-foreground">
-              App ID
-            </h3>
-            <Copyable produceText={() => props.clientToken.appId}>
-              <pre className="text-sm text-muted-foreground bg-muted p-2 rounded-md whitespace-pre-wrap break-all">
-                <code>{props.clientToken.appId}</code>
-              </pre>
-            </Copyable>
-          </div>
-        </div>
         <Separator />
         <div className="flex flex-col gap-4">
           <div className="flex justify-between items-center gap-2">

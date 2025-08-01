@@ -129,7 +129,7 @@ describe("addCallback integration", () => {
     });
 
     expect(result1).toBeDefined();
-    expect(result1.objRecord.idempotencyKey).toBe("test-isolation-key");
+    expect(result1.idempotencyKey).toBe("test-isolation-key");
 
     // Second callback with same idempotency key should be ignored due to conflict
     const result2 = await addCallback({
@@ -142,7 +142,7 @@ describe("addCallback integration", () => {
     });
 
     expect(result2).toBeDefined();
-    expect(result2.objRecord.idempotencyKey).toBe("test-isolation-key");
+    expect(result2.idempotencyKey).toBe("test-isolation-key");
   });
 
   it("creates a new callback successfully", async () => {
@@ -165,14 +165,14 @@ describe("addCallback integration", () => {
     });
 
     expect(result).toBeDefined();
-    expect(result.objRecord.name).toBe("My Test Callback");
-    expect(result.objRecord.description).toBe("A test callback description");
-    expect(result.objRecord.url).toBe("https://api.example.com/webhook");
-    expect(result.objRecord.method).toBe("POST");
-    expect(result.objRecord.requestHeaders).toEqual({
+    expect(result.name).toBe("My Test Callback");
+    expect(result.description).toBe("A test callback description");
+    expect(result.url).toBe("https://api.example.com/webhook");
+    expect(result.method).toBe("POST");
+    expect(result.requestHeaders).toEqual({
       "Content-Type": "application/json",
     });
-    expect(result.objRecord.requestBody).toBe('{"test": "data"}');
+    expect(result.requestBody).toBe('{"test": "data"}');
     expect(result.groupId).toBe(defaultGroupId);
     expect(result.appId).toBe(defaultAppId);
     expect(result.createdBy).toBe(defaultBy);
@@ -200,10 +200,10 @@ describe("addCallback integration", () => {
     });
 
     expect(result).toBeDefined();
-    expect(result.objRecord.name).toMatch(/__fmdx_generated_/);
-    expect(result.objRecord.description).toBeUndefined();
-    expect(result.objRecord.requestHeaders).toBeNull();
-    expect(result.objRecord.requestBody).toBeNull();
+    expect(result.name).toMatch(/__fmdx_generated_/);
+    expect(result.description).toBeUndefined();
+    expect(result.requestHeaders).toBeNull();
+    expect(result.requestBody).toBeNull();
   });
 
   it("generates idempotency key when not provided", async () => {
@@ -220,7 +220,7 @@ describe("addCallback integration", () => {
       storage,
     });
 
-    expect(result.objRecord.idempotencyKey).toMatch(/__fmdx_generated_/);
+    expect(result.idempotencyKey).toMatch(/__fmdx_generated_/);
   });
 
   it("handles timeout and interval fields", async () => {
@@ -243,9 +243,9 @@ describe("addCallback integration", () => {
       storage,
     });
 
-    expect(result.objRecord.timeout).toEqual(timeout);
-    expect(result.objRecord.intervalFrom).toEqual(intervalFrom);
-    expect(result.objRecord.intervalMs).toBe(intervalMs);
+    expect(result.timeout).toEqual(timeout);
+    expect(result.intervalFrom).toEqual(intervalFrom);
+    expect(result.intervalMs).toBe(intervalMs);
   });
 
   it("handles null timeout and interval fields", async () => {
@@ -264,9 +264,9 @@ describe("addCallback integration", () => {
       storage,
     });
 
-    expect(result.objRecord.timeout).toBeNull();
-    expect(result.objRecord.intervalFrom).toBeNull();
-    expect(result.objRecord.intervalMs).toBeNull();
+    expect(result.timeout).toBeNull();
+    expect(result.intervalFrom).toBeNull();
+    expect(result.intervalMs).toBeNull();
   });
 
   it("initializes execution tracking fields to null", async () => {
@@ -281,8 +281,8 @@ describe("addCallback integration", () => {
       storage,
     });
 
-    expect(result.objRecord.lastExecutedAt).toBeNull();
-    expect(result.objRecord.lastSuccessAt).toBeNull();
-    expect(result.objRecord.lastErrorAt).toBeNull();
+    expect(result.lastExecutedAt).toBeNull();
+    expect(result.lastSuccessAt).toBeNull();
+    expect(result.lastErrorAt).toBeNull();
   });
 });

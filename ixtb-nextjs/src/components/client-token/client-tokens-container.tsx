@@ -6,6 +6,7 @@ import {
   GetClientTokensEndpointArgs,
   IClientToken,
 } from "fmdx-core/definitions/clientToken";
+import { kId0 } from "fmdx-core/definitions/system";
 import { useState } from "react";
 import { OmitFrom } from "softkave-js-utils";
 import { ComponentListMessage } from "../internal/component-list/component-list-message.tsx";
@@ -42,7 +43,14 @@ export function ClientTokenListContainer({
     page,
     limit: pageSize,
     query: {
-      appId,
+      appId: kId0,
+      meta: [
+        {
+          field: "appId",
+          value: appId,
+          op: "eq",
+        },
+      ],
       ...filter,
     },
   });

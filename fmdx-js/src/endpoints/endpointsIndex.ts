@@ -1,5 +1,4 @@
 // content is auto-generated, do not modify
 export * from './fmdxTypes.js';
 export * from './fmdxEndpoints.js';
-export * from './endpointsIndex.js';
-export * from 'mfdoc-js-sdk-base';
+export type {SdkConfig} from './SdkConfig.js';

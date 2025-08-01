@@ -14,7 +14,7 @@ import { NextClientTokenAuthenticatedEndpointFn } from "../../types";
 
 async function callNodeServerAddCallback(params: {
   item: AddCallbackEndpointArgs;
-  orgId: string;
+  groupId: string;
   clientTokenId: string;
   idempotencyKey: string;
 }) {
@@ -22,7 +22,7 @@ async function callNodeServerAddCallback(params: {
   const nodeServerInternalAccessKey = getNodeServerInternalAccessKey();
   const callParams = {
     item: params.item,
-    orgId: params.orgId,
+    groupId: params.groupId,
     clientTokenId: params.clientTokenId,
     idempotencyKey: params.idempotencyKey,
   };
@@ -57,7 +57,7 @@ export const addCallbackEndpoint: NextClientTokenAuthenticatedEndpointFn<
     input.idempotencyKey ?? `__fmdx_generated_${uuidv7()}_${Date.now()}`;
   const callback = await callNodeServerAddCallback({
     item: input,
-    orgId: clientToken.groupId,
+    groupId: clientToken.groupId,
     clientTokenId: clientToken.id,
     idempotencyKey,
   });

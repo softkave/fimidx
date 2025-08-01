@@ -1,5 +1,5 @@
 import {Request, Response} from 'express';
-import {objModel} from 'fmdx-core/db/mongo';
+import {getObjModel} from 'fmdx-core/db/fmdx.mongo';
 import {deleteCallbacksSchema, ICallback} from 'fmdx-core/definitions/callback';
 import {kObjTags} from 'fmdx-core/definitions/obj';
 import {deleteCallbacks} from 'fmdx-core/serverHelpers/index';
@@ -18,7 +18,7 @@ async function cleanupDeletedCallbacks(params: {fromDate: Date; toDate: Date}) {
   const batchSize = 100;
 
   do {
-    batch = await objModel
+    batch = await getObjModel()
       .find({
         tag: kObjTags.callback,
         createdAt: {

@@ -4,8 +4,9 @@
   "private": true,
   "scripts": {
     "test": "env-cmd -f \".env.test\" vitest run --config ./vitest.config.ts",
-    "test:pure": "env-cmd -f \".env.test\" vitest run --config ./vitest.config.pure.ts",
+    "test:unit": "env-cmd -f \".env.test\" vitest run --config ./vitest.config.unit.ts",
     "clean": "rm -rf dist",
+    "compile:dev": "tsc --watch",
     "compile": "pnpm clean && tsc",
     "type-check": "tsc --noEmit",
     "db:generate:sqlite": "env-cmd -f \".env.local\" npx drizzle-kit generate --config=fmdx.sqlite.drizzle.config.ts",
@@ -16,7 +17,7 @@
     "db:migrate:postgres:dev": "env-cmd -f \".env.local\" npx drizzle-kit migrate --config=fmdx.postgres.drizzle.config.ts",
     "db:migrate:postgres:prod": "env-cmd -f \".env.prod\" npx drizzle-kit migrate --config=fmdx.postgres.drizzle.config.ts",
     "db:migrate:postgres:test": "env-cmd -f \".env.test\" npx drizzle-kit migrate --config=fmdx.postgres.drizzle.config.ts",
-    "mongo:dev": "npx run-rs --host localhost --portStart 27010 --dbpath ./local-mongo/dev --keep",
+    "mongo:dev": "npx run-rs --host localhost --portStart 27010 --dbpath ./local-mongo/dev --keep -v 7.0.0",
     "mongo:test": "npx run-rs --host localhost --portStart 27015 --dbpath ./local-mongo/test"
   },
   "type": "module",

@@ -7,7 +7,7 @@ export function ComponentListMessage(props: {
   className?: string;
 }) {
   return (
-    <div className={cn("p-4", props.className)}>
+    <div className={cn("p-4 w-full", props.className)}>
       <PageMessage
         title={props.title}
         message={props.message}

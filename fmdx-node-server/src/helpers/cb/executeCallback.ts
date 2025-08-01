@@ -1,5 +1,5 @@
 import axios, {AxiosError} from 'axios';
-import {objModel} from 'fmdx-core/db/mongo';
+import {getObjModel} from 'fmdx-core/db/fmdx.mongo';
 import {
   callbackMethodSchema,
   kCallbackFmdxHeaders,
@@ -14,7 +14,7 @@ import {removeCallbackFromStore} from './removeCallbackFromStore.js';
 
 export async function executeCallback(params: {callbackId: string}) {
   const {callbackId} = params;
-  const obj = await objModel
+  const obj = await getObjModel()
     .findOne({
       id: callbackId,
       tag: kObjTags.callback,
@@ -27,6 +27,7 @@ export async function executeCallback(params: {callbackId: string}) {
   }
 
   const callback = objToCallback(obj);
+  console.log('Executing callback', callback.id);
 
   try {
     const response = await axios({

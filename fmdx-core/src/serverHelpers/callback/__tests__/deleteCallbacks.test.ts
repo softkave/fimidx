@@ -274,7 +274,7 @@ describe("deleteCallbacks integration", () => {
     const deleteArgs = makeDeleteCallbacksArgs({
       query: {
         appId: defaultAppId,
-        name: { eq: alphaCallback.objRecord.name },
+        name: { eq: alphaCallback.name },
       },
     });
 
@@ -292,7 +292,7 @@ describe("deleteCallbacks integration", () => {
       storage,
     });
     expect(afterResult.callbacks).toHaveLength(1);
-    expect(afterResult.callbacks[0].name).toBe(betaCallback.objRecord.name);
+    expect(afterResult.callbacks[0].name).toBe(betaCallback.name);
   });
 
   it("deletes callbacks by url filter", async () => {

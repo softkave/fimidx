@@ -3,7 +3,6 @@
 import { IOrg } from "@/src/definitions/org";
 import { useDeleteOrg } from "@/src/lib/clientApi/org";
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
-import { useHasPermission } from "@/src/lib/clientHooks/permissionHooks";
 import { cn } from "@/src/lib/utils";
 import { isString } from "lodash-es";
 import { Ellipsis, Loader2 } from "lucide-react";
@@ -29,13 +28,6 @@ export interface IOrgItemMenuProps {
 
 export function OrgItemMenu(props: IOrgItemMenuProps) {
   const { org, onDeleting, onDeleted, routeAfterDelete = true } = props;
-
-  const {
-    checks: [canUpdate, canDelete],
-  } = useHasPermission({
-    orgId: org.id,
-    permission: [kPermissions.org.update, kPermissions.org.delete],
-  });
 
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
@@ -89,16 +81,10 @@ export function OrgItemMenu(props: IOrgItemMenuProps) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
-          <DropdownMenuItem
-            onSelect={() => setIsEditing(true)}
-            disabled={!canUpdate}
-          >
+          <DropdownMenuItem onSelect={() => setIsEditing(true)}>
             Edit
           </DropdownMenuItem>
-          <DropdownMenuItem
-            onSelect={deleteOrgDialog.trigger}
-            disabled={!canDelete}
-          >
+          <DropdownMenuItem onSelect={deleteOrgDialog.trigger}>
             Delete
           </DropdownMenuItem>
         </DropdownMenuContent>

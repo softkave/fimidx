@@ -8,11 +8,11 @@ export function ComponentList(props: {
   className?: string;
 }) {
   return (
-    <div className={cn("flex flex-col", props.className)}>
+    <div className={cn("flex flex-col w-full", props.className)}>
       {Array.from({ length: props.count }).map((_, index) => (
         <Fragment key={index}>
           {index > 0 && (
-            <div className="md:px-4">
+            <div className="md:px-4 w-full">
               <Separator />
             </div>
           )}

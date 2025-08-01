@@ -1,4 +1,3 @@
-import { kPermissions } from "fmdx-core/definitions/permissions";
 import { useMemo } from "react";
 import { convertToArray } from "softkave-js-utils";
 import { useGetMemberByUserId } from "../clientApi/member";
@@ -23,9 +22,7 @@ export function useHasPermission(opts: {
     }
 
     const hasWildcard =
-      getMemberByUserIdHook.data?.member.permissions?.includes(
-        kPermissions.wildcard
-      );
+      getMemberByUserIdHook.data?.member.permissions?.includes("*");
     const permissions = convertToArray(opts.permission);
     return permissions.map(
       (p) =>

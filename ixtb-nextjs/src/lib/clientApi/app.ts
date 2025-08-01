@@ -1,16 +1,17 @@
 import {
   AddAppEndpointResponse,
   addAppSchema,
-  deleteAppSchema,
-  GetAppEndpointResponse,
+  appQuerySchema,
+  deleteAppsSchema,
   GetAppsEndpointResponse,
   UpdateAppEndpointResponse,
-  updateAppSchema,
+  updateAppsSchema,
 } from "fmdx-core/definitions/app";
 import { convertToArray } from "softkave-js-utils";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
 import { z } from "zod";
+import { kApiAppKeys } from "./apikeys.ts";
 import { kAppSWRKeys } from "./swrkeys.ts";
 import {
   handleResponse,
@@ -37,15 +38,11 @@ export type AddAppOnSuccessParams = [
   res: Awaited<ReturnType<typeof addApp>>
 ];
 
-export function useAddApp(
-  opts: IUseMutationHandlerOpts<typeof addApp> & {
-    orgId: string;
-  }
-) {
+export function useAddApp(opts: IUseMutationHandlerOpts<typeof addApp>) {
   const mutationHandler = useMutationHandler(addApp, {
     ...opts,
     invalidate: [
-      kAppSWRKeys.getApps({ orgId: opts.orgId }),
+      kApiAppKeys.getApps(),
       ...convertToArray(opts.invalidate || []),
     ],
   });
@@ -71,11 +68,11 @@ export async function getApps(key: ReturnType<typeof kAppSWRKeys.getApps>) {
 export function useGetApps(opts: {
   page?: number;
   limit?: number;
-  orgId: string;
+  query: z.infer<typeof appQuerySchema>;
 }) {
   const { data, error, isLoading, isValidating, mutate } = useSWR(
     kAppSWRKeys.getApps({
-      orgId: opts.orgId,
+      query: opts.query,
       page: opts.page,
       limit: opts.limit,
     }),
@@ -85,27 +82,10 @@ export function useGetApps(opts: {
   return { data, error, isLoading, isValidating, mutate };
 }
 
-async function getApp(key: ReturnType<typeof kAppSWRKeys.getApp>) {
-  const res = await fetch(key, {
-    method: "GET",
-  });
-
-  return await handleResponse<GetAppEndpointResponse>(res);
-}
-
-export function useGetApp(opts: { appId: string }) {
-  const { data, error, isLoading, isValidating, mutate } = useSWR(
-    kAppSWRKeys.getApp(opts.appId),
-    getApp
-  );
-
-  return { data, error, isLoading, isValidating, mutate };
-}
-
 async function updateApp(
   key: ReturnType<typeof kAppSWRKeys.updateApp>,
   params: {
-    arg: z.infer<typeof updateAppSchema>;
+    arg: z.infer<typeof updateAppsSchema>;
   }
 ) {
   const res = await fetch(key, {
@@ -121,23 +101,17 @@ export type UpdateAppOnSuccessParams = [
   res: Awaited<ReturnType<typeof updateApp>>
 ];
 
-export function useUpdateApp(
-  opts: IUseMutationHandlerOpts<typeof updateApp> & {
-    appId: string;
-    orgId: string;
-  }
-) {
+export function useUpdateApp(opts: IUseMutationHandlerOpts<typeof updateApp>) {
   const mutationHandler = useMutationHandler(updateApp, {
     ...opts,
     invalidate: [
-      kAppSWRKeys.getApps({ orgId: opts.orgId }),
-      kAppSWRKeys.getApp(opts.appId),
+      kApiAppKeys.getApps(),
       ...convertToArray(opts.invalidate || []),
     ],
   });
 
   const { trigger, data, error, isMutating, reset } = useSWRMutation(
-    kAppSWRKeys.updateApp(opts.appId),
+    kAppSWRKeys.updateApp(),
     mutationHandler
   );
 
@@ -147,7 +121,7 @@ export function useUpdateApp(
 async function deleteApp(
   key: ReturnType<typeof kAppSWRKeys.deleteApp>,
   params: {
-    arg: z.infer<typeof deleteAppSchema>;
+    arg: z.infer<typeof deleteAppsSchema>;
   }
 ) {
   const res = await fetch(key, {
@@ -163,17 +137,11 @@ export type DeleteAppOnSuccessParams = [
   res: Awaited<ReturnType<typeof deleteApp>>
 ];
 
-export function useDeleteApp(
-  opts: IUseMutationHandlerOpts<typeof deleteApp> & {
-    appId: string;
-    orgId: string;
-  }
-) {
+export function useDeleteApp(opts: IUseMutationHandlerOpts<typeof deleteApp>) {
   const mutationHandler = useMutationHandler(deleteApp, {
     ...opts,
     invalidate: [
-      kAppSWRKeys.getApps({ orgId: opts.orgId }),
-      kAppSWRKeys.getApp(opts.appId),
+      kApiAppKeys.getApps(),
       ...convertToArray(opts.invalidate || []),
     ],
   });

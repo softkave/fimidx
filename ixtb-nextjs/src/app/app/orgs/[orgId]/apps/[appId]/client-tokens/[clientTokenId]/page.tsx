@@ -38,5 +38,5 @@ export default async function Page(
     );
   }
 
-  return <ClientTokenPage clientTokenId={clientTokenId} />;
+  return <ClientTokenPage appId={appId} clientTokenId={clientTokenId} />;
 }

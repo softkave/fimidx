@@ -16,10 +16,9 @@ export const kApiOrgKeys = {
 
 export const kApiAppKeys = {
   getApps: () => `/api/apps/fetch`,
-  getApp: (appId: string) => `/api/apps/${appId}`,
   addApp: () => `/api/apps`,
   deleteApp: () => `/api/apps`,
-  updateApp: (appId: string) => `/api/apps/${appId}`,
+  updateApp: () => `/api/apps`,
 };
 
 export const kApiClientTokenKeys = {
@@ -34,7 +33,7 @@ export const kApiClientTokenKeys = {
 
 export const kApiLogKeys = {
   ingest: () => `/api/logs/ingest`,
-  retrieve: () => `/api/logs/retrieve`,
+  retrieve: () => `/api/logs/fetch`,
   getLogFields: () => `/api/logs/fields`,
 };
 

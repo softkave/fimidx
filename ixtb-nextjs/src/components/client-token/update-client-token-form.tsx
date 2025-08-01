@@ -6,6 +6,7 @@ import {
 } from "@/src/lib/clientApi/clientToken.ts";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { IClientToken } from "fmdx-core/definitions/clientToken";
+import { kId0 } from "fmdx-core/definitions/system";
 import { useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -58,7 +59,7 @@ export function UpdateClientTokenForm(props: IUpdateClientTokenFormProps) {
     async (values: z.infer<typeof addClientTokenFormSchema>) => {
       await updateClientTokenHook.trigger({
         query: {
-          appId: clientToken.appId,
+          appId: kId0,
           id: {
             eq: clientToken.id,
           },
@@ -69,7 +70,7 @@ export function UpdateClientTokenForm(props: IUpdateClientTokenFormProps) {
         },
       });
     },
-    [updateClientTokenHook, clientToken.id, clientToken.appId]
+    [updateClientTokenHook, clientToken.id]
   );
 
   return (

@@ -15,6 +15,11 @@ export function startHttpServer(params: {
 
   app.use(express.json());
   app.use((req, res, next) => {
+    console.log(
+      'Internal access key',
+      req.headers[kInternalAccessKeyHeader],
+      internalAccessKey,
+    );
     if (req.headers[kInternalAccessKeyHeader] === internalAccessKey) {
       next();
     } else {
