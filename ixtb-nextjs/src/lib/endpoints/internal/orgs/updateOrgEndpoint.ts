@@ -2,8 +2,8 @@ import {
   UpdateOrgEndpointResponse,
   updateOrgSchema,
 } from "@/src/definitions/org";
-import { kId0 } from "fmdx-core/definitions/index";
-import { updateGroups } from "fmdx-core/serverHelpers/index";
+import { kId0 } from "fimidx-core/definitions/index";
+import { updateGroups } from "fimidx-core/serverHelpers/index";
 import { NextUserAuthenticatedEndpointFn } from "../../types";
 
 export const updateOrgEndpoint: NextUserAuthenticatedEndpointFn<

@@ -2,8 +2,8 @@ import {
   getManyObjsSchema,
   IGetManyObjsEndpointResponse,
   kObjTags,
-} from "fmdx-core/definitions/obj";
-import { getManyObjs } from "fmdx-core/serverHelpers/index";
+} from "fimidx-core/definitions/obj";
+import { getManyObjs } from "fimidx-core/serverHelpers/index";
 import { NextMaybeAuthenticatedEndpointFn } from "../../types";
 
 export const getManyObjsEndpoint: NextMaybeAuthenticatedEndpointFn<

@@ -1,5 +1,5 @@
 import { cn } from "@/src/lib/utils.ts";
-import { SidebarTrigger } from "../ui/sidebar";
+import { SidebarTrigger } from "../ui/sidebar.tsx";
 import { AppHeaderTitle } from "./app-header-title.tsx";
 import { UserMenu } from "./user-menu.tsx";
 

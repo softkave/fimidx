@@ -1,8 +1,13 @@
 packages:
-  - fmdx-core
+  - fimidx-core
   - ixtb-nextjs
-  - fmdx-node-server
-  - fmdx-js
-  - fmdx-mfdoc
+  - fimidx-node-server
+  - fimidx-js
+  - fimidx-mfdoc
+  - fimidx-winston-transport
 onlyBuiltDependencies:
+  - '@tailwindcss/oxide'
+  - esbuild
+  - sharp
   - sqlite3
+  - unrs-resolver

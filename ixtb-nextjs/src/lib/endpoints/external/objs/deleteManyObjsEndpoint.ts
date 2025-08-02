@@ -1,6 +1,6 @@
-import { deleteManyObjsSchema, kObjTags } from "fmdx-core/definitions/obj";
-import { kByTypes } from "fmdx-core/definitions/other";
-import { deleteManyObjs } from "fmdx-core/serverHelpers/index";
+import { deleteManyObjsSchema, kObjTags } from "fimidx-core/definitions/obj";
+import { kByTypes } from "fimidx-core/definitions/other";
+import { deleteManyObjs } from "fimidx-core/serverHelpers/index";
 import { NextClientTokenAuthenticatedEndpointFn } from "../../types";
 
 export const deleteManyObjsEndpoint: NextClientTokenAuthenticatedEndpointFn<

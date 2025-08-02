@@ -6,7 +6,7 @@ import {
   IAddCallbackEndpointResponse,
   IGetCallbackEndpointResponse,
   IGetCallbacksEndpointResponse,
-} from "fmdx-core/definitions/callback";
+} from "fimidx-core/definitions/callback";
 import { convertToArray } from "softkave-js-utils";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";

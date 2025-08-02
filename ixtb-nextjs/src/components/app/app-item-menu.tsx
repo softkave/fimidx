@@ -3,7 +3,7 @@
 import { useDeleteApp } from "@/src/lib/clientApi/app";
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
 import { cn } from "@/src/lib/utils";
-import { IApp } from "fmdx-core/definitions/app";
+import { IApp } from "fimidx-core/definitions/app";
 import { isString } from "lodash-es";
 import { Ellipsis, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";

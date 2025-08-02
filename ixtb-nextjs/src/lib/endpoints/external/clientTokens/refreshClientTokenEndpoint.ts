@@ -1,8 +1,8 @@
 import {
   RefreshClientTokenJWTEndpointResponse,
   refreshClientTokenJWTSchema,
-} from "fmdx-core/definitions/clientToken";
-import { refreshClientTokenJWT } from "fmdx-core/serverHelpers/index";
+} from "fimidx-core/definitions/clientToken";
+import { refreshClientTokenJWT } from "fimidx-core/serverHelpers/index";
 import { NextClientTokenAuthenticatedEndpointFn } from "../../types";
 
 export const refreshClientTokenEndpoint: NextClientTokenAuthenticatedEndpointFn<

@@ -1,10 +1,10 @@
-import { OwnServerError } from "fmdx-core/common/error";
+import { OwnServerError } from "fimidx-core/common/error";
 import {
   AddCallbackEndpointArgs,
   addCallbackSchema,
   IAddCallbackEndpointResponse,
   ICallback,
-} from "fmdx-core/definitions/index";
+} from "fimidx-core/definitions/index";
 import { v7 as uuidv7 } from "uuid";
 import {
   getNodeServerInternalAccessKey,
@@ -54,7 +54,7 @@ export const addCallbackEndpoint: NextClientTokenAuthenticatedEndpointFn<
 
   const input = addCallbackSchema.parse(await req.json());
   const idempotencyKey =
-    input.idempotencyKey ?? `__fmdx_generated_${uuidv7()}_${Date.now()}`;
+    input.idempotencyKey ?? `__fimidx_generated_${uuidv7()}_${Date.now()}`;
   const callback = await callNodeServerAddCallback({
     item: input,
     groupId: clientToken.groupId,

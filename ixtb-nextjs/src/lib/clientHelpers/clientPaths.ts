@@ -1,4 +1,4 @@
-const kBaseUrl = process.env.NEXT_PUBLIC_URL ?? "https://fmdx.fimidara.com";
+const kBaseUrl = process.env.NEXT_PUBLIC_URL ?? "https://fimidx.fimidara.com";
 
 export const kClientPaths = {
   index: "/",

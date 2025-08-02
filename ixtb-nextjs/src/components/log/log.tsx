@@ -1,4 +1,4 @@
-import { ILog } from "fmdx-core/definitions/log";
+import { ILog } from "fimidx-core/definitions/log";
 
 export interface ILogProps {
   log: ILog;

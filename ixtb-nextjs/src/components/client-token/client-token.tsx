@@ -1,6 +1,7 @@
 import { useEncodeClientTokenJWT } from "@/src/lib/clientApi/clientToken";
-import { IClientToken } from "fmdx-core/definitions/clientToken";
+import { IClientToken } from "fimidx-core/definitions/clientToken";
 import { useCallback } from "react";
+import { Copyable } from "../internal/copyable";
 import { ObfuscateText } from "../internal/obfuscate-text";
 import { Button } from "../ui/button";
 import { Separator } from "../ui/separator";
@@ -45,6 +46,15 @@ export function ClientToken(props: IClientTokenProps) {
             {props.clientToken.description}
           </p>
         )}
+        <Separator />
+        <div className="flex flex-col gap-2">
+          <h3 className="text-sm font-medium text-muted-foreground">App ID</h3>
+          <Copyable produceText={() => appId}>
+            <pre className="text-sm text-muted-foreground bg-muted p-2 rounded-md whitespace-pre-wrap break-all">
+              <code>{appId}</code>
+            </pre>
+          </Copyable>
+        </div>
         <Separator />
         <div className="flex flex-col gap-4">
           <div className="flex justify-between items-center gap-2">

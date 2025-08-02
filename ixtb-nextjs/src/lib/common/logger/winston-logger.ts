@@ -1,29 +1,20 @@
 import assert from "assert";
+import { FimidxWinstonTransport } from "fimidx-winston-transport";
 import winston from "winston";
-import {
-  FmLogsWinstonTransport,
-  kFmLogsBaseUrl as kDefaultFmLogsBaseUrl,
-} from "./fmlogs-winston-transport";
 
-const kFmLogsClientToken = process.env.FMLOGS_CLIENT_TOKEN;
-const kFmLogsorgId = process.env.FMLOGS_ORG_ID;
-const kFmLogsAppId = process.env.FMLOGS_APP_ID;
-const kFmLogsBaseUrl = process.env.FMLOGS_BASE_URL ?? kDefaultFmLogsBaseUrl;
+const kFimidxClientToken = process.env.FIMIDX_CLIENT_TOKEN;
+const kFimidxAppId = process.env.FIMIDX_APP_ID;
 
-assert(kFmLogsClientToken, "FMLOGS_CLIENT_TOKEN is not set");
-assert(kFmLogsorgId, "FMLOGS_ORG_ID is not set");
-assert(kFmLogsAppId, "FMLOGS_APP_ID is not set");
-assert(kFmLogsBaseUrl, "FMLOGS_BASE_URL is not set");
+assert(kFimidxClientToken, "FIMIDX_CLIENT_TOKEN is not set");
+assert(kFimidxAppId, "FIMIDX_APP_ID is not set");
 
 export const winstonLogger = winston.createLogger({
   level: "info",
   format: winston.format.json(),
   transports: [
-    new FmLogsWinstonTransport({
-      orgId: kFmLogsorgId,
-      appId: kFmLogsAppId,
-      clientToken: kFmLogsClientToken,
-      baseUrl: kFmLogsBaseUrl,
+    new FimidxWinstonTransport({
+      appId: kFimidxAppId,
+      clientToken: kFimidxClientToken,
     }),
   ],
 });

@@ -1,7 +1,7 @@
 import { deleteOrgSchema } from "@/src/definitions/org";
-import { kByTypes } from "fmdx-core/definitions/index";
-import { kId0 } from "fmdx-core/definitions/system";
-import { deleteGroups } from "fmdx-core/serverHelpers/index";
+import { kByTypes } from "fimidx-core/definitions/index";
+import { kId0 } from "fimidx-core/definitions/system";
+import { deleteGroups } from "fimidx-core/serverHelpers/index";
 import { NextUserAuthenticatedEndpointFn } from "../../types";
 
 export const deleteOrgEndpoint: NextUserAuthenticatedEndpointFn<void> = async (

@@ -2,7 +2,7 @@
 
 import { useGetApps } from "@/src/lib/clientApi/app";
 import assert from "assert";
-import { IApp } from "fmdx-core/definitions/app";
+import { IApp } from "fimidx-core/definitions/app";
 import { useCallback, useMemo } from "react";
 import { WrapLoader } from "../internal/wrap-loader";
 import { App, AppTab, kAppTabs } from "./app";

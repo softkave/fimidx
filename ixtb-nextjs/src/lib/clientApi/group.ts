@@ -6,7 +6,7 @@ import {
   GetGroupsEndpointResponse,
   UpdateGroupEndpointResponse,
   updateGroupSchema,
-} from "fmdx-core/definitions/group";
+} from "fimidx-core/definitions/group";
 import { convertToArray } from "softkave-js-utils";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";

@@ -1,8 +1,8 @@
 import {
   IUpdateMonitorsEndpointResponse,
   updateMonitorsSchema,
-} from "fmdx-core/definitions/index";
-import { updateMonitors } from "fmdx-core/serverHelpers/index";
+} from "fimidx-core/definitions/index";
+import { updateMonitors } from "fimidx-core/serverHelpers/index";
 import { NextMaybeAuthenticatedEndpointFn } from "../../types";
 
 export const updateMonitorsEndpoint: NextMaybeAuthenticatedEndpointFn<

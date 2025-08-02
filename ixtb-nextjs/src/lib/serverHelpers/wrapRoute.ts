@@ -1,5 +1,5 @@
 import { AssertionError } from "assert";
-import { OwnServerError, OwnError } from "fmdx-core/common/error";
+import { OwnError, OwnServerError } from "fimidx-core/common/error";
 import { NextRequest } from "next/server";
 import { AnyFn, AnyObject } from "softkave-js-utils";
 import { ZodError } from "zod";

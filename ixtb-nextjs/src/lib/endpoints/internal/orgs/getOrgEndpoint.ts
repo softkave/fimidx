@@ -1,8 +1,8 @@
 import { GetOrgEndpointResponse, getOrgSchema } from "@/src/definitions/org";
 import assert from "assert";
-import { kOwnServerErrorCodes, OwnServerError } from "fmdx-core/common/error";
-import { kId0 } from "fmdx-core/definitions/index";
-import { getGroups } from "fmdx-core/serverHelpers/index";
+import { kOwnServerErrorCodes, OwnServerError } from "fimidx-core/common/error";
+import { kId0 } from "fimidx-core/definitions/index";
+import { getGroups } from "fimidx-core/serverHelpers/index";
 import { first } from "lodash-es";
 import { NextUserAuthenticatedEndpointFn } from "../../types";
 import { groupToOrg } from "./groupToOrg";

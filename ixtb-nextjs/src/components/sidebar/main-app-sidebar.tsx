@@ -4,7 +4,7 @@ import {
   SidebarHeader,
 } from "@/src/components/ui/sidebar";
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
-import { kAppConstants } from "fmdx-core/definitions/appConstants";
+import { kAppConstants } from "fimidx-core/definitions/appConstants";
 import Link from "next/link";
 import { AppSidebarGroupContainer } from "./app-sidebar-group-container";
 import { HomeSidebarGroup } from "./home-sidebar-group";

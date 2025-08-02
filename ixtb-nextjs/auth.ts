@@ -1,7 +1,7 @@
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import assert from "assert";
-import { authDb } from "fmdx-core/db/auth-schema";
-import { checkIsAdminEmail } from "fmdx-core/serverHelpers/isAdmin";
+import { authDb } from "fimidx-core/db/auth-schema";
+import { checkIsAdminEmail } from "fimidx-core/serverHelpers/isAdmin";
 import NextAuth, { Session } from "next-auth";
 import Google from "next-auth/providers/google";
 import Resend from "next-auth/providers/resend";

@@ -1,6 +1,6 @@
 "use client";
 
-import { IApp } from "fmdx-core/definitions/app";
+import { IApp } from "fimidx-core/definitions/app";
 import { ComponentListHeader } from "../internal/component-list/component-list-header";
 import { AppItemMenu } from "./app-item-menu";
 

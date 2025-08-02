@@ -1,9 +1,9 @@
 import {
   IUpdateMembersEndpointResponse,
   updateMembersSchema,
-} from "fmdx-core/definitions/member";
-import { kByTypes } from "fmdx-core/definitions/other";
-import { updateMembers } from "fmdx-core/serverHelpers/index";
+} from "fimidx-core/definitions/member";
+import { kByTypes } from "fimidx-core/definitions/other";
+import { updateMembers } from "fimidx-core/serverHelpers/index";
 import { NextClientTokenAuthenticatedEndpointFn } from "../../types";
 
 export const updateMembersEndpoint: NextClientTokenAuthenticatedEndpointFn<

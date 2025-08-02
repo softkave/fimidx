@@ -1,8 +1,8 @@
 import assert from "assert";
-import { kOwnServerErrorCodes, OwnServerError } from "fmdx-core/common/error";
-import { ingestLogsSchema } from "fmdx-core/definitions/log";
-import { kByTypes } from "fmdx-core/definitions/other";
-import { getApps, ingestLogs } from "fmdx-core/serverHelpers/index";
+import { kOwnServerErrorCodes, OwnServerError } from "fimidx-core/common/error";
+import { ingestLogsSchema } from "fimidx-core/definitions/log";
+import { kByTypes } from "fimidx-core/definitions/other";
+import { getApps, ingestLogs } from "fimidx-core/serverHelpers/index";
 import { first } from "lodash-es";
 import { NextClientTokenAuthenticatedEndpointFn } from "../../types";
 
@@ -13,6 +13,8 @@ export const ingestLogsEndpoint: NextClientTokenAuthenticatedEndpointFn<
     req,
     session: { clientToken },
   } = params;
+
+  console.log("ingestLogsEndpoint", params);
 
   const input = ingestLogsSchema.parse(await req.json());
   const { apps } = await getApps({
@@ -26,12 +28,13 @@ export const ingestLogsEndpoint: NextClientTokenAuthenticatedEndpointFn<
   });
 
   const app = first(apps);
+  console.log("app", app);
   assert(
     app,
     new OwnServerError("App not found", kOwnServerErrorCodes.NotFound)
   );
   assert(
-    app?.id === clientToken.appId,
+    app?.id === clientToken.meta?.appId,
     new OwnServerError("Permission denied", kOwnServerErrorCodes.Unauthorized)
   );
 

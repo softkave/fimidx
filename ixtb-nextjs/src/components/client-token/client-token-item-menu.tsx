@@ -3,8 +3,8 @@
 import { useDeleteClientTokens } from "@/src/lib/clientApi/clientToken";
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
 import { cn } from "@/src/lib/utils";
-import { IClientToken } from "fmdx-core/definitions/clientToken";
-import { kId0 } from "fmdx-core/definitions/system";
+import { IClientToken } from "fimidx-core/definitions/clientToken";
+import { kId0 } from "fimidx-core/definitions/system";
 import { isString } from "lodash-es";
 import { Ellipsis, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";

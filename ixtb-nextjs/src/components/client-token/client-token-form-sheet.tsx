@@ -1,6 +1,6 @@
 "use client";
 
-import { IClientToken } from "fmdx-core/definitions/clientToken";
+import { IClientToken } from "fimidx-core/definitions/clientToken";
 import { useCallback } from "react";
 import { MaybeScroll } from "../internal/maybe-scroll.tsx";
 import {

@@ -1,6 +1,9 @@
-import { addAppSchema } from "fmdx-core/definitions/app";
-import { AddAppEndpointResponse, kByTypes } from "fmdx-core/definitions/index";
-import { addApp } from "fmdx-core/serverHelpers/index";
+import { addAppSchema } from "fimidx-core/definitions/app";
+import {
+  AddAppEndpointResponse,
+  kByTypes,
+} from "fimidx-core/definitions/index";
+import { addApp } from "fimidx-core/serverHelpers/index";
 import { NextUserAuthenticatedEndpointFn } from "../../types";
 
 export const addAppEndpoint: NextUserAuthenticatedEndpointFn<

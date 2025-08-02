@@ -1,6 +1,6 @@
 "use client";
 
-import { IApp } from "fmdx-core/definitions/app";
+import { IApp } from "fimidx-core/definitions/app";
 import { useCallback } from "react";
 import { MaybeScroll } from "../internal/maybe-scroll.tsx";
 import {

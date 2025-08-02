@@ -6,7 +6,7 @@ import {
   GetAppsEndpointResponse,
   UpdateAppEndpointResponse,
   updateAppsSchema,
-} from "fmdx-core/definitions/app";
+} from "fimidx-core/definitions/app";
 import { convertToArray } from "softkave-js-utils";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";

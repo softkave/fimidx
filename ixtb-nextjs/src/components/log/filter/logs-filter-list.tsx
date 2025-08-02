@@ -1,9 +1,9 @@
 import assert from "assert";
-import { ILogField } from "fmdx-core/definitions/log";
+import { ILogField } from "fimidx-core/definitions/log";
 import {
   IObjPartQueryItem,
   IObjPartQueryList,
-} from "fmdx-core/definitions/obj";
+} from "fimidx-core/definitions/obj";
 import { Loader2, PlusIcon, XIcon } from "lucide-react";
 import { ComponentProps, useMemo, useState } from "react";
 import { Button } from "../../ui/button";

@@ -1,4 +1,4 @@
-# Plans for fmdx 02
+# Plans for fimidx 02
 
 - Underlying storage layer using Mongodb. Cut Postgresql for now, because deeply nested array fields are proving a bit unwieldy.
 - Current offerings will be:

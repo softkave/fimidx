@@ -1,5 +1,5 @@
-import { ILog } from "fmdx-core/definitions/log";
-import { IObjPartQueryList } from "fmdx-core/definitions/obj";
+import { ILog } from "fimidx-core/definitions/log";
+import { IObjPartQueryList } from "fimidx-core/definitions/obj";
 import { useMemo } from "react";
 import { ComponentListMessage } from "../internal/component-list/component-list-message.tsx";
 import {

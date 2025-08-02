@@ -4,13 +4,13 @@ import {
   db,
   emailBlockLists as emailBlockListTable,
   emailRecords as emailRecordTable,
-} from "fmdx-core/db/fmdx.sqlite";
+} from "fimidx-core/db/fimidx.sqlite";
 import {
   EmailRecordReason,
   EmailRecordStatus,
   kEmailRecordProvider,
   kEmailRecordStatus,
-} from "fmdx-core/definitions/email";
+} from "fimidx-core/definitions/email";
 import { Resend } from "resend";
 import { AnyObject, convertToArray, OmitFrom } from "softkave-js-utils";
 

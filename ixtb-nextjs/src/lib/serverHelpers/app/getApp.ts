@@ -1,7 +1,7 @@
 import assert from "assert";
-import { kOwnServerErrorCodes, OwnServerError } from "fmdx-core/common/error";
-import { IClientToken } from "fmdx-core/definitions/clientToken";
-import { getApps } from "fmdx-core/serverHelpers/index";
+import { kOwnServerErrorCodes, OwnServerError } from "fimidx-core/common/error";
+import { IClientToken } from "fimidx-core/definitions/clientToken";
+import { getApps } from "fimidx-core/serverHelpers/index";
 import { first } from "lodash-es";
 
 export async function getApp(params: {

@@ -2,8 +2,8 @@ import {
   getObjFieldsSchema,
   IGetObjFieldsEndpointResponse,
   kObjTags,
-} from "fmdx-core/definitions/obj";
-import { getObjFields } from "fmdx-core/serverHelpers/index";
+} from "fimidx-core/definitions/obj";
+import { getObjFields } from "fimidx-core/serverHelpers/index";
 import { NextMaybeAuthenticatedEndpointFn } from "../../types";
 
 // TODO: delineate between internal and external objs

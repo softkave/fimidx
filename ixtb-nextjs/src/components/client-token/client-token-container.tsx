@@ -4,8 +4,8 @@ import { useGetClientTokens } from "@/src/lib/clientApi/clientToken";
 import {
   getClientTokensSchema,
   IClientToken,
-} from "fmdx-core/definitions/clientToken";
-import { kId0 } from "fmdx-core/definitions/system";
+} from "fimidx-core/definitions/clientToken";
+import { kId0 } from "fimidx-core/definitions/system";
 import { useCallback, useMemo } from "react";
 import { z } from "zod";
 import { WrapLoader } from "../internal/wrap-loader";

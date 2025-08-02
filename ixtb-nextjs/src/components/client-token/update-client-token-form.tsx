@@ -5,8 +5,8 @@ import {
   useUpdateClientTokens,
 } from "@/src/lib/clientApi/clientToken.ts";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { IClientToken } from "fmdx-core/definitions/clientToken";
-import { kId0 } from "fmdx-core/definitions/system";
+import { IClientToken } from "fimidx-core/definitions/clientToken";
+import { kId0 } from "fimidx-core/definitions/system";
 import { useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";

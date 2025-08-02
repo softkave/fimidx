@@ -1,6 +1,6 @@
-import { deleteAppsSchema } from "fmdx-core/definitions/app";
-import { kByTypes } from "fmdx-core/definitions/other";
-import { deleteApps } from "fmdx-core/serverHelpers/index";
+import { deleteAppsSchema } from "fimidx-core/definitions/app";
+import { kByTypes } from "fimidx-core/definitions/other";
+import { deleteApps } from "fimidx-core/serverHelpers/index";
 import { NextUserAuthenticatedEndpointFn } from "../../types";
 
 export const deleteAppEndpoint: NextUserAuthenticatedEndpointFn<void> = async (

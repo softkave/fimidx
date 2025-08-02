@@ -1,5 +1,5 @@
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
-import { IApp } from "fmdx-core/definitions/app";
+import { IApp } from "fimidx-core/definitions/app";
 import Link from "next/link";
 import { ComponentListItemSkeleton } from "../internal/component-list/component-list-item-skeleton.tsx";
 import { ComponentListItem } from "../internal/component-list/component-list-item.tsx";

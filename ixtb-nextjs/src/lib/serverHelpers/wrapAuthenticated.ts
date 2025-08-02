@@ -1,12 +1,12 @@
 import { auth, NextAuthRequest } from "@/auth";
 import assert from "assert";
-import { OwnServerError } from "fmdx-core/common/error";
-import { IClientToken } from "fmdx-core/definitions/clientToken";
-import { kByTypes } from "fmdx-core/definitions/other";
+import { OwnServerError } from "fimidx-core/common/error";
+import { IClientToken } from "fimidx-core/definitions/clientToken";
+import { kByTypes } from "fimidx-core/definitions/other";
 import {
   getJWTSecret,
   IEncodeClientTokenJWTContent,
-} from "fmdx-core/serverHelpers/clientToken/encodeClientTokenJWT";
+} from "fimidx-core/serverHelpers/clientToken/encodeClientTokenJWT";
 import jwt from "jsonwebtoken";
 import { isString } from "lodash-es";
 import { Session } from "next-auth";
@@ -86,6 +86,8 @@ async function tryGetClientTokenAuthenticatedRequest(
     const { clientToken } = await getClientToken({
       input: { clientTokenId: decodedToken.id },
     });
+    console.log("clientToken", clientToken);
+    console.log("decodedToken", decodedToken);
     assert(
       clientToken.appId === decodedToken.appId,
       new OwnServerError("Unauthorized", 401)

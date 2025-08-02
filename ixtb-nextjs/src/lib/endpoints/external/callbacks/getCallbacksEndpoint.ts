@@ -1,8 +1,8 @@
 import {
   getCallbacksSchema,
   IGetCallbacksEndpointResponse,
-} from "fmdx-core/definitions/index";
-import { getCallbacks } from "fmdx-core/serverHelpers/index";
+} from "fimidx-core/definitions/index";
+import { getCallbacks } from "fimidx-core/serverHelpers/index";
 import { NextMaybeAuthenticatedEndpointFn } from "../../types";
 
 export const getCallbacksEndpoint: NextMaybeAuthenticatedEndpointFn<

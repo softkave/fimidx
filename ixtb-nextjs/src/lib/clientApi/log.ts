@@ -3,7 +3,7 @@ import {
   GetLogFieldsEndpointResponse,
   GetLogsEndpointArgs,
   GetLogsEndpointResponse,
-} from "fmdx-core/definitions/log";
+} from "fimidx-core/definitions/log";
 import useSWR from "swr";
 import { kLogSWRKeys } from "./swrkeys";
 import { handleResponse } from "./utils";

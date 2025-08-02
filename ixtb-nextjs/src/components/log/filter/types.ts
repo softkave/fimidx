@@ -1,4 +1,4 @@
-import { IObjPartQueryItem } from "fmdx-core/definitions/obj";
+import { IObjPartQueryItem } from "fimidx-core/definitions/obj";
 
 export interface IWorkingLogPartFilterItem {
   item: IObjPartQueryItem;

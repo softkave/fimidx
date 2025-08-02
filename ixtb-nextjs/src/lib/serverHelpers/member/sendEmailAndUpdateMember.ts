@@ -1,6 +1,6 @@
-import { kEmailRecordStatus } from "fmdx-core/definitions/email";
-import { kId0 } from "fmdx-core/definitions/system";
-import { updateMemberSendEmailStatus } from "fmdx-core/serverHelpers/index";
+import { kEmailRecordStatus } from "fimidx-core/definitions/email";
+import { kId0 } from "fimidx-core/definitions/system";
+import { updateMemberSendEmailStatus } from "fimidx-core/serverHelpers/index";
 import { sendAddParticipantEmail } from "../emails/sendAddParticipantEmail";
 
 export async function sendEmailAndUpdateMember(params: {

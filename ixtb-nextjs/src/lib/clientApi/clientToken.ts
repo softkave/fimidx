@@ -8,7 +8,7 @@ import {
   GetClientTokensEndpointResponse,
   UpdateClientTokensEndpointResponse,
   updateClientTokensSchema,
-} from "fmdx-core/definitions/clientToken";
+} from "fimidx-core/definitions/clientToken";
 import { first } from "lodash-es";
 import { convertToArray } from "softkave-js-utils";
 import useSWR from "swr";

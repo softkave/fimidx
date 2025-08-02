@@ -9,7 +9,7 @@ import {
   Preview,
   Tailwind,
 } from "@react-email/components";
-import { kAppConstants } from "fmdx-core/definitions/appConstants";
+import { kAppConstants } from "fimidx-core/definitions/appConstants";
 
 export interface AddParticipantEmailProps {
   orgName: string;

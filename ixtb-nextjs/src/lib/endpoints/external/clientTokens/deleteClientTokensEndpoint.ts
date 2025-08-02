@@ -1,5 +1,5 @@
-import { deleteClientTokensSchema } from "fmdx-core/definitions/clientToken";
-import { deleteClientTokens } from "fmdx-core/serverHelpers/index";
+import { deleteClientTokensSchema } from "fimidx-core/definitions/clientToken";
+import { deleteClientTokens } from "fimidx-core/serverHelpers/index";
 import { NextMaybeAuthenticatedEndpointFn } from "../../types";
 
 export const deleteClientTokensEndpoint: NextMaybeAuthenticatedEndpointFn<

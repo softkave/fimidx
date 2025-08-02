@@ -1,7 +1,7 @@
 import { AppHeader } from "@/src/components/internal/app-header";
 import { DefaultErrorMessage } from "@/src/components/internal/default-error-message.tsx";
 import { ErrorTypeMessage } from "@/src/components/internal/error-type-message.tsx";
-import { kAppConstants } from "fmdx-core/definitions/appConstants";
+import { kAppConstants } from "fimidx-core/definitions/appConstants";
 import { Metadata } from "next";
 import { Suspense } from "react";
 

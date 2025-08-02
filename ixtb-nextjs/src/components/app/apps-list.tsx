@@ -1,4 +1,4 @@
-import { IApp } from "fmdx-core/definitions/app";
+import { IApp } from "fimidx-core/definitions/app";
 import { ComponentList } from "../internal/component-list/component-list";
 import { ComponentListMessage } from "../internal/component-list/component-list-message";
 import { AppItem, AppItemSkeleton } from "./app-item";

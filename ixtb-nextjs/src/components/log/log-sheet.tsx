@@ -1,6 +1,6 @@
 "use client";
 
-import { ILog } from "fmdx-core/definitions/log";
+import { ILog } from "fimidx-core/definitions/log";
 import { Sheet, SheetContent } from "../ui/sheet.tsx";
 import { Log } from "./log.tsx";
 

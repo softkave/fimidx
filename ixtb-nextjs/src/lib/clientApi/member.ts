@@ -10,7 +10,7 @@ import {
   removeMemberSchema,
   respondToMemberRequestSchema,
   updateMemberSchema,
-} from "fmdx-core/definitions/members";
+} from "fimidx-core/definitions/members";
 import { convertToArray } from "softkave-js-utils";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";

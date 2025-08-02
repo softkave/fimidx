@@ -1,6 +1,6 @@
 import { cn } from "@/src/lib/utils";
 import { format, parse } from "date-fns";
-import { DurationUnit } from "fmdx-core/definitions/other";
+import { DurationUnit } from "fimidx-core/definitions/other";
 import { isNumber } from "lodash-es";
 import { CalendarIcon, CalendarRangeIcon, HashIcon } from "lucide-react";
 import { useState } from "react";

@@ -2,9 +2,9 @@ import {
   IUpdateManyObjsEndpointResponse,
   kObjTags,
   updateManyObjsSchema,
-} from "fmdx-core/definitions/obj";
-import { kByTypes } from "fmdx-core/definitions/other";
-import { updateManyObjs } from "fmdx-core/serverHelpers/index";
+} from "fimidx-core/definitions/obj";
+import { kByTypes } from "fimidx-core/definitions/other";
+import { updateManyObjs } from "fimidx-core/serverHelpers/index";
 import { NextClientTokenAuthenticatedEndpointFn } from "../../types";
 
 export const updateManyObjsEndpoint: NextClientTokenAuthenticatedEndpointFn<

@@ -1,6 +1,6 @@
-import { FieldType } from "fmdx-core/common/indexer";
-import { ILogField } from "fmdx-core/definitions/log";
-import { objPartQueryItemOpSchema } from "fmdx-core/definitions/obj";
+import { FieldType } from "fimidx-core/common/indexer";
+import { ILogField } from "fimidx-core/definitions/log";
+import { objPartQueryItemOpSchema } from "fimidx-core/definitions/obj";
 import { XIcon } from "lucide-react";
 import { useMemo } from "react";
 import { Button } from "../../ui/button";

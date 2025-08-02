@@ -1,5 +1,5 @@
 import { Duration } from "date-fns";
-import { kDurationUnits } from "fmdx-core/definitions/other";
+import { kDurationUnits } from "fimidx-core/definitions/other";
 import { DurationItemInput } from "./duration-item-input";
 
 export function DurationListInput(props: {

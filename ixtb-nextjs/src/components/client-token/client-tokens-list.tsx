@@ -1,4 +1,4 @@
-import { IClientToken } from "fmdx-core/definitions/clientToken";
+import { IClientToken } from "fimidx-core/definitions/clientToken";
 import { ComponentListMessage } from "../internal/component-list/component-list-message.tsx";
 import { ComponentList } from "../internal/component-list/component-list.tsx";
 import {

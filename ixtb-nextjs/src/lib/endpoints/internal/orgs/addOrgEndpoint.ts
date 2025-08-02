@@ -1,6 +1,6 @@
 import { AddOrgEndpointResponse, addOrgSchema } from "@/src/definitions/org";
-import { kByTypes, kId0 } from "fmdx-core/definitions/index";
-import { addGroup, addMember } from "fmdx-core/serverHelpers/index";
+import { kByTypes, kId0 } from "fimidx-core/definitions/index";
+import { addGroup, addMember } from "fimidx-core/serverHelpers/index";
 import { NextUserAuthenticatedEndpointFn } from "../../types";
 import { groupToOrg } from "./groupToOrg";
 

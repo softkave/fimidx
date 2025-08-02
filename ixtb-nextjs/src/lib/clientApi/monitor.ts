@@ -8,7 +8,7 @@ import {
   IGetMonitorsEndpointResponse,
   IUpdateMonitorEndpointResponse,
   updateMonitorSchema,
-} from "fmdx-core/definitions/monitor";
+} from "fimidx-core/definitions/monitor";
 import { convertToArray } from "softkave-js-utils";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";

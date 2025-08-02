@@ -1,8 +1,8 @@
 import {
   getMonitorsSchema,
   IGetMonitorsEndpointResponse,
-} from "fmdx-core/definitions/index";
-import { getMonitors } from "fmdx-core/serverHelpers/index";
+} from "fimidx-core/definitions/index";
+import { getMonitors } from "fimidx-core/serverHelpers/index";
 import { NextMaybeAuthenticatedEndpointFn } from "../../types";
 
 export const getMonitorsEndpoint: NextMaybeAuthenticatedEndpointFn<

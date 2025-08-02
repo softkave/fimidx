@@ -1,5 +1,5 @@
-import { deleteMembersSchema, kByTypes } from "fmdx-core/definitions/index";
-import { deleteMembers } from "fmdx-core/serverHelpers/index";
+import { deleteMembersSchema, kByTypes } from "fimidx-core/definitions/index";
+import { deleteMembers } from "fimidx-core/serverHelpers/index";
 import { NextClientTokenAuthenticatedEndpointFn } from "../../types";
 
 export const deleteMemberEndpoint: NextClientTokenAuthenticatedEndpointFn<

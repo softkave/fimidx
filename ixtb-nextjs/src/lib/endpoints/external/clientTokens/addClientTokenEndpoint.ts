@@ -1,8 +1,8 @@
 import {
   AddClientTokenEndpointResponse,
   addClientTokenSchema,
-} from "fmdx-core/definitions/clientToken";
-import { addClientToken } from "fmdx-core/serverHelpers/index";
+} from "fimidx-core/definitions/clientToken";
+import { addClientToken } from "fimidx-core/serverHelpers/index";
 import { NextMaybeAuthenticatedEndpointFn } from "../../types";
 
 export const addClientTokenEndpoint: NextMaybeAuthenticatedEndpointFn<

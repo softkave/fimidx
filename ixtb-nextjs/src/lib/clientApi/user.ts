@@ -1,4 +1,4 @@
-import { IGetUserEndpointResponse } from "fmdx-core/definitions/user";
+import { IGetUserEndpointResponse } from "fimidx-core/definitions/user";
 import useSWR from "swr";
 import { useAppSession } from "../clientHooks/userHooks.ts";
 import { handleResponse } from "./utils.ts";

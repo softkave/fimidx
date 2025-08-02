@@ -1,8 +1,8 @@
 import {
   GetAppsEndpointResponse,
   getAppsSchema,
-} from "fmdx-core/definitions/index";
-import { getApps } from "fmdx-core/serverHelpers/index";
+} from "fimidx-core/definitions/index";
+import { getApps } from "fimidx-core/serverHelpers/index";
 import { NextUserAuthenticatedEndpointFn } from "../../types";
 
 export const getAppsEndpoint: NextUserAuthenticatedEndpointFn<

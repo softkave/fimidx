@@ -2,7 +2,7 @@
 
 import { useGetApps } from "@/src/lib/clientApi/app.ts";
 import { cn } from "@/src/lib/utils.ts";
-import { GetAppsEndpointArgs, IApp } from "fmdx-core/definitions/app";
+import { GetAppsEndpointArgs, IApp } from "fimidx-core/definitions/app";
 import { useState } from "react";
 import { OmitFrom } from "softkave-js-utils";
 import { ComponentListMessage } from "../internal/component-list/component-list-message.tsx";

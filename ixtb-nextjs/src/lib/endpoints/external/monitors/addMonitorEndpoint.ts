@@ -2,8 +2,8 @@ import { getApp } from "@/src/lib/serverHelpers/app/getApp";
 import {
   addMonitorSchema,
   IAddMonitorEndpointResponse,
-} from "fmdx-core/definitions/monitor";
-import { addMonitor } from "fmdx-core/serverHelpers/index";
+} from "fimidx-core/definitions/monitor";
+import { addMonitor } from "fimidx-core/serverHelpers/index";
 import { NextMaybeAuthenticatedEndpointFn } from "../../types";
 
 export const addMonitorEndpoint: NextMaybeAuthenticatedEndpointFn<

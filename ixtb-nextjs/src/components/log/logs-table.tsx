@@ -1,5 +1,5 @@
 import { cn } from "@/src/lib/utils.ts";
-import { ILog } from "fmdx-core/definitions/log";
+import { ILog } from "fimidx-core/definitions/log";
 import { useState } from "react";
 import { Badge } from "../ui/badge.tsx";
 import { Skeleton } from "../ui/skeleton.tsx";

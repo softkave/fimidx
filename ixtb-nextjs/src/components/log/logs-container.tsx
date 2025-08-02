@@ -6,8 +6,8 @@ import {
   GetLogsEndpointArgs,
   getLogsSchema,
   ILog,
-} from "fmdx-core/definitions/log";
-import { IObjPartQueryList } from "fmdx-core/definitions/obj";
+} from "fimidx-core/definitions/log";
+import { IObjPartQueryList } from "fimidx-core/definitions/obj";
 import { ReactNode, useMemo, useState } from "react";
 import { OmitFrom } from "softkave-js-utils";
 import { z } from "zod";

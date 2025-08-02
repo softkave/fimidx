@@ -1,0 +1,66 @@
+{
+  "name": "fimidx",
+  "version": "0.2.1",
+  "description": "fimidx js sdk",
+  "author": {
+    "email": "ywordk@gmail.com",
+    "name": "softkave"
+  },
+  "homepage": "https://github.com/softkave/fimidx/tree/main/fimidx-js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/softkave/fimidx.git"
+  },
+  "bugs": {
+    "url": "https://github.com/softkave/fimidx/issues"
+  },
+  "type": "module",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "files": [
+    "build/{*.js,**/*.js}",
+    "build/{*.js.map,**/*.js.map}",
+    "build/{*.d.ts,**/*.d.ts}",
+    "build/{*.d.ts.map,**/*.d.ts.map}",
+    "!build/**/__tests__/**/*",
+    "!build/**/testUtils/**/*"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "fimidx",
+    "logs"
+  ],
+  "scripts": {
+    "lint": "gts lint",
+    "clean": "gts clean && rm -f tsconfig.tsbuildinfo",
+    "compile": "npm run clean && tsc",
+    "fix": "gts fix",
+    "pretty": "prettier --write",
+    "pretest": "npm run compile",
+    "test": "env-cmd -f \".env.test\" vitest --config=./vitest.config.ts",
+    "test:browser": "env-cmd -f \".env.test\" vitest --config=./vitest.browser.config.ts",
+    "publish:npm": "npm run clean && npm run compile && npm publish",
+    "publish:local": "npm run clean && npm run compile && yalc publish",
+    "show:packlist": "npm run clean && npm run compile && npm pack --dry-run"
+  },
+  "engines": {
+    "node": ">=13"
+  },
+  "devDependencies": {
+    "@faker-js/faker": "^9.5.0",
+    "@types/express": "^5.0.1",
+    "@types/lodash-es": "^4.17.12",
+    "@types/node": "^22.7.5",
+    "env-cmd": "^10.1.0",
+    "express": "^5.1.0",
+    "gts": "^6.0.2",
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.3",
+    "vitest": "^3.1.4"
+  },
+  "dependencies": {
+    "lodash-es": "^4.17.21",
+    "mfdoc-js-sdk-base": "^0.3.1",
+    "softkave-js-utils": "^0.17.0"
+  }
+}

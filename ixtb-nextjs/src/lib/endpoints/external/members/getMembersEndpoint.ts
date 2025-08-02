@@ -1,8 +1,8 @@
 import {
   IGetMembersEndpointResponse,
   getMembersSchema,
-} from "fmdx-core/definitions/member";
-import { getMembers } from "fmdx-core/serverHelpers/index";
+} from "fimidx-core/definitions/member";
+import { getMembers } from "fimidx-core/serverHelpers/index";
 import { NextClientTokenAuthenticatedEndpointFn } from "../../types";
 
 export const getMembersEndpoint: NextClientTokenAuthenticatedEndpointFn<

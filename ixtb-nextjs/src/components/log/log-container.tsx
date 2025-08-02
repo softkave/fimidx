@@ -1,7 +1,7 @@
 "use client";
 
 import { useGetLogs } from "@/src/lib/clientApi/log";
-import { getLogsSchema, ILog } from "fmdx-core/definitions/log";
+import { getLogsSchema, ILog } from "fimidx-core/definitions/log";
 import { useCallback, useMemo } from "react";
 import { z } from "zod";
 import { WrapLoader } from "../internal/wrap-loader";

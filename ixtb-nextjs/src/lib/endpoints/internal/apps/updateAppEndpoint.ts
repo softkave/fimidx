@@ -1,9 +1,9 @@
-import { updateAppsSchema } from "fmdx-core/definitions/app";
+import { updateAppsSchema } from "fimidx-core/definitions/app";
 import {
   kByTypes,
   UpdateAppEndpointResponse,
-} from "fmdx-core/definitions/index";
-import { updateApps } from "fmdx-core/serverHelpers/index";
+} from "fimidx-core/definitions/index";
+import { updateApps } from "fimidx-core/serverHelpers/index";
 import { NextUserAuthenticatedEndpointFn } from "../../types";
 
 export const updateAppEndpoint: NextUserAuthenticatedEndpointFn<

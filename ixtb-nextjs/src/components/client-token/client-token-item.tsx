@@ -1,5 +1,5 @@
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
-import { IClientToken } from "fmdx-core/definitions/clientToken";
+import { IClientToken } from "fimidx-core/definitions/clientToken";
 import Link from "next/link";
 import { ComponentListItemSkeleton } from "../internal/component-list/component-list-item-skeleton.tsx";
 import { ComponentListItem } from "../internal/component-list/component-list-item.tsx";

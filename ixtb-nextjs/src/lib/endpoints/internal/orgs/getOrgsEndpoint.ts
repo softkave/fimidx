@@ -1,7 +1,7 @@
 import { GetOrgsEndpointResponse, getOrgsSchema } from "@/src/definitions/org";
-import { kMemberStatus } from "fmdx-core/definitions/member";
-import { kId0 } from "fmdx-core/definitions/system";
-import { getGroups, getMemberRequests } from "fmdx-core/serverHelpers/index";
+import { kMemberStatus } from "fimidx-core/definitions/member";
+import { kId0 } from "fimidx-core/definitions/system";
+import { getGroups, getMemberRequests } from "fimidx-core/serverHelpers/index";
 import { NextUserAuthenticatedEndpointFn } from "../../types";
 import { groupToOrg } from "./groupToOrg";
 

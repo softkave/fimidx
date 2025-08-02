@@ -3,19 +3,19 @@
 // invalidate the SWR cache using the api path.
 
 import { GetOrgsEndpointArgs } from "@/src/definitions/org";
-import { GetAppsEndpointArgs } from "fmdx-core/definitions/app";
-import { GetCallbacksEndpointArgs } from "fmdx-core/definitions/callback";
-import { GetClientTokensEndpointArgs } from "fmdx-core/definitions/clientToken";
-import { GetGroupsEndpointArgs } from "fmdx-core/definitions/group";
+import { GetAppsEndpointArgs } from "fimidx-core/definitions/app";
+import { GetCallbacksEndpointArgs } from "fimidx-core/definitions/callback";
+import { GetClientTokensEndpointArgs } from "fimidx-core/definitions/clientToken";
+import { GetGroupsEndpointArgs } from "fimidx-core/definitions/group";
 import {
   GetLogFieldsEndpointArgs,
   GetLogsEndpointArgs,
-} from "fmdx-core/definitions/log";
+} from "fimidx-core/definitions/log";
 import {
   GetMemberRequestsEndpointArgs,
   GetMembersEndpointArgs,
-} from "fmdx-core/definitions/member";
-import { GetMonitorsEndpointArgs } from "fmdx-core/definitions/monitor";
+} from "fimidx-core/definitions/member";
+import { GetMonitorsEndpointArgs } from "fimidx-core/definitions/monitor";
 import {
   kApiAppKeys,
   kApiCallbackKeys,

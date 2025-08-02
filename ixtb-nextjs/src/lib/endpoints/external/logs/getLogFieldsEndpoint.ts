@@ -1,8 +1,8 @@
 import {
   GetLogFieldsEndpointResponse,
   getLogFieldsSchema,
-} from "fmdx-core/definitions/log";
-import { getLogFields } from "fmdx-core/serverHelpers/index";
+} from "fimidx-core/definitions/log";
+import { getLogFields } from "fimidx-core/serverHelpers/index";
 import { NextMaybeAuthenticatedEndpointFn } from "../../types";
 
 export const getLogFieldsEndpoint: NextMaybeAuthenticatedEndpointFn<

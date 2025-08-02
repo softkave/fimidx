@@ -1,4 +1,4 @@
-import { IApp } from "fmdx-core/definitions/app";
+import { IApp } from "fimidx-core/definitions/app";
 import { ValueOf } from "type-fest";
 import { ClientTokensPage } from "../client-token/client-tokens-page";
 import { LogsPage } from "../log/logs-page";

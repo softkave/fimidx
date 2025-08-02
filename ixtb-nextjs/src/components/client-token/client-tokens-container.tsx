@@ -5,8 +5,8 @@ import { cn } from "@/src/lib/utils.ts";
 import {
   GetClientTokensEndpointArgs,
   IClientToken,
-} from "fmdx-core/definitions/clientToken";
-import { kId0 } from "fmdx-core/definitions/system";
+} from "fimidx-core/definitions/clientToken";
+import { kId0 } from "fimidx-core/definitions/system";
 import { useState } from "react";
 import { OmitFrom } from "softkave-js-utils";
 import { ComponentListMessage } from "../internal/component-list/component-list-message.tsx";

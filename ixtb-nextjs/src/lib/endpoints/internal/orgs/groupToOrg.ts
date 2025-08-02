@@ -1,4 +1,4 @@
-import type { IGroup } from "fmdx-core/definitions/group";
+import type { IGroup } from "fimidx-core/definitions/group";
 import type { IOrg } from "../../../../definitions/org";
 
 export function groupToOrg(group: IGroup): IOrg {

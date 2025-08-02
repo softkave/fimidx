@@ -1,8 +1,8 @@
-import { OwnServerError } from "fmdx-core/common/error";
+import { OwnServerError } from "fimidx-core/common/error";
 import {
   DeleteCallbacksEndpointArgs,
   deleteCallbacksSchema,
-} from "fmdx-core/definitions/index";
+} from "fimidx-core/definitions/index";
 import {
   getNodeServerInternalAccessKey,
   getNodeServerURL,

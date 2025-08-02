@@ -2,8 +2,8 @@ import { getClientToken } from "@/src/lib/serverHelpers/clientToken/getClientTok
 import {
   EncodeClientTokenJWTEndpointResponse,
   encodeClientTokenJWTSchema,
-} from "fmdx-core/definitions/clientToken";
-import { encodeClientTokenJWT } from "fmdx-core/serverHelpers/index";
+} from "fimidx-core/definitions/clientToken";
+import { encodeClientTokenJWT } from "fimidx-core/serverHelpers/index";
 import { NextMaybeAuthenticatedEndpointFn } from "../../types";
 
 export const encodeClientTokenEndpoint: NextMaybeAuthenticatedEndpointFn<

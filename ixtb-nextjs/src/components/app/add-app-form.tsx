@@ -2,7 +2,7 @@
 
 import { AddAppOnSuccessParams, useAddApp } from "@/src/lib/clientApi/app.ts";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { IApp } from "fmdx-core/definitions/app";
+import { IApp } from "fimidx-core/definitions/app";
 import { useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";

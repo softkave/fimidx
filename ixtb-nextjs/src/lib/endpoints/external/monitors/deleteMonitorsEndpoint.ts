@@ -1,5 +1,5 @@
-import { deleteMonitorsSchema } from "fmdx-core/definitions/monitor";
-import { deleteMonitors } from "fmdx-core/serverHelpers/index";
+import { deleteMonitorsSchema } from "fimidx-core/definitions/monitor";
+import { deleteMonitors } from "fimidx-core/serverHelpers/index";
 import { NextMaybeAuthenticatedEndpointFn } from "../../types";
 
 export const deleteMonitorsEndpoint: NextMaybeAuthenticatedEndpointFn<

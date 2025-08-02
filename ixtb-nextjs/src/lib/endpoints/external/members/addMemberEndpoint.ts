@@ -2,8 +2,8 @@ import {
   addMemberSchema,
   IAddMemberEndpointResponse,
   kByTypes,
-} from "fmdx-core/definitions/index";
-import { addMember } from "fmdx-core/serverHelpers/index";
+} from "fimidx-core/definitions/index";
+import { addMember } from "fimidx-core/serverHelpers/index";
 import { NextClientTokenAuthenticatedEndpointFn } from "../../types";
 
 export const addMemberEndpoint: NextClientTokenAuthenticatedEndpointFn<
