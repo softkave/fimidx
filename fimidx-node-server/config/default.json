@@ -1,8 +1,0 @@
-{
-  "serverUrl": "http://localhost:4040",
-  "indexObjsUrl": "http://localhost:4040/objs/indexObjs",
-  "indexObjsIntervalMs": 60000,
-  "cleanupObjsUrl": "http://localhost:4040/objs/cleanupObjs",
-  "cleanupObjsIntervalMs": 60000,
-  "internalAccessKey": "internal-access-key"
-}

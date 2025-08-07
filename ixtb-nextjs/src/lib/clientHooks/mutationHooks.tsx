@@ -1,6 +1,7 @@
 import { isString } from "lodash-es";
 import { useCallback } from "react";
 import { toast } from "sonner";
+import { fimidxLogger } from "../common/logger/fimidx-logger";
 
 export function useMutationFnWithRetry<
   TFn extends (...args: unknown[]) => unknown
@@ -10,7 +11,7 @@ export function useMutationFnWithRetry<
       try {
         return await fn(...args);
       } catch (error) {
-        console.error(error);
+        fimidxLogger.error(error);
         toast.error("Error", {
           description: isString((error as Error | undefined)?.message)
             ? (error as Error).message

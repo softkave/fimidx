@@ -107,9 +107,6 @@ async function indexObjFields(params: {
       }
     });
 
-    console.log("New fields", newFields);
-    console.log("Existing fields to update", existingFieldsToUpdate);
-
     // @ts-expect-error
     const batchParams: Parameters<typeof db.batch> = [];
 
@@ -202,8 +199,6 @@ export async function indexObjsBatch(params: {
     return index;
   });
 
-  console.log("Index list", indexList);
-
   await indexObjFields({ objs, indexList });
 }
 
@@ -240,8 +235,6 @@ export async function indexObjs(params: {
       page,
       limit: batchSize,
     });
-
-    console.log("Read result", readResult);
 
     batch = readResult.objs;
     await prefetchApps(batch);

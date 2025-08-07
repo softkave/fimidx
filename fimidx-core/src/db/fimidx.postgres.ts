@@ -1,12 +1,10 @@
-import assert from "assert";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { boolean, jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { getCoreConfig } from "../common/getCoreConfig.js";
 
-const fimidxDbURL = process.env.FIMIDX_DB_POSTGRES_DATABASE_URL;
+const { postgres } = getCoreConfig();
 
-assert.ok(fimidxDbURL, "FIMIDX_DB_POSTGRES_DATABASE_URL is required");
-
-export const fimidxPostgresDb = drizzle(fimidxDbURL);
+export const fimidxPostgresDb = drizzle(postgres.url);
 
 // IObj schema
 export const objs = pgTable("objs", {

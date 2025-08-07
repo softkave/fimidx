@@ -5,22 +5,11 @@ import { getObjModel } from "../../db/fimidx.mongo.js";
 import type { IInputObjRecord, IObj } from "../../definitions/obj.js";
 import { MongoObjStorage } from "./MongoObjStorage.js";
 
-const REQUIRED_ENV_VARS = ["MONGO_URI", "MONGO_DB_NAME"];
-
-function checkEnv() {
-  for (const key of REQUIRED_ENV_VARS) {
-    if (!process.env[key]) {
-      throw new Error(`Missing required env var: ${key}`);
-    }
-  }
-}
-
 describe("MongoObjStorage (integration)", () => {
   let storage: MongoObjStorage;
   let objModel: ReturnType<typeof getObjModel>;
 
   beforeAll(async () => {
-    checkEnv();
     objModel = getObjModel();
     storage = new MongoObjStorage(objModel);
     // Wait for connection

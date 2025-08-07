@@ -5,6 +5,8 @@ packages:
   - fimidx-js
   - fimidx-mfdoc
   - fimidx-winston-transport
+  - fimidx-console-like-logger
+  - fimidx-log-files-consumer
 onlyBuiltDependencies:
   - '@tailwindcss/oxide'
   - esbuild

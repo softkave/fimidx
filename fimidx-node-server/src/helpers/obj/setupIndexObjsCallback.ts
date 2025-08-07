@@ -3,7 +3,7 @@ import {getCallbacks} from 'fimidx-core/serverHelpers/index';
 import {first} from 'lodash-es';
 import {addCallbackEndpointImpl} from '../../httpEndpoints/cbs/addCallbackEndpoint.js';
 import {kInternalAccessKeyHeader} from '../../httpServer.js';
-import {getConfig} from '../../utils/config.js';
+import {getCoreConfig} from 'fimidx-core/common/getCoreConfig';
 
 export async function setupIndexObjsCallback() {
   const name = '__fimidx_indexObjs_callback';
@@ -25,7 +25,10 @@ export async function setupIndexObjsCallback() {
     return;
   }
 
-  const {internalAccessKey, indexObjsIntervalMs, indexObjsUrl} = getConfig();
+  const {
+    fimidxInternal: {internalAccessKey},
+    indexObjs: {url: indexObjsUrl, intervalMs: indexObjsIntervalMs},
+  } = getCoreConfig();
 
   await addCallbackEndpointImpl({
     clientTokenId: kId0,

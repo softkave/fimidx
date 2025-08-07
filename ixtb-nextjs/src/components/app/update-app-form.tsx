@@ -52,16 +52,20 @@ export function UpdateAppForm(props: IUpdateAppFormProps) {
 
   const updateAppHook = useUpdateApp({
     onSuccess: handleSuccess,
-    appId: app.id,
-    orgId: app.orgId,
   });
 
   const onSubmit = useCallback(
     async (values: z.infer<typeof addAppFormSchema>) => {
       await updateAppHook.trigger({
-        id: app.id,
-        name: values.name,
-        description: values.description,
+        query: {
+          id: {
+            eq: app.id,
+          },
+        },
+        update: {
+          name: values.name,
+          description: values.description,
+        },
       });
     },
     [updateAppHook, app.id]

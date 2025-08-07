@@ -1,13 +1,12 @@
 import assert from "assert";
 import { OwnServerError } from "../common/error.js";
+import { getCoreConfig } from "../common/getCoreConfig.js";
 
-const adminEnvRaw = process.env.ADMIN_EMAILS;
-assert.ok(adminEnvRaw, "ADMIN_EMAILS must be set");
-export const adminEmails = adminEnvRaw.split(",").map((email) => email.trim());
+const { adminEmails: adminEmailsConfig } = getCoreConfig();
 
 export function checkIsAdminEmail(email?: string | null) {
   assert.ok(email, "Email is required");
-  return adminEmails.includes(email);
+  return adminEmailsConfig && adminEmailsConfig.includes(email);
 }
 
 export function assertCheckIsAdminEmail(email: string) {

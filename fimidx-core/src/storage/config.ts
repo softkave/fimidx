@@ -1,3 +1,4 @@
+import { getCoreConfig } from "../common/getCoreConfig.js";
 import { getObjModel } from "../db/fimidx.mongo.js";
 import { StorageFactory } from "./StorageFactory.js";
 import type { IObjStorage } from "./types.js";
@@ -25,23 +26,23 @@ export function createStorage(options: StorageOptions): IObjStorage {
 }
 
 export function getDefaultStorageType(): "mongo" | "postgres" {
-  const storageType = process.env.FIMIDX_STORAGE_TYPE;
-  if (!storageType) {
+  const { storage } = getCoreConfig();
+  if (!storage?.type) {
     return "mongo";
   }
-  if (storageType === "mongo") {
+  if (storage.type === "mongo") {
     return "mongo";
-  } else if (storageType === "postgres") {
+  } else if (storage.type === "postgres") {
     return "postgres";
   }
-  throw new Error(`Unsupported storage type: ${storageType}`);
+  throw new Error(`Unsupported storage type: ${storage.type}`);
 }
 
 // Default storage configuration from environment variables
 export function createDefaultStorage(): IObjStorage {
-  const storageType = process.env.FIMIDX_STORAGE_TYPE || "postgres";
+  const { storage } = getCoreConfig();
 
   return createStorage({
-    type: storageType as "mongo" | "postgres",
+    type: storage?.type || "postgres",
   });
 }

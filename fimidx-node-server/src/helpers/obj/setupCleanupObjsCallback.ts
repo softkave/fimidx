@@ -1,9 +1,9 @@
+import {getCoreConfig} from 'fimidx-core/common/getCoreConfig';
 import {kId0} from 'fimidx-core/definitions/system';
 import {getCallbacks} from 'fimidx-core/serverHelpers/index';
 import {first} from 'lodash-es';
 import {addCallbackEndpointImpl} from '../../httpEndpoints/cbs/addCallbackEndpoint.js';
 import {kInternalAccessKeyHeader} from '../../httpServer.js';
-import {getConfig} from '../../utils/config.js';
 
 export async function setupCleanupObjsCallback() {
   const name = '__fimidx_cleanupObjs_callback';
@@ -25,8 +25,10 @@ export async function setupCleanupObjsCallback() {
     return;
   }
 
-  const {internalAccessKey, cleanupObjsIntervalMs, cleanupObjsUrl} =
-    getConfig();
+  const {
+    fimidxInternal: {internalAccessKey},
+    cleanupObjs: {url: cleanupObjsUrl, intervalMs: cleanupObjsIntervalMs},
+  } = getCoreConfig();
 
   await addCallbackEndpointImpl({
     clientTokenId: kId0,

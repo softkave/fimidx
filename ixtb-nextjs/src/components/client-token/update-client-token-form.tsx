@@ -28,7 +28,7 @@ export interface IUpdateClientTokenFormProps {
   onSubmitComplete: (clientToken?: IClientToken) => void;
 }
 
-export const addClientTokenFormSchema = z.object({
+export const updateClientTokenFormSchema = z.object({
   name: z.string().min(1),
   description: z.string().optional(),
 });
@@ -36,8 +36,8 @@ export const addClientTokenFormSchema = z.object({
 export function UpdateClientTokenForm(props: IUpdateClientTokenFormProps) {
   const { clientToken, onSubmitComplete } = props;
 
-  const form = useForm<z.infer<typeof addClientTokenFormSchema>>({
-    resolver: zodResolver(addClientTokenFormSchema),
+  const form = useForm<z.infer<typeof updateClientTokenFormSchema>>({
+    resolver: zodResolver(updateClientTokenFormSchema),
     defaultValues: {
       name: clientToken.name,
       description: clientToken.description ?? "",
@@ -56,7 +56,7 @@ export function UpdateClientTokenForm(props: IUpdateClientTokenFormProps) {
   });
 
   const onSubmit = useCallback(
-    async (values: z.infer<typeof addClientTokenFormSchema>) => {
+    async (values: z.infer<typeof updateClientTokenFormSchema>) => {
       await updateClientTokenHook.trigger({
         query: {
           appId: kId0,

@@ -42,7 +42,7 @@ export function LogListContainer({
   showFiltersAndSort,
 }: ILogListContainerProps) {
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(100);
   const [filters, setFilters] = useState<IObjPartQueryList>([]);
 
   const args = useMemo(

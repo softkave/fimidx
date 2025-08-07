@@ -1,4 +1,4 @@
-import { FimidxEndpoints } from 'fimidx';
+import { FimidxLogger, IFimidxLoggerOptions } from 'fimidx';
 import Transport, { default as TransportStream } from 'winston-transport';
 
 export interface IFimidxWinstonTransportOptions
@@ -6,23 +6,44 @@ export interface IFimidxWinstonTransportOptions
   appId: string;
   clientToken: string;
   serverURL?: string;
+
+  // Buffering options
+  bufferTimeout?: number; // ms, default: 1000
+  maxBufferSize?: number; // default: 100
+
+  // Retry options
+  maxRetries?: number; // default: 3
+  retryDelay?: number; // ms, default: 1000
+
+  // Fallback options
+  consoleLogOnError?: boolean; // default: true
+  logRemoteErrors?: boolean; // default: false
+
+  // Metadata to include in every log entry
+  metadata?: Record<string, any>;
 }
 
 export class FimidxWinstonTransport extends Transport {
-  protected readonly appId: string;
-  protected readonly clientToken: string;
-  protected readonly serverURL?: string;
-  protected fimidx: FimidxEndpoints;
+  private logger: FimidxLogger;
 
   constructor(opts: IFimidxWinstonTransportOptions) {
     super(opts);
-    this.appId = opts.appId;
-    this.clientToken = opts.clientToken;
-    this.serverURL = opts.serverURL;
-    this.fimidx = new FimidxEndpoints({
-      authToken: this.clientToken,
-      serverURL: this.serverURL,
-    });
+    
+    // Create FimidxLogger instance with Winston transport options
+    const loggerOptions: IFimidxLoggerOptions = {
+      appId: opts.appId,
+      clientToken: opts.clientToken,
+      serverURL: opts.serverURL,
+      bufferTimeout: opts.bufferTimeout,
+      maxBufferSize: opts.maxBufferSize,
+      maxRetries: opts.maxRetries,
+      retryDelay: opts.retryDelay,
+      consoleLogOnError: opts.consoleLogOnError,
+      logRemoteErrors: opts.logRemoteErrors,
+      metadata: opts.metadata,
+    };
+
+    this.logger = new FimidxLogger(loggerOptions);
   }
 
   log(info: any, callback: () => void) {
@@ -30,38 +51,22 @@ export class FimidxWinstonTransport extends Transport {
       this.emit('logged', info);
     });
 
-    info = typeof info === 'object' ? info : {message: info};
+    // Ensure info is an object
+    info = typeof info === 'object' ? info : { message: info };
 
-    // TODO: batch logs
-    this.sendLogs({logs: [info]}).finally(() => {
-      callback();
-    });
+    // Use the buffered logger
+    this.logger.log(info);
+    
+    callback();
   }
 
-  protected async sendLogs(params: {
-    logs: any[];
-    consoleLogOnError?: boolean;
-    throwOnError?: boolean;
-  }) {
-    const {logs, consoleLogOnError = true, throwOnError = false} = params;
+  // Expose flush method for Winston transport
+  async flush(): Promise<void> {
+    return this.logger.flush();
+  }
 
-    console.log("sendLogs", logs);
-    console.log("this.serverURL", this.serverURL);
-
-    try {
-      await this.fimidx.logs.ingestLogs(
-        {appId: this.appId, logs},
-        {serverURL: this.serverURL, authToken: this.clientToken},
-      );
-    } catch (error) {
-      if (throwOnError) {
-        throw error;
-      }
-
-      if (consoleLogOnError) {
-        console.error(error);
-        logs.map(console.log.bind(console));
-      }
-    }
+  // Expose close method for Winston transport
+  async close(): Promise<void> {
+    return this.logger.close();
   }
 }

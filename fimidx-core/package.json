@@ -65,7 +65,9 @@
     "uuid": "^11.1.0",
     "winston": "^3.17.0",
     "winston-transport": "^4.9.0",
-    "zod": "^3.24.2"
+    "zod": "^3.24.2",
+    "fimidx": "workspace:*",
+    "fimidx-winston-transport": "workspace:*"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

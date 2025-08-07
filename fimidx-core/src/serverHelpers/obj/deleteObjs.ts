@@ -1,3 +1,4 @@
+import { fimidxLogger } from "../../common/logger/fimidx-logger.js";
 import type { IObjField, IObjQuery } from "../../definitions/obj.js";
 import { createStorage, getDefaultStorageType } from "../../storage/config.js";
 import type { IObjStorage } from "../../storage/types.js";
@@ -72,7 +73,7 @@ export async function cleanupDeletedObjs(params?: {
   const result = await storage.cleanupDeletedObjs({
     batchSize: 1000,
     onProgress: (processed) => {
-      console.log(`Cleaned up ${processed} deleted objects`);
+      fimidxLogger.log(`Cleaned up ${processed} deleted objects`);
     },
   });
 

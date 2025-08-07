@@ -1,12 +1,4 @@
-import {
-  afterAll,
-  afterEach,
-  beforeAll,
-  beforeEach,
-  describe,
-  expect,
-  it,
-} from "vitest";
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import type { AddMonitorEndpointArgs } from "../../../definitions/monitor.js";
 import { kObjTags } from "../../../definitions/obj.js";
 import { createDefaultStorage } from "../../../storage/config.js";
@@ -76,26 +68,10 @@ function makeTestMonitorArgs(name: string, overrides: any = {}) {
 
 describe("addMonitor integration", () => {
   let storage: IObjStorage;
-  let cleanup: (() => Promise<void>) | undefined;
 
   beforeAll(async () => {
     // Test will use the default storage type from createDefaultStorage()
     storage = createDefaultStorage();
-
-    // For MongoDB, we need to ensure the connection is ready
-    if (
-      process.env.FIMIDX_STORAGE_TYPE === "mongo" ||
-      !process.env.FIMIDX_STORAGE_TYPE
-    ) {
-      // MongoDB specific setup - we'll handle this through the storage interface
-      cleanup = async () => {
-        // Cleanup will be handled by the storage interface
-      };
-    }
-  });
-
-  afterAll(async () => {
-    if (cleanup) await cleanup();
   });
 
   beforeEach(async () => {

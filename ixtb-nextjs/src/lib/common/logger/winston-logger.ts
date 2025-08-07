@@ -1,20 +1,23 @@
-import assert from "assert";
 import { FimidxWinstonTransport } from "fimidx-winston-transport";
 import winston from "winston";
+import { getClientConfig } from "../getClientConfig";
 
-const kFimidxClientToken = process.env.FIMIDX_CLIENT_TOKEN;
-const kFimidxAppId = process.env.FIMIDX_APP_ID;
-
-assert(kFimidxClientToken, "FIMIDX_CLIENT_TOKEN is not set");
-assert(kFimidxAppId, "FIMIDX_APP_ID is not set");
+const { fimidxAppId, fimidxClientToken, nodeEnv, fimidxServerUrl } =
+  getClientConfig();
 
 export const winstonLogger = winston.createLogger({
   level: "info",
   format: winston.format.json(),
   transports: [
     new FimidxWinstonTransport({
-      appId: kFimidxAppId,
-      clientToken: kFimidxClientToken,
+      appId: fimidxAppId,
+      clientToken: fimidxClientToken,
+      consoleLogOnError: true,
+      logRemoteErrors: true,
+      metadata: {
+        app: "ixtb-nextjs",
+      },
+      ...(nodeEnv === "development" ? { serverURL: fimidxServerUrl } : {}),
     }),
   ],
 });

@@ -1,14 +1,6 @@
 import { and, eq } from "drizzle-orm";
 import { v7 as uuidv7 } from "uuid";
-import {
-  afterAll,
-  afterEach,
-  beforeAll,
-  beforeEach,
-  describe,
-  expect,
-  it,
-} from "vitest";
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { db, objFields as objFieldsTable } from "../../../db/fimidx.sqlite.js";
 import { kObjTags } from "../../../definitions/obj.js";
 import type { GetPermissionsEndpointArgs } from "../../../definitions/permission.js";
@@ -92,23 +84,9 @@ async function insertActionFieldForSorting(params: {
 
 describe("getPermissions integration", () => {
   let storage: IObjStorage;
-  let cleanup: (() => Promise<void>) | undefined;
 
   beforeAll(async () => {
     storage = createDefaultStorage();
-
-    if (
-      process.env.FIMIDX_STORAGE_TYPE === "mongo" ||
-      !process.env.FIMIDX_STORAGE_TYPE
-    ) {
-      cleanup = async () => {
-        // Cleanup will be handled by the storage interface
-      };
-    }
-  });
-
-  afterAll(async () => {
-    if (cleanup) await cleanup();
   });
 
   beforeEach(async () => {

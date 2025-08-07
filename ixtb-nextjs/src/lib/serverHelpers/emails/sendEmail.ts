@@ -1,5 +1,5 @@
-import assert from "assert";
 import { eq } from "drizzle-orm";
+import { getCoreConfig } from "fimidx-core/common/getCoreConfig";
 import {
   db,
   emailBlockLists as emailBlockListTable,
@@ -13,13 +13,11 @@ import {
 } from "fimidx-core/definitions/email";
 import { Resend } from "resend";
 import { AnyObject, convertToArray, OmitFrom } from "softkave-js-utils";
+import { fimidxLogger } from "../../common/logger/fimidx-logger";
 
-const resendApiKey = process.env.RESEND_API_KEY;
-const fromEmail = process.env.RESEND_FROM_EMAIL;
-assert(resendApiKey, "RESEND_API_KEY is not set");
-assert(fromEmail, "RESEND_FROM_EMAIL is not set");
+const { resend: resendConfig } = getCoreConfig();
 
-const resend = new Resend(resendApiKey);
+const resend = new Resend(resendConfig.apiKey);
 
 type SendEmailParams = OmitFrom<
   Parameters<typeof resend.emails.send>[0],
@@ -104,7 +102,7 @@ export const sendEmail = async (
 }> => {
   try {
     const { to, subject, reason, params: params2, callerId } = params;
-    const from = fromEmail;
+    const from = resendConfig.fromEmail;
     const emailRecords = await Promise.all(
       convertToArray(to).map(async (to) => {
         const emailRecord = await createEmailRecord({
@@ -148,7 +146,7 @@ export const sendEmail = async (
 
       return { success: true, emailRecords: emailRecordsResult };
     } catch (sendEmailError) {
-      console.error(sendEmailError);
+      fimidxLogger.error(sendEmailError);
       const serverErrorString = JSON.stringify(sendEmailError);
       await Promise.allSettled(
         emailRecords.map(async (emailRecord) => {
@@ -168,7 +166,7 @@ export const sendEmail = async (
       return { success: false, emailRecords: emailRecordsResult };
     }
   } catch (error) {
-    console.error(error);
+    fimidxLogger.error(error);
     return { success: false, emailRecords: [] };
   }
 };

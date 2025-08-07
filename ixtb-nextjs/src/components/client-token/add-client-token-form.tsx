@@ -74,7 +74,7 @@ export function AddClientTokenForm(props: IAddClientTokenFormProps) {
         },
       });
     },
-    [addClientTokenHook, appId]
+    [addClientTokenHook, appId, orgId]
   );
 
   return (

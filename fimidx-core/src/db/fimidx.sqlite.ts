@@ -1,19 +1,15 @@
 import { createClient } from "@libsql/client";
-import assert from "assert";
 import { drizzle } from "drizzle-orm/libsql";
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { v7 as uuidv7 } from "uuid";
+import { getCoreConfig } from "../common/getCoreConfig.js";
 import type { FieldType } from "../common/indexer.js";
 
-const fimidxDbURL = process.env.FIMIDX_DB_TURSO_DATABASE_URL;
-const fimidxDbAuthToken = process.env.FIMIDX_DB_TURSO_AUTH_TOKEN;
-
-assert.ok(fimidxDbURL, "FIMIDX_DB_TURSO_DATABASE_URL is required");
-assert.ok(fimidxDbAuthToken, "FIMIDX_DB_TURSO_AUTH_TOKEN is required");
+const { turso } = getCoreConfig();
 
 const fimidxClient = createClient({
-  authToken: fimidxDbAuthToken,
-  url: fimidxDbURL,
+  authToken: turso.authToken,
+  url: turso.url,
 });
 
 export const db = drizzle(fimidxClient);

@@ -37,7 +37,7 @@ export function ClientTokenContainer(props: IClientTokenContainerProps) {
         },
       },
     }),
-    [clientTokenId, appId]
+    [clientTokenId]
   );
 
   const clientTokenHook = useGetClientTokens(args);

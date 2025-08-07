@@ -1,8 +1,8 @@
-import assert from "assert";
 import { getDeferredPromise, type AnyObject } from "softkave-js-utils";
 import { v4 as uuidv4 } from "uuid";
-import { appAssert } from "./appAssert.js";
-import { OwnServerError } from "./error.js";
+import { assert } from "vitest";
+import { getCoreConfig } from "./getCoreConfig.js";
+import { fimidxLogger } from "./logger/fimidx-logger.js";
 
 export enum WsReadyState {
   Connecting = 0,
@@ -22,22 +22,16 @@ export interface IWsBase {
   getReadyState: () => WsReadyState;
 }
 
-const wsHost = process.env.NEXT_PUBLIC_WS_HOST;
-assert(wsHost, "NEXT_PUBLIC_WS_HOST is not set");
+const { ws: wsConfig } = getCoreConfig();
 
 export function getWs(getWsClient: (host: string) => IWsBase) {
-  appAssert(
-    wsHost,
-    new OwnServerError("Server error", 500),
-    "NEXT_PUBLIC_WS_HOST is not set"
-  );
-
-  const ws = getWsClient(wsHost);
+  assert(wsConfig.host, "ws.host is required");
+  const ws = getWsClient(wsConfig.host);
   ws.addOpenListener(() => {
-    console.log("Connected to WebSocket server");
+    fimidxLogger.log("Connected to WebSocket server");
   });
   ws.addErrorListener((...args) => {
-    console.error("WebSocket error", ...args);
+    fimidxLogger.error("WebSocket error", ...args);
   });
 
   return ws;
@@ -80,7 +74,7 @@ export async function sendMessageToWs(
       try {
         input = JSON.parse(messageRaw);
       } catch (error) {
-        console.error("Error parsing message", error, messageRaw);
+        fimidxLogger.error("Error parsing message", error, messageRaw);
       }
 
       if (input?.messageId === output.messageId) {

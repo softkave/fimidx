@@ -32,8 +32,6 @@ export function AppItemMenu(props: IAppItemMenuProps) {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const deleteAppHook = useDeleteApp({
-    orgId: app.orgId,
-    appId: app.id,
     onSuccess: () => {
       toast.success("App deleted");
       onDeleted?.();
@@ -49,7 +47,13 @@ export function AppItemMenu(props: IAppItemMenuProps) {
 
   const handleDelete = () => {
     onDeleting?.();
-    deleteAppHook.trigger({ id: app.id });
+    deleteAppHook.trigger({
+      query: {
+        id: {
+          eq: app.id,
+        },
+      },
+    });
   };
 
   const deleteAppDialog = useDeleteResourceDialog({

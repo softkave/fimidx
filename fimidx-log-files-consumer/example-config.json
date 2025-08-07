@@ -1,0 +1,26 @@
+{
+  "appId": "my-app",
+  "clientToken": "your-client-token",
+  "serverURL": "https://your-fimidx-server.com",
+  "metadata": {
+    "environment": "production",
+    "service": "log-consumer"
+  },
+  "logFiles": [
+    {
+      "path": "/var/log/application.log",
+      "metadata": {
+        "logType": "application",
+        "level": "info"
+      }
+    },
+    {
+      "path": "/var/log/error.log",
+      "metadata": {
+        "logType": "error",
+        "level": "error"
+      }
+    }
+  ],
+  "trackConsumptionFilepath": "./consumption-data.json"
+}

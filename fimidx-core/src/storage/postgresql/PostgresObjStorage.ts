@@ -132,17 +132,17 @@ export class PostgresObjStorage implements IObjStorage {
         )
       : sql`${sql.identifier(mapFieldToDbColumn("createdAt"))} DESC`;
 
-    console.log(
-      "sql",
-      this.db
-        .select()
-        .from(objs)
-        .where(whereClause)
-        .orderBy(orderByClause)
-        .limit(limit)
-        .offset(page * limit)
-        .toSQL()
-    );
+    // console.log(
+    //   "sql",
+    //   this.db
+    //     .select()
+    //     .from(objs)
+    //     .where(whereClause)
+    //     .orderBy(orderByClause)
+    //     .limit(limit)
+    //     .offset(page * limit)
+    //     .toSQL()
+    // );
 
     const result = await this.db
       .select()

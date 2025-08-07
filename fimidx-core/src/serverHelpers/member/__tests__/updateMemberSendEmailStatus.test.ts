@@ -1,12 +1,4 @@
-import {
-  afterAll,
-  afterEach,
-  beforeAll,
-  beforeEach,
-  describe,
-  expect,
-  it,
-} from "vitest";
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { kObjTags } from "../../../definitions/obj.js";
 import { createDefaultStorage } from "../../../storage/config.js";
 import type { IObjStorage } from "../../../storage/types.js";
@@ -41,23 +33,9 @@ function makeAddMemberArgs(overrides: any = {}) {
 
 describe("updateMemberSendEmailStatus integration", () => {
   let storage: IObjStorage;
-  let cleanup: (() => Promise<void>) | undefined;
 
   beforeAll(async () => {
     storage = createDefaultStorage();
-
-    if (
-      process.env.FIMIDX_STORAGE_TYPE === "mongo" ||
-      !process.env.FIMIDX_STORAGE_TYPE
-    ) {
-      cleanup = async () => {
-        // Cleanup will be handled by the storage interface
-      };
-    }
-  });
-
-  afterAll(async () => {
-    if (cleanup) await cleanup();
   });
 
   beforeEach(async () => {

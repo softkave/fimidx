@@ -14,8 +14,6 @@ export const ingestLogsEndpoint: NextClientTokenAuthenticatedEndpointFn<
     session: { clientToken },
   } = params;
 
-  console.log("ingestLogsEndpoint", params);
-
   const input = ingestLogsSchema.parse(await req.json());
   const { apps } = await getApps({
     args: {
@@ -28,7 +26,6 @@ export const ingestLogsEndpoint: NextClientTokenAuthenticatedEndpointFn<
   });
 
   const app = first(apps);
-  console.log("app", app);
   assert(
     app,
     new OwnServerError("App not found", kOwnServerErrorCodes.NotFound)

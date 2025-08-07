@@ -1,5 +1,4 @@
 import { createClient } from "@libsql/client";
-import assert from "assert";
 import { drizzle } from "drizzle-orm/libsql";
 import {
   integer,
@@ -9,15 +8,13 @@ import {
 } from "drizzle-orm/sqlite-core";
 import type { AdapterAccountType } from "next-auth/adapters";
 import { v7 as uuidv7 } from "uuid";
+import { getCoreConfig } from "../common/getCoreConfig.js";
 
-const authDbURL = process.env.AUTH_DB_TURSO_DATABASE_URL;
-const authDbAuthToken = process.env.AUTH_DB_TURSO_AUTH_TOKEN;
-assert.ok(authDbURL, "AUTH_DB_TURSO_DATABASE_URL is required");
-assert.ok(authDbAuthToken, "AUTH_DB_TURSO_AUTH_TOKEN is required");
+const { auth } = getCoreConfig();
 
 const authClient = createClient({
-  authToken: authDbAuthToken,
-  url: authDbURL,
+  authToken: auth.turso.authToken,
+  url: auth.turso.url,
 });
 
 export const authDb = drizzle(authClient);

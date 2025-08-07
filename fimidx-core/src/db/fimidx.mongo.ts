@@ -1,5 +1,6 @@
 import assert from "assert";
 import { createConnection, Schema } from "mongoose";
+import { getCoreConfig } from "../common/getCoreConfig.js";
 import type { IObj } from "../definitions/obj.js";
 
 let connection: ReturnType<typeof createConnection> | null = null;
@@ -7,8 +8,9 @@ let promise: Promise<ReturnType<typeof createConnection>> | null = null;
 
 export function getMongoConnection() {
   if (!connection) {
-    const uri = process.env.MONGO_URI;
-    const dbName = process.env.MONGO_DB_NAME;
+    const { mongo } = getCoreConfig();
+    const uri = mongo.uri;
+    const dbName = mongo.dbName;
     assert(uri, "MONGO_URI is not set");
     assert(dbName, "MONGO_DB_NAME is not set");
     connection = createConnection(uri, { dbName });

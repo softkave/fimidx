@@ -1,18 +1,14 @@
-import assert from "assert";
 import { createHash } from "crypto";
 import jwt from "jsonwebtoken";
-import { isString } from "lodash-es";
 import { v7 as uuidv7 } from "uuid";
+import { getCoreConfig } from "../../common/getCoreConfig.js";
 import type { EncodeClientTokenJWTEndpointArgs } from "../../definitions/clientToken.js";
-
-const kJWTSecret = process.env.FIMIDX_JWT_SECRET;
-assert(isString(kJWTSecret), "FIMIDX_JWT_SECRET is not set");
 
 export const kDefaultExpiresAtDuration = 1000 * 60 * 60 * 24 * 30; // 30 days
 
 export function getJWTSecret() {
-  assert(isString(kJWTSecret), "FIMIDX_JWT_SECRET is not set");
-  return kJWTSecret;
+  const { jwtSecret } = getCoreConfig();
+  return jwtSecret;
 }
 
 export interface IEncodeClientTokenJWTContent {

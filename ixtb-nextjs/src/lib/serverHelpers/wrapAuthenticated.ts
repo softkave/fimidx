@@ -86,8 +86,7 @@ async function tryGetClientTokenAuthenticatedRequest(
     const { clientToken } = await getClientToken({
       input: { clientTokenId: decodedToken.id },
     });
-    console.log("clientToken", clientToken);
-    console.log("decodedToken", decodedToken);
+
     assert(
       clientToken.appId === decodedToken.appId,
       new OwnServerError("Unauthorized", 401)
