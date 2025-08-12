@@ -7,8 +7,10 @@ const { fimidxAppId, fimidxClientToken, nodeEnv, fimidxServerUrl } =
 export const fimidxLogger = new FimidxConsoleLikeLogger({
   appId: fimidxAppId,
   clientToken: fimidxClientToken,
-  enabled: true,
-  enableConsoleFallback: nodeEnv === "development",
+  // TODO: change to true when ready to use
+  enabled: false,
+  enableConsoleFallback: true,
+  // enableConsoleFallback: nodeEnv === "development",
   consoleLogOnError: true,
   logRemoteErrors: true,
   metadata: {
