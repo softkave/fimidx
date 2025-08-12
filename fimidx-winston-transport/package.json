@@ -1,6 +1,6 @@
 {
   "name": "fimidx-winston-transport",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "fimidx Winston Transport",
   "author": {
     "email": "ywordk@gmail.com",
@@ -48,7 +48,7 @@
   },
   "dependencies": {
     "winston-transport": "^4.9.0",
-    "fimidx": "^0.3.0"
+    "fimidx": "^0.3.1"
   },
   "devDependencies": {
     "gts": "^6.0.2",

@@ -23,11 +23,11 @@ importers:
         specifier: ^0.40.1
         version: 0.40.1(@libsql/client@0.14.0)(@types/pg@8.15.4)(gel@2.1.0)(pg@8.16.3)(sqlite3@5.1.7)
       fimidx:
-        specifier: workspace:*
-        version: link:../fimidx-js
+        specifier: ^0.3.1
+        version: 0.3.1(assert@2.1.0)(nanoid@3.3.11)(path-browserify@1.0.1)(type-fest@4.41.0)
       fimidx-winston-transport:
-        specifier: workspace:*
-        version: link:../fimidx-winston-transport
+        specifier: ^0.1.1
+        version: 0.1.1(assert@2.1.0)(nanoid@3.3.11)(path-browserify@1.0.1)(type-fest@4.41.0)
       jsonwebtoken:
         specifier: ^9.0.2
         version: 9.0.2
@@ -148,8 +148,8 @@ importers:
         specifier: ^4.0.3
         version: 4.0.3
       fimidx:
-        specifier: ^0.3.0
-        version: 0.3.0(assert@2.1.0)(nanoid@3.3.11)(path-browserify@1.0.1)(type-fest@4.41.0)
+        specifier: ^0.3.1
+        version: 0.3.1(assert@2.1.0)(nanoid@3.3.11)(path-browserify@1.0.1)(type-fest@4.41.0)
       zod:
         specifier: ^4.0.15
         version: 4.0.15
@@ -213,8 +213,8 @@ importers:
         specifier: workspace:*
         version: link:../fimidx-core
       fimidx-winston-transport:
-        specifier: workspace:*
-        version: link:../fimidx-winston-transport
+        specifier: ^0.1.1
+        version: 0.1.1(assert@2.1.0)(nanoid@3.3.11)(path-browserify@1.0.1)(type-fest@4.41.0)
       path-to-regexp:
         specifier: ^8.2.0
         version: 8.2.0
@@ -268,8 +268,8 @@ importers:
   fimidx-winston-transport:
     dependencies:
       fimidx:
-        specifier: ^0.3.0
-        version: 0.3.0(assert@2.1.0)(nanoid@3.3.11)(path-browserify@1.0.1)(type-fest@4.41.0)
+        specifier: ^0.3.1
+        version: 0.3.1(assert@2.1.0)(nanoid@3.3.11)(path-browserify@1.0.1)(type-fest@4.41.0)
       winston-transport:
         specifier: ^4.9.0
         version: 4.9.0
@@ -368,14 +368,14 @@ importers:
         specifier: ^0.40.0
         version: 0.40.1(@libsql/client@0.14.0)(@types/pg@8.15.4)(gel@2.1.0)(pg@8.16.3)(sqlite3@5.1.7)
       fimidx:
-        specifier: workspace:*
-        version: link:../fimidx-js
+        specifier: ^0.3.1
+        version: 0.3.1(assert@2.1.0)(nanoid@3.3.11)(path-browserify@1.0.1)(type-fest@4.41.0)
       fimidx-core:
         specifier: workspace:*
         version: link:../fimidx-core
       fimidx-winston-transport:
-        specifier: workspace:*
-        version: link:../fimidx-winston-transport
+        specifier: ^0.1.1
+        version: 0.1.1(assert@2.1.0)(nanoid@3.3.11)(path-browserify@1.0.1)(type-fest@4.41.0)
       jsonwebtoken:
         specifier: ^9.0.2
         version: 9.0.2
@@ -4106,8 +4106,12 @@ packages:
     resolution: {integrity: sha512-YsGpe3WHLK8ZYi4tWDg2Jy3ebRz2rXowDxnld4bkQB00cc/1Zw9AWnC0i9ztDJitivtQvaI9KaLyKrc+hBW0yg==}
     engines: {node: '>=8'}
 
-  fimidx@0.3.0:
-    resolution: {integrity: sha512-zPQVTH+KHC/cs2B/QRTthwKYwTPuNuCEZoO9uAz0KrpXp/jKYDzLryYmpA7vUV2e/6KYU4DN5eGttF+183BFlg==}
+  fimidx-winston-transport@0.1.1:
+    resolution: {integrity: sha512-EC6VMy36cZ5oiSR/ZG98nUoSKcQUle5QNFUVs5mSTX4/xbB1C6Uo0gDhAaAHy3ylSSq3lnv0uU6YFj+IHbeU6Q==}
+    engines: {node: '>=13'}
+
+  fimidx@0.3.1:
+    resolution: {integrity: sha512-5a62Bzl/3GLLnS593bkCdsLjN4FCAsxNTIya4mRo3bstiqt4iaLelNs3vvtBeQB0stdqDfUa5lDxwdzMDJZDSQ==}
     engines: {node: '>=13'}
 
   finalhandler@2.1.0:
@@ -9982,7 +9986,18 @@ snapshots:
     dependencies:
       to-regex-range: 5.0.1
 
-  fimidx@0.3.0(assert@2.1.0)(nanoid@3.3.11)(path-browserify@1.0.1)(type-fest@4.41.0):
+  fimidx-winston-transport@0.1.1(assert@2.1.0)(nanoid@3.3.11)(path-browserify@1.0.1)(type-fest@4.41.0):
+    dependencies:
+      fimidx: 0.3.1(assert@2.1.0)(nanoid@3.3.11)(path-browserify@1.0.1)(type-fest@4.41.0)
+      winston-transport: 4.9.0
+    transitivePeerDependencies:
+      - assert
+      - debug
+      - nanoid
+      - path-browserify
+      - type-fest
+
+  fimidx@0.3.1(assert@2.1.0)(nanoid@3.3.11)(path-browserify@1.0.1)(type-fest@4.41.0):
     dependencies:
       lodash-es: 4.17.21
       mfdoc-js-sdk-base: 0.3.1(nanoid@3.3.11)(path-browserify@1.0.1)(type-fest@4.41.0)

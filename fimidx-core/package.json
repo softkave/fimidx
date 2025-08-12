@@ -66,8 +66,8 @@
     "winston": "^3.17.0",
     "winston-transport": "^4.9.0",
     "zod": "^3.24.2",
-    "fimidx": "workspace:*",
-    "fimidx-winston-transport": "workspace:*"
+    "fimidx": "^0.3.1",
+    "fimidx-winston-transport": "^0.1.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
