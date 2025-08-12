@@ -7,16 +7,17 @@ export function ClientTokensPage(props: {
   appId: string;
   orgId: string;
   className?: string;
+  title?: string;
+  description?: string;
 }) {
   return (
     <AppPage>
-      <div
-        className={cn("flex flex-col max-w-lg pt-0 mx-auto", props.className)}
-      >
+      <div className={cn("flex flex-col max-w-lg mx-auto", props.className)}>
         <ClientTokensHeader
-          className="p-4"
           appId={props.appId}
           orgId={props.orgId}
+          title={props.title}
+          description={props.description}
         />
         <ClientTokenListContainer
           appId={props.appId}

@@ -1,4 +1,4 @@
-import { IWsBase } from "fmdx-core/common/ws";
+import { IWsBase } from "fimidx-core/common/ws";
 import { AnyFn, AnyObject } from "softkave-js-utils";
 
 export class WsBrowser implements IWsBase {

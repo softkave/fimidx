@@ -3,7 +3,7 @@ import {
   DurationUnit,
   kDurationUnits,
   kDurationUnitsToLabel,
-} from "fmdx-core/definitions/other";
+} from "fimidx-core/definitions/other";
 import { Input } from "../ui/input";
 import {
   Select,

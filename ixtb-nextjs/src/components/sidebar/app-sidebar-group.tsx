@@ -7,7 +7,7 @@ import {
   SidebarMenuItem,
 } from "@/src/components/ui/sidebar";
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
-import { GitCompareArrowsIcon, KeyIcon, LogsIcon } from "lucide-react";
+import { KeyIcon, LogsIcon } from "lucide-react";
 import { useMemo } from "react";
 import { ISidebarItem } from "./types";
 
@@ -23,16 +23,6 @@ function getItems(orgId: string, appId: string) {
       url: kClientPaths.app.org.app.log.index(orgId, appId),
       icon: LogsIcon,
     },
-    {
-      title: "Callbacks",
-      url: kClientPaths.app.org.app.callbacks.index(orgId, appId),
-      icon: GitCompareArrowsIcon,
-    },
-    // {
-    //   title: "Monitors",
-    //   url: kClientPaths.app.org.app.monitors.index(orgId, appId),
-    //   icon: MonitorCogIcon,
-    // },
   ];
 
   return items;

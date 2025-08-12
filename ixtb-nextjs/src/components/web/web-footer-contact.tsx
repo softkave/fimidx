@@ -1,4 +1,5 @@
 import { cn } from "@/src/lib/utils";
+import { kAppConstants } from "fimidx-core/definitions/appConstants";
 import { MailIcon } from "lucide-react";
 import Link from "next/link";
 import { GithubIcon } from "../icons/github";
@@ -6,7 +7,6 @@ import { LinkedinIcon } from "../icons/linkedin";
 import { XIcon } from "../icons/x";
 import { Button } from "../ui/button";
 import { Separator } from "../ui/separator";
-import { kAppConstants } from "fmdx-core/definitions/appConstants";
 
 export interface IWebFooterContact {
   title: string;

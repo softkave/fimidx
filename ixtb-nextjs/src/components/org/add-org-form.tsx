@@ -1,5 +1,6 @@
 "use client";
 
+import { IOrg } from "@/src/definitions/org.ts";
 import { AddOrgOnSuccessParams, useAddOrg } from "@/src/lib/clientApi/org.ts";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCallback } from "react";
@@ -17,7 +18,6 @@ import {
 } from "../ui/form.tsx";
 import { Input } from "../ui/input.tsx";
 import { Textarea } from "../ui/textarea.tsx";
-import { IOrg } from "fmdx-core/definitions/org";
 
 export interface IAddOrgFormProps {
   onSubmitComplete: (org: IOrg) => void;
@@ -76,10 +76,10 @@ export function AddOrgForm(props: IAddOrgFormProps) {
             <FormItem>
               <FormLabel>Name</FormLabel>
               <FormControl>
-                <Input placeholder="my logs organization" {...field} />
+                <Input placeholder="my logs org" {...field} />
               </FormControl>
               <FormDescription>
-                This is the name of the organization.
+                What is the name of the organization?
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -92,10 +92,10 @@ export function AddOrgForm(props: IAddOrgFormProps) {
             <FormItem>
               <FormLabel>Description</FormLabel>
               <FormControl>
-                <Textarea placeholder="my logs organization" {...field} />
+                <Textarea placeholder="my logs org" {...field} />
               </FormControl>
               <FormDescription>
-                This is the description of the organization.
+                What is the description of the organization?
               </FormDescription>
               <FormMessage />
             </FormItem>

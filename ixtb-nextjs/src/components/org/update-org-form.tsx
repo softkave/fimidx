@@ -1,11 +1,11 @@
 "use client";
 
+import { IOrg } from "@/src/definitions/org.ts";
 import {
   UpdateOrgOnSuccessParams,
   useUpdateOrg,
 } from "@/src/lib/clientApi/org.ts";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { IOrg } from "fmdx-core/definitions/org";
 import { useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -24,7 +24,7 @@ import { Textarea } from "../ui/textarea.tsx";
 
 export interface IUpdateOrgFormProps {
   org: IOrg;
-  onSubmitComplete: (org: IOrg) => void;
+  onSubmitComplete: (org: IOrg | undefined) => void;
 }
 
 export const addOrgFormSchema = z.object({
@@ -45,7 +45,7 @@ export function UpdateOrgForm(props: IUpdateOrgFormProps) {
 
   const handleSuccess = useCallback(
     (...args: UpdateOrgOnSuccessParams) => {
-      onSubmitComplete(args[1].org);
+      onSubmitComplete(undefined);
     },
     [onSubmitComplete]
   );
@@ -58,11 +58,14 @@ export function UpdateOrgForm(props: IUpdateOrgFormProps) {
   const onSubmit = useCallback(
     async (values: z.infer<typeof addOrgFormSchema>) => {
       await updateOrgHook.trigger({
-        name: values.name,
-        description: values.description,
+        id: org.id,
+        update: {
+          name: values.name,
+          description: values.description,
+        },
       });
     },
-    [updateOrgHook]
+    [org.id, updateOrgHook]
   );
 
   return (
@@ -81,10 +84,10 @@ export function UpdateOrgForm(props: IUpdateOrgFormProps) {
             <FormItem>
               <FormLabel>Name</FormLabel>
               <FormControl>
-                <Input placeholder="my logs organization" {...field} />
+                <Input placeholder="my logs org" {...field} />
               </FormControl>
               <FormDescription>
-                This is the name of the organization.
+                What is the name of the organization?
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -97,10 +100,10 @@ export function UpdateOrgForm(props: IUpdateOrgFormProps) {
             <FormItem>
               <FormLabel>Description</FormLabel>
               <FormControl>
-                <Textarea placeholder="my logs organization" {...field} />
+                <Textarea placeholder="my logs org" {...field} />
               </FormControl>
               <FormDescription>
-                This is the description of the organization.
+                What is the description of the organization?
               </FormDescription>
               <FormMessage />
             </FormItem>

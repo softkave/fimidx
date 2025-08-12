@@ -1,11 +1,11 @@
 "use client";
 
-import { IFetchedLog } from "fmdx-core/definitions/log";
+import { ILog } from "fimidx-core/definitions/log";
 import { Sheet, SheetContent } from "../ui/sheet.tsx";
 import { Log } from "./log.tsx";
 
 export interface ILogSheetProps {
-  log: IFetchedLog;
+  log: ILog;
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
 }

@@ -1,7 +1,8 @@
 "use client";
 
-import { useGetApp } from "@/src/lib/clientApi/app";
-import { IApp } from "fmdx-core/definitions/app";
+import { useGetApps } from "@/src/lib/clientApi/app";
+import assert from "assert";
+import { IApp } from "fimidx-core/definitions/app";
 import { useCallback, useMemo } from "react";
 import { WrapLoader } from "../internal/wrap-loader";
 import { App, AppTab, kAppTabs } from "./app";
@@ -25,17 +26,28 @@ export function AppContainer(props: IAppContainerProps) {
     renderLoading,
     renderError,
   } = props;
-  const getAppHook = useGetApp({ appId });
+  const getAppsHook = useGetApps({
+    query: {
+      id: {
+        eq: appId,
+      },
+    },
+  });
 
-  const error = getAppHook.error;
-  const isLoading = getAppHook.isLoading;
+  const isLoading = getAppsHook.isLoading;
+  const error =
+    getAppsHook.error ||
+    (!isLoading && getAppsHook.data?.apps.length === 0
+      ? new Error("App not found")
+      : undefined);
   const data = useMemo((): IAppContainerRenderProps | undefined => {
-    if (getAppHook.data) {
+    if (getAppsHook.data) {
+      assert(getAppsHook.data.apps.length === 1, "App not found");
       return {
-        app: getAppHook.data.app,
+        app: getAppsHook.data.apps[0],
       };
     }
-  }, [getAppHook.data]);
+  }, [getAppsHook.data]);
 
   const defaultRender = useCallback(
     (response: IAppContainerRenderProps) => (

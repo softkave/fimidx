@@ -1,8 +1,8 @@
 "use client";
 
-import { IApp } from "fmdx-core/definitions/app";
+import { IApp } from "fimidx-core/definitions/app";
 import { useCallback } from "react";
-import { ScrollArea } from "../ui/scroll-area.tsx";
+import { MaybeScroll } from "../internal/maybe-scroll.tsx";
 import {
   Sheet,
   SheetContent,
@@ -18,14 +18,14 @@ export interface IAppFormSheetProps {
   app?: IApp;
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
-  onSubmitComplete?: (app: IApp) => void;
+  onSubmitComplete?: (app?: IApp) => void;
 }
 
 export function AppFormSheet(props: IAppFormSheetProps) {
   const { isOpen, onOpenChange, onSubmitComplete, app, orgId } = props;
 
   const handleSubmitComplete = useCallback(
-    (app: IApp) => {
+    (app?: IApp) => {
       onOpenChange(false);
       onSubmitComplete?.(app);
     },
@@ -35,7 +35,7 @@ export function AppFormSheet(props: IAppFormSheetProps) {
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
       <SheetContent className="w-full max:w-[440px] p-0">
-        <ScrollArea className="h-[calc(100vh)]">
+        <MaybeScroll className="h-[calc(100vh)]">
           <SheetHeader>
             <SheetTitle>{app ? "Update App" : "New App"}</SheetTitle>
             <SheetDescription>
@@ -57,7 +57,7 @@ export function AppFormSheet(props: IAppFormSheetProps) {
               />
             )}
           </div>
-        </ScrollArea>
+        </MaybeScroll>
       </SheetContent>
     </Sheet>
   );

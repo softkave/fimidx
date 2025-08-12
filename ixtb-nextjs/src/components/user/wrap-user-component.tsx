@@ -3,11 +3,11 @@
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths.ts";
 import { useAppSession } from "@/src/lib/clientHooks/userHooks.ts";
 import assert from "assert";
+import { IUser } from "fimidx-core/definitions/user";
 import { redirect, usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { PageError } from "../internal/error.tsx";
 import { PageLoading } from "../internal/loading.tsx";
-import { IUser } from "fmdx-core/definitions/user";
 
 interface IWrapUserComponentProps {
   render?: React.ReactNode | ((user: IUser) => React.ReactNode);

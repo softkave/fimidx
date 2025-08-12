@@ -1,7 +1,8 @@
 "use client";
 
+import { IClientToken } from "fimidx-core/definitions/clientToken";
 import { useCallback } from "react";
-import { ScrollArea } from "../ui/scroll-area.tsx";
+import { MaybeScroll } from "../internal/maybe-scroll.tsx";
 import {
   Sheet,
   SheetContent,
@@ -11,7 +12,6 @@ import {
 } from "../ui/sheet.tsx";
 import { AddClientTokenForm } from "./add-client-token-form.tsx";
 import { UpdateClientTokenForm } from "./update-client-token-form.tsx";
-import { IClientToken } from "fmdx-core/definitions/clientToken";
 
 export interface IClientTokenFormSheetProps {
   orgId: string;
@@ -19,15 +19,29 @@ export interface IClientTokenFormSheetProps {
   clientToken?: IClientToken;
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
-  onSubmitComplete?: (clientToken: IClientToken) => void;
+  onSubmitComplete?: (clientToken?: IClientToken) => void;
+  addMessage?: string;
+  updateMessage?: string;
+  addTitle?: string;
+  updateTitle?: string;
 }
 
 export function ClientTokenFormSheet(props: IClientTokenFormSheetProps) {
-  const { isOpen, onOpenChange, onSubmitComplete, clientToken, orgId, appId } =
-    props;
+  const {
+    isOpen,
+    onOpenChange,
+    onSubmitComplete,
+    clientToken,
+    orgId,
+    appId,
+    addMessage = "Create a new client token to start adding logs.",
+    updateMessage = "Update the client token to change the name or description.",
+    addTitle = "New Client Token",
+    updateTitle = "Update Client Token",
+  } = props;
 
   const handleSubmitComplete = useCallback(
-    (clientToken: IClientToken) => {
+    (clientToken?: IClientToken) => {
       onOpenChange(false);
       onSubmitComplete?.(clientToken);
     },
@@ -37,15 +51,11 @@ export function ClientTokenFormSheet(props: IClientTokenFormSheetProps) {
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
       <SheetContent className="w-full max:w-[440px] p-0">
-        <ScrollArea className="h-[calc(100vh)]">
+        <MaybeScroll className="h-[calc(100vh)]">
           <SheetHeader>
-            <SheetTitle>
-              {clientToken ? "Update Client Token" : "New Client Token"}
-            </SheetTitle>
+            <SheetTitle>{clientToken ? updateTitle : addTitle}</SheetTitle>
             <SheetDescription>
-              {clientToken
-                ? "Update the client token to change the name or description."
-                : "Create a new client token to start adding logs."}
+              {clientToken ? updateMessage : addMessage}
             </SheetDescription>
           </SheetHeader>
           <div className="mt-2 p-4">
@@ -62,7 +72,7 @@ export function ClientTokenFormSheet(props: IClientTokenFormSheetProps) {
               />
             )}
           </div>
-        </ScrollArea>
+        </MaybeScroll>
       </SheetContent>
     </Sheet>
   );

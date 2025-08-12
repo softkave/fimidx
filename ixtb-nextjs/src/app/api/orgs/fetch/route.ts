@@ -1,4 +1,4 @@
-import { getOrgsEndpoint } from "@/src/lib/endpoints/orgs/getOrgsEndpoint";
+import { getOrgsEndpoint } from "@/src/lib/endpoints/internal/orgs/getOrgsEndpoint";
 import { wrapUserAuthenticated } from "@/src/lib/serverHelpers/wrapAuthenticated.ts";
 import { IRouteContext } from "@/src/lib/serverHelpers/wrapRoute.ts";
 import { NextRequest } from "next/server";

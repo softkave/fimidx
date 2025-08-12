@@ -1,17 +1,18 @@
 import { auth, NextAuthRequest } from "@/auth";
 import assert from "assert";
-import { OwnServerError } from "fmdx-core/common/error";
-import { IClientToken } from "fmdx-core/definitions/clientToken";
+import { OwnServerError } from "fimidx-core/common/error";
+import { IClientToken } from "fimidx-core/definitions/clientToken";
+import { kByTypes } from "fimidx-core/definitions/other";
 import {
   getJWTSecret,
   IEncodeClientTokenJWTContent,
-} from "fmdx-core/serverHelpers/clientToken/encodeClientTokenJWT";
-import { getClientToken } from "fmdx-core/serverHelpers/clientToken/getClientToken";
+} from "fimidx-core/serverHelpers/clientToken/encodeClientTokenJWT";
 import jwt from "jsonwebtoken";
 import { isString } from "lodash-es";
 import { Session } from "next-auth";
 import { NextRequest } from "next/server";
 import { AnyFn, AnyObject } from "softkave-js-utils";
+import { getClientToken } from "./clientToken/getClientToken";
 import { IRouteContext, wrapRoute } from "./wrapRoute";
 
 export interface IUserAuthenticatedRequest {
@@ -29,7 +30,14 @@ export interface IClientTokenAuthenticatedRequest {
 
 export type IMaybeAuthenticatedRequest = Partial<
   IUserAuthenticatedRequest & IClientTokenAuthenticatedRequest
->;
+> & {
+  by?: string;
+  byType?: string;
+  getBy: () => {
+    by: string;
+    byType: string;
+  };
+};
 
 type RouteFn = AnyFn<[NextAuthRequest, IRouteContext], Promise<Response>>;
 
@@ -75,13 +83,16 @@ async function tryGetClientTokenAuthenticatedRequest(
       getJWTSecret()
     ) as IEncodeClientTokenJWTContent;
 
-    const clientToken = await getClientToken({ id: decodedToken.id });
+    const { clientToken } = await getClientToken({
+      input: { clientTokenId: decodedToken.id },
+    });
+
     assert(
       clientToken.appId === decodedToken.appId,
       new OwnServerError("Unauthorized", 401)
     );
     assert(
-      clientToken.orgId === decodedToken.orgId,
+      clientToken.groupId === decodedToken.groupId,
       new OwnServerError("Unauthorized", 401)
     );
 
@@ -90,7 +101,7 @@ async function tryGetClientTokenAuthenticatedRequest(
       jwtContent: decodedToken,
       checkOrgId: (orgId: string) => {
         assert.ok(
-          orgId === clientToken.orgId,
+          orgId === clientToken.groupId,
           new OwnServerError("Unauthorized", 401)
         );
       },
@@ -164,6 +175,21 @@ export const wrapMaybeAuthenticated = (
       return routeFn(req, ctx, {
         ...userAuthenticatedRequest,
         ...clientTokenAuthenticatedRequest,
+        getBy: () => {
+          if (userAuthenticatedRequest) {
+            return {
+              by: userAuthenticatedRequest.userId,
+              byType: kByTypes.user,
+            };
+          }
+          if (clientTokenAuthenticatedRequest) {
+            return {
+              by: clientTokenAuthenticatedRequest.clientToken.groupId,
+              byType: kByTypes.clientToken,
+            };
+          }
+          throw new OwnServerError("Unauthorized", 401);
+        },
       });
     })
   );

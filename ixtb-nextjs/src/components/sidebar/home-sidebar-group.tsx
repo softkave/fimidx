@@ -7,19 +7,14 @@ import {
   SidebarMenuItem,
 } from "@/src/components/ui/sidebar";
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
-import { BoxesIcon, UserPlus } from "lucide-react";
+import { BoxesIcon } from "lucide-react";
 import { ISidebarItem } from "./types";
 
 const items: ISidebarItem[] = [
   {
-    title: "Organizations",
+    title: "Orgs",
     url: kClientPaths.app.org.index,
     icon: BoxesIcon,
-  },
-  {
-    title: "My Requests",
-    url: kClientPaths.app.myRequests,
-    icon: UserPlus,
   },
 ];
 

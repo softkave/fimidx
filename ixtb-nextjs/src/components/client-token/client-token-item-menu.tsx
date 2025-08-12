@@ -1,11 +1,10 @@
 "use client";
 
-import { useDeleteClientToken } from "@/src/lib/clientApi/clientToken";
+import { useDeleteClientTokens } from "@/src/lib/clientApi/clientToken";
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
-import { useHasPermission } from "@/src/lib/clientHooks/permissionHooks";
 import { cn } from "@/src/lib/utils";
-import { IClientToken } from "fmdx-core/definitions/clientToken";
-import { kPermissions } from "fmdx-core/definitions/permissions";
+import { IClientToken } from "fimidx-core/definitions/clientToken";
+import { kId0 } from "fimidx-core/definitions/system";
 import { isString } from "lodash-es";
 import { Ellipsis, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -38,32 +37,24 @@ export function ClientTokenItemMenu(props: IClientTokenItemMenuProps) {
     appId,
   } = props;
 
-  const {
-    checks: [canDelete, canUpdate],
-  } = useHasPermission({
-    orgId: clientToken.orgId,
-    permission: [
-      kPermissions.clientToken.delete,
-      kPermissions.clientToken.update,
-    ],
-  });
-
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
-  const deleteClientTokenHook = useDeleteClientToken({
-    appId: appId,
-    clientTokenId: clientToken.id,
+  const deleteClientTokenHook = useDeleteClientTokens({
     onSuccess: () => {
       toast.success("ClientToken deleted");
       onDeleted?.();
       if (routeAfterDelete) {
+        const orgId = clientToken.meta?.orgId;
+        const appId = clientToken.meta?.appId;
+
+        if (!orgId || !appId) {
+          return;
+        }
+
         router.push(
           isString(routeAfterDelete)
             ? routeAfterDelete
-            : kClientPaths.app.org.app.clientToken.index(
-                clientToken.orgId,
-                appId
-              )
+            : kClientPaths.app.org.app.clientToken.index(orgId, appId)
         );
       }
     },
@@ -71,7 +62,14 @@ export function ClientTokenItemMenu(props: IClientTokenItemMenuProps) {
 
   const handleDelete = () => {
     onDeleting?.();
-    deleteClientTokenHook.trigger({ id: clientToken.id });
+    deleteClientTokenHook.trigger({
+      query: {
+        appId: kId0,
+        id: {
+          eq: clientToken.id,
+        },
+      },
+    });
   };
 
   const deleteClientTokenDialog = useDeleteResourceDialog({
@@ -87,7 +85,7 @@ export function ClientTokenItemMenu(props: IClientTokenItemMenuProps) {
       {deleteClientTokenDialog.DeleteResourceDialog()}
       <ClientTokenFormSheet
         clientToken={clientToken}
-        orgId={clientToken.orgId}
+        orgId={clientToken.groupId}
         appId={appId}
         onOpenChange={setIsEditing}
         isOpen={isEditing}
@@ -108,16 +106,10 @@ export function ClientTokenItemMenu(props: IClientTokenItemMenuProps) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
-          <DropdownMenuItem
-            onSelect={() => setIsEditing(true)}
-            disabled={!canUpdate}
-          >
+          <DropdownMenuItem onSelect={() => setIsEditing(true)}>
             Edit
           </DropdownMenuItem>
-          <DropdownMenuItem
-            onSelect={deleteClientTokenDialog.trigger}
-            disabled={!canDelete}
-          >
+          <DropdownMenuItem onSelect={deleteClientTokenDialog.trigger}>
             Delete
           </DropdownMenuItem>
         </DropdownMenuContent>

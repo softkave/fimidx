@@ -17,8 +17,8 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "../ui/form";
-import { Input } from "../ui/input";
+} from "../ui/form.tsx";
+import { Input } from "../ui/input.tsx";
 
 export interface IEmailSignInClientProps {
   redirectTo?: string;

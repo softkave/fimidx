@@ -1,8 +1,9 @@
 import { AssertionError } from "assert";
-import { OwnServerError, OwnError } from "fmdx-core/common/error";
+import { OwnError, OwnServerError } from "fimidx-core/common/error";
 import { NextRequest } from "next/server";
 import { AnyFn, AnyObject } from "softkave-js-utils";
 import { ZodError } from "zod";
+import { fimidxLogger } from "../common/logger/fimidx-logger";
 
 export interface IRouteContext {
   params: Promise<AnyObject>;
@@ -20,7 +21,7 @@ export const wrapRoute =
         status: 200,
       });
     } catch (error) {
-      console.error(error);
+      fimidxLogger.error(error);
 
       if (OwnServerError.isOwnServerError(error)) {
         return Response.json(

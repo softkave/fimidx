@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  transpilePackages: ["fmdx-core"],
+  transpilePackages: ["fimidx-core"],
 };
 
 export default nextConfig;

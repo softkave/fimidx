@@ -11,7 +11,7 @@ export function AppSidebarGroupContainer(props: {
     <AppContainer
       appId={props.appId}
       render={({ app }) => (
-        <AppSidebarGroup orgId={app.orgId} appId={app.id} name={app.name} />
+        <AppSidebarGroup orgId={props.orgId} appId={app.id} name={app.name} />
       )}
       renderLoading={() => null}
       renderError={() => null}

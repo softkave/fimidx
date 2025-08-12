@@ -1,8 +1,8 @@
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
-import { cn } from "@/src/lib/utils";
-import { IApp } from "fmdx-core/definitions/app";
+import { IApp } from "fimidx-core/definitions/app";
 import Link from "next/link";
-import { Skeleton } from "../ui/skeleton";
+import { ComponentListItemSkeleton } from "../internal/component-list/component-list-item-skeleton.tsx";
+import { ComponentListItem } from "../internal/component-list/component-list-item.tsx";
 import { AppItemMenu } from "./app-item-menu.tsx";
 
 export interface IAppItemProps {
@@ -11,7 +11,7 @@ export interface IAppItemProps {
 
 export function AppItem(props: IAppItemProps) {
   return (
-    <div className="flex justify-between items-center gap-2 hover:bg-muted/50 transition-colors rounded-md px-4 py-2">
+    <ComponentListItem button={<AppItemMenu app={props.item} />}>
       <Link
         href={kClientPaths.app.org.app.single(props.item.orgId, props.item.id)}
         className="flex-1"
@@ -21,19 +21,10 @@ export function AppItem(props: IAppItemProps) {
           <p className="text-muted-foreground">{props.item.description}</p>
         </div>
       </Link>
-      <AppItemMenu app={props.item} />
-    </div>
+    </ComponentListItem>
   );
 }
 
 export function AppItemSkeleton(props: { className?: string }) {
-  return (
-    <div className={cn("flex justify-between gap-2 px-4", props.className)}>
-      <div className="flex flex-col gap-1 flex-1">
-        <Skeleton className="w-full h-8" />
-        <Skeleton className="w-full h-8" />
-      </div>
-      <Skeleton className="w-8 h-8" />
-    </div>
-  );
+  return <ComponentListItemSkeleton className={props.className} />;
 }

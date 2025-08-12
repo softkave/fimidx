@@ -1,6 +1,6 @@
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
 import { cn } from "@/src/lib/utils";
-import { kAppConstants } from "fmdx-core/definitions/appConstants";
+import { kAppConstants } from "fimidx-core/definitions/appConstants";
 import Link from "next/link";
 import { Button } from "../ui/button";
 

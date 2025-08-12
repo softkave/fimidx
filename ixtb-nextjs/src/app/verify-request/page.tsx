@@ -1,6 +1,6 @@
 import { AppHeader } from "@/src/components/internal/app-header";
 import { VerifyRequestMessage } from "@/src/components/internal/verify-request-message.tsx";
-import { kAppConstants } from "fmdx-core/definitions/appConstants";
+import { kAppConstants } from "fimidx-core/definitions/appConstants";
 import { Metadata } from "next";
 import { Suspense } from "react";
 

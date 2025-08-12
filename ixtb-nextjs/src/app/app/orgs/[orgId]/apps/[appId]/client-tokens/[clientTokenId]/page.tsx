@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { ClientTokenPage } from "@/src/components/client-token/client-token-page";
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
-import { kAppConstants } from "fmdx-core/definitions/appConstants";
+import { kAppConstants } from "fimidx-core/definitions/appConstants";
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { JSX } from "react";
@@ -38,5 +38,5 @@ export default async function Page(
     );
   }
 
-  return <ClientTokenPage clientTokenId={clientTokenId} />;
+  return <ClientTokenPage appId={appId} clientTokenId={clientTokenId} />;
 }

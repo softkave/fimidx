@@ -48,3 +48,10 @@ yalc.lock
 dist
 
 .env*
+
+# local mongo
+local-mongo/
+
+# config
+local.json
+local-*.json

@@ -1,12 +1,12 @@
 "use client";
 
+import { GetOrgsEndpointArgs, IOrg } from "@/src/definitions/org.ts";
 import { useGetOrgs } from "@/src/lib/clientApi/org.ts";
 import { cn } from "@/src/lib/utils.ts";
-import { GetOrgsEndpointArgs, IOrg } from "fmdx-core/definitions/org";
 import { useState } from "react";
 import { OmitFrom } from "softkave-js-utils";
-import ListPagination from "../internal/list-pagination.tsx";
-import { PageMessage } from "../internal/page-message.tsx";
+import { ComponentListMessage } from "../internal/component-list/component-list-message.tsx";
+import UnknownCountListPagination from "../internal/unknown-count-list-pagination.tsx";
 import { WrapLoader } from "../internal/wrap-loader.tsx";
 import { Orgs } from "./org-list.tsx";
 
@@ -49,10 +49,10 @@ export function OrgListContainer({
         data={orgHooks.data}
         render={(data) =>
           data.orgs.length === 0 && showNoOrgsMessage ? (
-            <PageMessage
-              title="No organizations"
-              message="No organizations found"
-              className="px-4 flex flex-col items-center justify-center py-32"
+            <ComponentListMessage
+              title="No organizations found"
+              message="Add an organization to get started"
+              className="w-full"
             />
           ) : (
             <div
@@ -62,8 +62,8 @@ export function OrgListContainer({
               )}
             >
               {render(data.orgs)}
-              <ListPagination
-                count={data.total}
+              <UnknownCountListPagination
+                hasMore={data.hasMore}
                 page={page}
                 pageSize={pageSize}
                 disabled={orgHooks.isLoading}

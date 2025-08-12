@@ -5,8 +5,8 @@ import { OrgsHeader } from "./orgs-header";
 export function OrgsPage() {
   return (
     <AppPage>
-      <div className="flex flex-col max-w-lg pt-0 mx-auto">
-        <OrgsHeader className="p-4" />
+      <div className="flex flex-col max-w-lg mx-auto">
+        <OrgsHeader />
         <OrgListContainer showNoOrgsMessage={false} />
       </div>
     </AppPage>

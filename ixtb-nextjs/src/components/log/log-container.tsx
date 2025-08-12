@@ -1,35 +1,58 @@
 "use client";
 
-import { useGetLogById } from "@/src/lib/clientApi/log";
-import { IFetchedLog } from "fmdx-core/definitions/log";
+import { useGetLogs } from "@/src/lib/clientApi/log";
+import { getLogsSchema, ILog } from "fimidx-core/definitions/log";
 import { useCallback, useMemo } from "react";
+import { z } from "zod";
 import { WrapLoader } from "../internal/wrap-loader";
 import { Log } from "./log";
 
 export interface ILogContainerRenderProps {
-  log: IFetchedLog;
+  log: ILog;
 }
 
 export interface ILogContainerProps {
   logId: string;
+  appId: string;
   render?: (response: ILogContainerRenderProps) => React.ReactNode;
   renderLoading?: () => React.ReactNode;
   renderError?: (error: unknown) => React.ReactNode;
 }
 
 export function LogContainer(props: ILogContainerProps) {
-  const { logId, renderLoading, renderError } = props;
-  const getLogHook = useGetLogById({ logId });
+  const { logId, appId, renderLoading, renderError } = props;
 
-  const error = getLogHook.error;
-  const isLoading = getLogHook.isLoading;
+  const args = useMemo(
+    (): z.infer<typeof getLogsSchema> => ({
+      page: 1,
+      limit: 1,
+      query: {
+        appId,
+        logsQuery: {
+          and: [
+            {
+              field: "id",
+              op: "eq",
+              value: logId,
+            },
+          ],
+        },
+      },
+    }),
+    [logId, appId]
+  );
+
+  const logHook = useGetLogs(args);
+
+  const error = logHook.error;
+  const isLoading = logHook.isLoading;
   const data = useMemo((): ILogContainerRenderProps | undefined => {
-    if (getLogHook.data) {
+    if (logHook.data) {
       return {
-        log: getLogHook.data.log,
+        log: logHook.data.logs[0],
       };
     }
-  }, [getLogHook.data]);
+  }, [logHook.data]);
 
   const defaultRender = useCallback(
     (response: ILogContainerRenderProps) => <Log log={response.log} />,

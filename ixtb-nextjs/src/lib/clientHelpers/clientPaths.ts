@@ -1,4 +1,6 @@
-const kBaseUrl = process.env.NEXT_PUBLIC_URL ?? "https://fmdx.fimidara.com";
+import { getClientConfig } from "../common/getClientConfig";
+
+const kBaseUrl = getClientConfig().publicURL ?? "https://fimidx.fimidara.com";
 
 export const kClientPaths = {
   index: "/",

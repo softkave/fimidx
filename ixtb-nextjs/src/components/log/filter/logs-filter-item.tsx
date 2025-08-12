@@ -1,9 +1,6 @@
-import {
-  ILogField,
-  LogPartFilterItemOp,
-  logPartFilterItemOpSchema,
-} from "fmdx-core/definitions/log";
-import { flatten } from "lodash-es";
+import { FieldType } from "fimidx-core/common/indexer";
+import { ILogField } from "fimidx-core/definitions/log";
+import { objPartQueryItemOpSchema } from "fimidx-core/definitions/obj";
 import { XIcon } from "lucide-react";
 import { useMemo } from "react";
 import { Button } from "../../ui/button";
@@ -16,12 +13,12 @@ import {
 } from "../../ui/select";
 import { Textarea } from "../../ui/textarea";
 import { BetweenNumberOrDateInput } from "./between-number-or-date-input";
-import { InInputContainer } from "./in-input-container";
+import { InInput } from "./in-input";
 import { NumberOrDateInput } from "./number-or-date-input";
 import { IWorkingLogPartFilterItem } from "./types";
 
-const kOps = logPartFilterItemOpSchema.Values;
-const kOpLabels = {
+const kOps = objPartQueryItemOpSchema.Values;
+const kOpLabels: Record<keyof typeof kOps, string> = {
   [kOps.eq]: "Equal to",
   [kOps.neq]: "Not equal to",
   [kOps.gt]: "Greater than",
@@ -29,15 +26,14 @@ const kOpLabels = {
   [kOps.lt]: "Less than",
   [kOps.lte]: "Less than or equal to",
   [kOps.like]: "Like",
-  [kOps.ilike]: "Case insensitive like",
   [kOps.in]: "In",
   [kOps.not_in]: "Not in",
   [kOps.between]: "Between",
+  [kOps.exists]: "Exists",
 };
 
-type ValueType = "string" | "number" | "boolean" | "null" | "undefined";
-const kValueTypeToAllowedOps: Record<ValueType, LogPartFilterItemOp[]> = {
-  string: [kOps.eq, kOps.neq, kOps.like, kOps.ilike, kOps.in, kOps.not_in],
+const kValueTypeToAllowedOps: Record<FieldType, (keyof typeof kOps)[]> = {
+  string: [kOps.eq, kOps.neq, kOps.like, kOps.in, kOps.not_in],
   number: [
     kOps.eq,
     kOps.neq,
@@ -66,29 +62,21 @@ export function LogsFilterItem(props: ILogsFilterItemProps) {
   const { fields, item, onChange, onRemove, appId, disabled } = props;
 
   const field = useMemo(() => {
-    return fields.find((f) => f.name === item.name);
-  }, [fields, item.name]);
+    return fields.find((f) => f.path === item.item.field);
+  }, [fields, item.item.field]);
 
   const ops = useMemo(() => {
-    return field
-      ? flatten(
-          field.valueType
-            .split(",")
-            .map((t) => kValueTypeToAllowedOps[t as ValueType])
-        )
-      : [];
+    return field ? kValueTypeToAllowedOps[field.type] : [];
   }, [field]);
 
   const renderSelectName = () => {
     return (
       <Select
-        value={item.name}
+        value={item.item.field}
         onValueChange={(value) => {
           onChange({
             ...item,
-            name: value,
-            op: undefined,
-            value: [],
+            item: { ...item.item, field: value },
           });
         }}
         disabled={disabled}
@@ -98,9 +86,9 @@ export function LogsFilterItem(props: ILogsFilterItemProps) {
         </SelectTrigger>
         <SelectContent>
           {fields?.map((field) => (
-            <SelectItem key={field.id} value={field.name}>
+            <SelectItem key={field.id} value={field.path}>
               <pre>
-                <code>{field.name}</code>
+                <code>{field.path}</code>
               </pre>
             </SelectItem>
           ))}
@@ -112,9 +100,16 @@ export function LogsFilterItem(props: ILogsFilterItemProps) {
   const renderSelectOp = () => {
     return (
       <Select
-        value={item.op}
+        value={item.item.op}
         onValueChange={(value) => {
-          onChange({ ...item, op: value as LogPartFilterItemOp, value: [] });
+          onChange({
+            ...item,
+            item: {
+              ...item.item,
+              // @ts-expect-error
+              op: value,
+            },
+          });
         }}
         disabled={!field || disabled}
       >
@@ -133,39 +128,54 @@ export function LogsFilterItem(props: ILogsFilterItemProps) {
   };
 
   const renderSelectValue = () => {
-    if (!item.name) {
+    if (!item.item.field) {
       return null;
     }
 
-    switch (item.op) {
+    switch (item.item.op) {
       case kOps.in:
       case kOps.not_in:
         return (
-          <InInputContainer
-            appId={appId}
-            value={item.value ?? []}
-            onChange={(value) => onChange({ ...item, value })}
-            fieldName={item.name}
+          <InInput
+            value={item.item.value as string[]}
+            onChange={(value) =>
+              onChange({
+                ...item,
+                item: {
+                  ...item.item,
+                  value: value as any,
+                },
+              })
+            }
             disabled={disabled}
           />
         );
       case kOps.between:
         return (
           <BetweenNumberOrDateInput
-            value={item.value ?? []}
-            onChange={(value) => onChange({ ...item, value })}
-            fieldName={item.name}
+            value={item.item.value as any}
+            onChange={(value) =>
+              onChange({
+                ...item,
+                item: { ...item.item, value: value as any },
+              })
+            }
+            fieldName={item.item.field}
             disabled={disabled}
           />
         );
       case kOps.like:
-      case kOps.ilike:
       case kOps.eq:
       case kOps.neq:
         return (
           <Textarea
-            value={item.value ?? []}
-            onChange={(e) => onChange({ ...item, value: [e.target.value] })}
+            value={item.item.value as any}
+            onChange={(e) =>
+              onChange({
+                ...item,
+                item: { ...item.item, value: e.target.value as any },
+              })
+            }
             disabled={disabled}
           />
         );
@@ -175,9 +185,14 @@ export function LogsFilterItem(props: ILogsFilterItemProps) {
       case kOps.lte:
         return (
           <NumberOrDateInput
-            value={item.value ?? []}
-            onChange={(value) => onChange({ ...item, value })}
-            fieldName={item.name}
+            value={item.item.value as any}
+            onChange={(value) =>
+              onChange({
+                ...item,
+                item: { ...item.item, value: value as any },
+              })
+            }
+            fieldName={item.item.field}
             disabled={disabled}
           />
         );
@@ -208,10 +223,9 @@ export function LogsFilterItem(props: ILogsFilterItemProps) {
   };
 
   const render = () => {
-    switch (item.op) {
+    switch (item.item.op) {
       case kOps.between:
       case kOps.like:
-      case kOps.ilike:
       case kOps.eq:
       case kOps.neq:
       case kOps.gt:

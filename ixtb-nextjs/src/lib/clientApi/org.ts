@@ -6,7 +6,8 @@ import {
   GetOrgsEndpointResponse,
   UpdateOrgEndpointResponse,
   updateOrgSchema,
-} from "fmdx-core/definitions/org";
+} from "@/src/definitions/org.ts";
+import { first } from "lodash-es";
 import { convertToArray } from "softkave-js-utils";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
@@ -41,7 +42,8 @@ export function useAddOrg(opts: IUseMutationHandlerOpts<typeof addOrg> = {}) {
   const mutationHandler = useMutationHandler(addOrg, {
     ...opts,
     invalidate: [
-      kOrgSWRKeys.getOrgs({}),
+      // Use only the first key to invalidate the cache
+      first(kOrgSWRKeys.getOrgs({})),
       ...convertToArray(opts.invalidate || []),
     ],
   });
@@ -115,7 +117,8 @@ export function useUpdateOrg(
   const mutationHandler = useMutationHandler(updateOrg, {
     ...opts,
     invalidate: [
-      kOrgSWRKeys.getOrgs({}),
+      // Use only the first key to invalidate the cache
+      first(kOrgSWRKeys.getOrgs({})),
       kOrgSWRKeys.getOrg(opts.orgId),
       ...convertToArray(opts.invalidate || []),
     ],
@@ -154,14 +157,15 @@ export function useDeleteOrg(
   const mutationHandler = useMutationHandler(deleteOrg, {
     ...opts,
     invalidate: [
-      kOrgSWRKeys.getOrgs({}),
+      // Use only the first key to invalidate the cache
+      first(kOrgSWRKeys.getOrgs({})),
       kOrgSWRKeys.getOrg(opts.orgId),
       ...convertToArray(opts.invalidate || []),
     ],
   });
 
   const { trigger, data, error, isMutating, reset } = useSWRMutation(
-    kOrgSWRKeys.deleteOrg(),
+    kOrgSWRKeys.deleteOrg(opts.orgId),
     mutationHandler
   );
 

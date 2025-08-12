@@ -7,7 +7,7 @@ import {
   SidebarMenuItem,
 } from "@/src/components/ui/sidebar";
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
-import { AppWindow, Users } from "lucide-react";
+import { AppWindow } from "lucide-react";
 import { useMemo } from "react";
 import { ISidebarItem } from "./types";
 
@@ -17,11 +17,6 @@ function getItems(orgId: string) {
       title: "Apps",
       url: kClientPaths.app.org.app.index(orgId),
       icon: AppWindow,
-    },
-    {
-      title: "Members",
-      url: kClientPaths.app.org.members.index(orgId),
-      icon: Users,
     },
   ];
 

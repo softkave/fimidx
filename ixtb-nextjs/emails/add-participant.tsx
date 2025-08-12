@@ -9,7 +9,7 @@ import {
   Preview,
   Tailwind,
 } from "@react-email/components";
-import { kAppConstants } from "fmdx-core/definitions/appConstants";
+import { kAppConstants } from "fimidx-core/definitions/appConstants";
 
 export interface AddParticipantEmailProps {
   orgName: string;
@@ -42,7 +42,7 @@ export const AddParticipantEmail = ({
                 <div>
                   <p className="mb-0">
                     You have been invited by <strong>{inviterName}</strong> to
-                    join organization <strong>{orgName}</strong> on{" "}
+                    join org <strong>{orgName}</strong> on{" "}
                     <a
                       href={kClientPaths.withURL(kClientPaths.index)}
                       className="text-blue-500"

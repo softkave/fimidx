@@ -5,7 +5,7 @@ import {
   useUpdateApp,
 } from "@/src/lib/clientApi/app.ts";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { IApp } from "fmdx-core/definitions/app";
+import { IApp } from "fimidx-core/definitions/app";
 import { useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -24,7 +24,7 @@ import { Textarea } from "../ui/textarea.tsx";
 
 export interface IUpdateAppFormProps {
   app: IApp;
-  onSubmitComplete: (app: IApp) => void;
+  onSubmitComplete: (app?: IApp) => void;
 }
 
 export const addAppFormSchema = z.object({
@@ -45,23 +45,27 @@ export function UpdateAppForm(props: IUpdateAppFormProps) {
 
   const handleSuccess = useCallback(
     (...args: UpdateAppOnSuccessParams) => {
-      onSubmitComplete(args[1].app);
+      onSubmitComplete(undefined);
     },
     [onSubmitComplete]
   );
 
   const updateAppHook = useUpdateApp({
     onSuccess: handleSuccess,
-    appId: app.id,
-    orgId: app.orgId,
   });
 
   const onSubmit = useCallback(
     async (values: z.infer<typeof addAppFormSchema>) => {
       await updateAppHook.trigger({
-        id: app.id,
-        name: values.name,
-        description: values.description,
+        query: {
+          id: {
+            eq: app.id,
+          },
+        },
+        update: {
+          name: values.name,
+          description: values.description,
+        },
       });
     },
     [updateAppHook, app.id]
@@ -85,7 +89,7 @@ export function UpdateAppForm(props: IUpdateAppFormProps) {
               <FormControl>
                 <Input placeholder="my logs app" {...field} />
               </FormControl>
-              <FormDescription>This is the name of the app.</FormDescription>
+              <FormDescription>What is the name of the app?</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -100,7 +104,7 @@ export function UpdateAppForm(props: IUpdateAppFormProps) {
                 <Textarea placeholder="my logs app" {...field} />
               </FormControl>
               <FormDescription>
-                This is the description of the app.
+                What is the description of the app?
               </FormDescription>
               <FormMessage />
             </FormItem>

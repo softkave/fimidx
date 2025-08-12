@@ -2,9 +2,8 @@
 
 import { useDeleteApp } from "@/src/lib/clientApi/app";
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
-import { useHasPermission } from "@/src/lib/clientHooks/permissionHooks";
 import { cn } from "@/src/lib/utils";
-import { IApp } from "fmdx-core/definitions/app";
+import { IApp } from "fimidx-core/definitions/app";
 import { isString } from "lodash-es";
 import { Ellipsis, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -19,7 +18,6 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { AppFormSheet } from "./app-form-sheet";
-import { kPermissions } from "fmdx-core/definitions/permissions";
 
 export interface IAppItemMenuProps {
   app: IApp;
@@ -31,18 +29,9 @@ export interface IAppItemMenuProps {
 export function AppItemMenu(props: IAppItemMenuProps) {
   const { app, onDeleting, onDeleted, routeAfterDelete = true } = props;
 
-  const {
-    checks: [canDelete, canUpdate],
-  } = useHasPermission({
-    orgId: app.orgId,
-    permission: [kPermissions.app.delete, kPermissions.app.update],
-  });
-
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const deleteAppHook = useDeleteApp({
-    orgId: app.orgId,
-    appId: app.id,
     onSuccess: () => {
       toast.success("App deleted");
       onDeleted?.();
@@ -58,7 +47,13 @@ export function AppItemMenu(props: IAppItemMenuProps) {
 
   const handleDelete = () => {
     onDeleting?.();
-    deleteAppHook.trigger({ id: app.id });
+    deleteAppHook.trigger({
+      query: {
+        id: {
+          eq: app.id,
+        },
+      },
+    });
   };
 
   const deleteAppDialog = useDeleteResourceDialog({
@@ -94,16 +89,10 @@ export function AppItemMenu(props: IAppItemMenuProps) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
-          <DropdownMenuItem
-            onSelect={() => setIsEditing(true)}
-            disabled={!canUpdate}
-          >
+          <DropdownMenuItem onSelect={() => setIsEditing(true)}>
             Edit
           </DropdownMenuItem>
-          <DropdownMenuItem
-            onSelect={deleteAppDialog.trigger}
-            disabled={!canDelete}
-          >
+          <DropdownMenuItem onSelect={deleteAppDialog.trigger}>
             Delete
           </DropdownMenuItem>
         </DropdownMenuContent>

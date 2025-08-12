@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/src/lib/utils";
+import { ComponentListHeader } from "../internal/component-list/component-list-header";
 import { LogsHeaderMenu } from "./logs-header-menu";
 
 export function LogsHeader(props: {
@@ -11,17 +11,16 @@ export function LogsHeader(props: {
   showFiltersAndSort: boolean;
 }) {
   return (
-    <div
-      className={cn(
-        "flex justify-between items-center w-full",
-        props.className
-      )}
-    >
-      <h1 className="text-2xl font-bold">Logs</h1>
-      <LogsHeaderMenu
-        onShowFiltersAndSort={props.onShowFiltersAndSort}
-        showFiltersAndSort={props.showFiltersAndSort}
-      />
-    </div>
+    <ComponentListHeader
+      title="Logs"
+      description="View and manage logs"
+      button={
+        <LogsHeaderMenu
+          onShowFiltersAndSort={props.onShowFiltersAndSort}
+          showFiltersAndSort={props.showFiltersAndSort}
+        />
+      }
+      className={props.className}
+    />
   );
 }

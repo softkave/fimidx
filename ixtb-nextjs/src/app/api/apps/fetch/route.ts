@@ -1,4 +1,4 @@
-import { getAppsEndpoint } from "@/src/lib/endpoints/apps/getAppsEndpoint";
+import { getAppsEndpoint } from "@/src/lib/endpoints/internal/apps/getAppsEndpoint";
 import { wrapUserAuthenticated } from "@/src/lib/serverHelpers/wrapAuthenticated.ts";
 import { IRouteContext } from "@/src/lib/serverHelpers/wrapRoute.ts";
 import { NextRequest } from "next/server";

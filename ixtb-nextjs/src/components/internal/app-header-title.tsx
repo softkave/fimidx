@@ -2,7 +2,7 @@
 
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths.ts";
 import { cn } from "@/src/lib/utils.ts";
-import { kAppConstants } from "fmdx-core/definitions/appConstants";
+import { kAppConstants } from "fimidx-core/definitions/appConstants";
 import Link from "next/link";
 import { useSidebar } from "../ui/sidebar.tsx";
 

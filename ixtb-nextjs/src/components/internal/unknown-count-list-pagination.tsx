@@ -42,13 +42,17 @@ function UnknownCountListPagination(props: IUnknownCountListPaginationProps) {
     }
   };
 
+  if (page === 1 && !hasMore) {
+    return null;
+  }
+
   return (
     <Pagination className={className} style={style}>
       <PaginationContent>
         <PaginationItem>
           <PaginationPrevious
             href="#"
-            disabled={page === 0 || disabled}
+            disabled={page === 1 || disabled}
             onClick={() => onPaginationChange(page - 1, pageSize)}
           />
         </PaginationItem>

@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { AppsPage } from "@/src/components/app/apps-page";
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
-import { kAppConstants } from "fmdx-core/definitions/appConstants";
+import { kAppConstants } from "fimidx-core/definitions/appConstants";
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { JSX } from "react";
@@ -11,14 +11,14 @@ export const metadata: Metadata = {
   description: kAppConstants.description,
 };
 
-type OrgIdAppsPageProps = {
+type orgIdAppsPageProps = {
   params: Promise<{
     orgId: string;
   }>;
 };
 
 export default async function Page(
-  props: OrgIdAppsPageProps
+  props: orgIdAppsPageProps
 ): Promise<JSX.Element> {
   const { orgId } = await props.params;
   const session = await auth();

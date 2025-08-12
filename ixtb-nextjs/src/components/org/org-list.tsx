@@ -1,5 +1,6 @@
-import { IOrg } from "fmdx-core/definitions/org";
-import { PageMessage } from "../internal/page-message";
+import { IOrg } from "@/src/definitions/org";
+import { ComponentList } from "../internal/component-list/component-list";
+import { ComponentListMessage } from "../internal/component-list/component-list-message";
 import { OrgItem, OrgItemSkeleton } from "./org-item";
 
 export interface IOrgsProps {
@@ -8,13 +9,10 @@ export interface IOrgsProps {
 
 export function OrgItemEmpty() {
   return (
-    <div className="w-full px-4">
-      <PageMessage
-        title="No organizations found"
-        message="Add an organization to get started"
-        variant="secondary"
-      />
-    </div>
+    <ComponentListMessage
+      title="No organizations found"
+      message="Add an organization to get started"
+    />
   );
 }
 
@@ -24,20 +22,20 @@ export function Orgs(props: IOrgsProps) {
   }
 
   return (
-    <div className="w-full">
-      {props.orgs.map((org) => (
-        <OrgItem key={org.id} item={org} />
-      ))}
-    </div>
+    <ComponentList
+      count={props.orgs.length}
+      renderItem={(index) => (
+        <OrgItem key={props.orgs[index].id} item={props.orgs[index]} />
+      )}
+    />
   );
 }
 
 export function OrgsSkeleton() {
   return (
-    <div className="flex flex-col gap-4">
-      <OrgItemSkeleton className="w-full" />
-      <OrgItemSkeleton className="w-full" />
-      <OrgItemSkeleton className="w-full" />
-    </div>
+    <ComponentList
+      count={3}
+      renderItem={(index) => <OrgItemSkeleton key={index} />}
+    />
   );
 }

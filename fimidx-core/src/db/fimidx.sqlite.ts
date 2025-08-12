@@ -1,0 +1,67 @@
+import { createClient } from "@libsql/client";
+import { drizzle } from "drizzle-orm/libsql";
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { v7 as uuidv7 } from "uuid";
+import { getCoreConfig } from "../common/getCoreConfig.js";
+import type { FieldType } from "../common/indexer.js";
+
+const { turso } = getCoreConfig();
+
+const fimidxClient = createClient({
+  authToken: turso.authToken,
+  url: turso.url,
+});
+
+export const db = drizzle(fimidxClient);
+
+export const emailRecords = sqliteTable("emailRecord", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => uuidv7()),
+  createdAt: integer("createdAt", { mode: "timestamp_ms" }).notNull(),
+  updatedAt: integer("updatedAt", { mode: "timestamp_ms" }).notNull(),
+  from: text("from").notNull(),
+  to: text("to").notNull(),
+  subject: text("subject").notNull(),
+  status: text("status").notNull(),
+  reason: text("reason").notNull(),
+  params: text("params", { mode: "json" }).$type<Record<string, unknown>>(),
+  provider: text("provider").notNull(),
+  response: text("response"),
+  senderError: text("senderError"),
+  serverError: text("serverError"),
+  callerId: text("callerId"),
+});
+
+export const emailBlockLists = sqliteTable("emailBlockList", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => uuidv7()),
+  createdAt: integer("createdAt", { mode: "timestamp_ms" }).notNull(),
+  updatedAt: integer("updatedAt", { mode: "timestamp_ms" }).notNull(),
+  email: text("email").notNull(),
+  justifyingEmailRecordId: text("justifyingEmailRecordId").references(
+    () => emailRecords.id,
+    { onDelete: "cascade" }
+  ),
+  reason: text("reason"),
+});
+
+export const objFields = sqliteTable("objField", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => uuidv7()),
+  createdAt: integer("createdAt", { mode: "timestamp_ms" }).notNull(),
+  updatedAt: integer("updatedAt", { mode: "timestamp_ms" }).notNull(),
+  appId: text("appId").notNull(),
+  groupId: text("groupId").notNull(),
+  path: text("path").notNull(),
+  type: text("type").notNull(),
+  arrayTypes: text("arrayTypes", { mode: "json" })
+    .$type<FieldType[]>()
+    .notNull(),
+  isArrayCompressed: integer("isArrayCompressed", {
+    mode: "boolean",
+  }).notNull(),
+  tag: text("tag").notNull(),
+});

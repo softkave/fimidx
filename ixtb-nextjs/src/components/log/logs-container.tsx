@@ -5,15 +5,13 @@ import { cn } from "@/src/lib/utils.ts";
 import {
   GetLogsEndpointArgs,
   getLogsSchema,
-  IFetchedLog,
-  LogPartFilterList,
-} from "fmdx-core/definitions/log";
-import { isNumber } from "lodash-es";
+  ILog,
+} from "fimidx-core/definitions/log";
+import { IObjPartQueryList } from "fimidx-core/definitions/obj";
 import { ReactNode, useMemo, useState } from "react";
 import { OmitFrom } from "softkave-js-utils";
 import { z } from "zod";
-import ListPagination from "../internal/list-pagination.tsx";
-import { PageMessage } from "../internal/page-message.tsx";
+import { ComponentListMessage } from "../internal/component-list/component-list-message.tsx";
 import UnknownCountListPagination from "../internal/unknown-count-list-pagination.tsx";
 import { WrapLoader } from "../internal/wrap-loader.tsx";
 import { Logs } from "./logs-list.tsx";
@@ -25,7 +23,7 @@ export type ILogListContainerFilter = OmitFrom<
 >;
 
 export interface ILogListContainerProps {
-  render?: (logs: IFetchedLog[]) => React.ReactNode;
+  render?: (logs: ILog[]) => React.ReactNode;
   showNoLogsMessage?: boolean;
   className?: string;
   logsContainerClassName?: string;
@@ -44,22 +42,24 @@ export function LogListContainer({
   showFiltersAndSort,
 }: ILogListContainerProps) {
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  const [filters, setFilters] = useState<LogPartFilterList>([]);
+  const [pageSize, setPageSize] = useState(100);
+  const [filters, setFilters] = useState<IObjPartQueryList>([]);
 
   const args = useMemo(
     (): z.infer<typeof getLogsSchema> => ({
-      appId,
       page,
       limit: pageSize,
-      filter: filters.length > 0 ? filters : undefined,
+      query: {
+        appId,
+        logsQuery: filters.length > 0 ? { and: filters } : undefined,
+      },
     }),
     [page, pageSize, filters, appId]
   );
 
-  const logHooks = useGetLogs(args);
+  const logsHook = useGetLogs(args);
 
-  const defaultRender = (logs: IFetchedLog[]) => {
+  const defaultRender = (logs: ILog[]) => {
     return (
       <Logs
         logs={logs}
@@ -77,31 +77,21 @@ export function LogListContainer({
   return (
     <div className={cn("flex flex-col items-center w-full", className)}>
       <WrapLoader
-        isLoading={logHooks.isLoading}
-        error={logHooks.error}
-        data={logHooks.data}
+        isLoading={logsHook.isLoading}
+        error={logsHook.error}
+        data={logsHook.data}
         errorClassName="flex flex-col max-w-lg mx-auto"
         loadingClassName="flex flex-col max-w-lg mx-auto"
         render={(data) => {
           let paginationNode: ReactNode = null;
 
-          if (page > 1 || data.hasMore || data.total) {
-            paginationNode = isNumber(data.total) ? (
-              <ListPagination
-                count={data.total}
-                page={page}
-                pageSize={pageSize}
-                disabled={logHooks.isLoading}
-                setPage={setPage}
-                setPageSize={setPageSize}
-                className="py-4 max-w-lg pt-0 mx-auto"
-              />
-            ) : (
+          if (page > 1 || data.hasMore) {
+            paginationNode = (
               <UnknownCountListPagination
                 hasMore={data.hasMore}
                 page={page}
                 pageSize={pageSize}
-                disabled={logHooks.isLoading}
+                disabled={logsHook.isLoading}
                 setPage={setPage}
                 setPageSize={setPageSize}
                 className="py-4 max-w-lg pt-0 mx-auto"
@@ -110,10 +100,10 @@ export function LogListContainer({
           }
 
           return data.logs.length === 0 && showNoLogsMessage ? (
-            <PageMessage
-              title="No logs"
-              message="No logs found"
-              className="px-0 flex flex-col items-center justify-center py-32 flex flex-col max-w-lg pt-0 mx-auto"
+            <ComponentListMessage
+              title="No logs found"
+              message="Use the API to send logs to this app or change the filters"
+              className="flex flex-col max-w-lg mx-auto"
             />
           ) : (
             <div
