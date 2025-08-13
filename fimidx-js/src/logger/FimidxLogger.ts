@@ -94,6 +94,18 @@ export class FimidxLogger {
     return this.flushBuffer();
   };
 
+  setMetadata = (metadata: Record<string, any>): void => {
+    this.metadata = metadata;
+  };
+
+  getMetadata = (): Record<string, any> | undefined => {
+    return this.metadata;
+  };
+
+  mergeMetadata = (metadata: Record<string, any>): void => {
+    this.metadata = {...this.metadata, ...metadata};
+  };
+
   close = async (): Promise<void> => {
     // Clear any pending timer
     if (this.flushTimer) {

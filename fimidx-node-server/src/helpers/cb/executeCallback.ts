@@ -10,7 +10,7 @@ import {
   objToCallback,
 } from 'fimidx-core/serverHelpers/index';
 import {kPromiseStore} from '../../ctx/promiseStore.js';
-import {winstonLogger} from '../../utils/loggers/winston.js';
+import {fimidxNodeWinstonLogger} from '../../utils/fimidxNodeloggers.js';
 import {removeCallbackFromStore} from './removeCallbackFromStore.js';
 
 export async function executeCallback(params: {callbackId: string}) {
@@ -28,7 +28,7 @@ export async function executeCallback(params: {callbackId: string}) {
   }
 
   const callback = objToCallback(obj);
-  winstonLogger.info('Executing callback', {id: callback.id});
+  fimidxNodeWinstonLogger.info('Executing callback', {id: callback.id});
 
   try {
     const response = await axios({

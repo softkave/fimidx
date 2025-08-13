@@ -3,7 +3,7 @@ import {addCallbackEndpoint} from './httpEndpoints/cbs/addCallbackEndpoint.js';
 import {deleteCallbacksEndpoint} from './httpEndpoints/cbs/deleteCallbacksEndpoint.js';
 import {cleanupDeletedObjsEndpoint} from './httpEndpoints/objs/cleanupDeletedObjsEndpoint.js';
 import {indexObjsEndpoint} from './httpEndpoints/objs/indexObjsEndpoint.js';
-import {winstonLogger} from './utils/loggers/winston.js';
+import {fimidxNodeWinstonLogger} from './utils/fimidxNodeloggers.js';
 
 export const kInternalAccessKeyHeader = 'x-internal-access-key';
 
@@ -38,6 +38,6 @@ export function startHttpServer(params: {
   });
 
   app.listen(port, () => {
-    winstonLogger.info('HTTP server is running', {port});
+    fimidxNodeWinstonLogger.info('HTTP server is running', {port});
   });
 }

@@ -1,7 +1,8 @@
 import {isObject} from 'lodash-es';
-import {FimidxLogger, type IFimidxLoggerOptions} from './FimidxLogger.js';
+import {FimidxLogger} from './FimidxLogger.js';
 
-export interface IFimidxConsoleLikeLoggerOptions extends IFimidxLoggerOptions {
+export interface IFimidxConsoleLikeLoggerOptions {
+  fimidxLogger: FimidxLogger;
   // Additional options specific to console-like behavior
   enableConsoleFallback?: boolean; // default: true
   enabled?: boolean; // default: true
@@ -19,7 +20,7 @@ export class FimidxConsoleLikeLogger {
   private groupIndentationSize: number = 2;
 
   constructor(opts: IFimidxConsoleLikeLoggerOptions) {
-    this.fimidxLogger = new FimidxLogger(opts);
+    this.fimidxLogger = opts.fimidxLogger;
     this.enableConsoleFallback = opts.enableConsoleFallback ?? true;
     this.enabled = opts.enabled ?? true;
   }

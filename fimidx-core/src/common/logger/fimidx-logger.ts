@@ -1,22 +1,13 @@
-import { FimidxConsoleLikeLogger, FimidxNextAuthLogger } from "fimidx";
+import { FimidxLogger } from "fimidx";
 import { getClientConfig } from "../getClientConfig.js";
 
 const { fimidxAppId, fimidxClientToken, nodeEnv, fimidxServerUrl } =
   getClientConfig();
 
-export const fimidxLogger = new FimidxConsoleLikeLogger({
+export const fimidxLogger = new FimidxLogger({
   appId: fimidxAppId,
   clientToken: fimidxClientToken,
-  // TODO: change to true when ready to use
-  enabled: false,
-  enableConsoleFallback: true,
-  // enableConsoleFallback: nodeEnv === "development",
   consoleLogOnError: true,
   logRemoteErrors: true,
-  metadata: {
-    app: "ixtb-nextjs",
-  },
   ...(nodeEnv === "development" ? { serverURL: fimidxServerUrl } : {}),
 });
-
-export const fimidxNextAuthLogger = new FimidxNextAuthLogger(fimidxLogger);

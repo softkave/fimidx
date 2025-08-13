@@ -6,13 +6,13 @@ import NextAuth, { Session } from "next-auth";
 import Google from "next-auth/providers/google";
 import Resend from "next-auth/providers/resend";
 import type { NextRequest } from "next/server";
-import { fimidxNextAuthLogger } from "./src/lib/common/logger/fimidx-logger";
+import { ixtbNextAuthLogger } from "./src/lib/common/ixtb-loggers";
 import { sendVerificationRequestEmail } from "./src/lib/serverHelpers/emails/sendVerificationRequestEmail";
 
 const { resend } = getCoreConfig();
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  logger: fimidxNextAuthLogger,
+  logger: ixtbNextAuthLogger,
   providers: [
     Google,
     Resend({

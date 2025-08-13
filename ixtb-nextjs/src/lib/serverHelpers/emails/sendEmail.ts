@@ -13,7 +13,7 @@ import {
 } from "fimidx-core/definitions/email";
 import { Resend } from "resend";
 import { AnyObject, convertToArray, OmitFrom } from "softkave-js-utils";
-import { fimidxLogger } from "../../common/logger/fimidx-logger";
+import { ixtbConsoleLogger } from "../../common/ixtb-loggers";
 
 const { resend: resendConfig } = getCoreConfig();
 
@@ -146,7 +146,7 @@ export const sendEmail = async (
 
       return { success: true, emailRecords: emailRecordsResult };
     } catch (sendEmailError) {
-      fimidxLogger.error(sendEmailError);
+      ixtbConsoleLogger.error(sendEmailError);
       const serverErrorString = JSON.stringify(sendEmailError);
       await Promise.allSettled(
         emailRecords.map(async (emailRecord) => {
@@ -166,7 +166,7 @@ export const sendEmail = async (
       return { success: false, emailRecords: emailRecordsResult };
     }
   } catch (error) {
-    fimidxLogger.error(error);
+    ixtbConsoleLogger.error(error);
     return { success: false, emailRecords: [] };
   }
 };

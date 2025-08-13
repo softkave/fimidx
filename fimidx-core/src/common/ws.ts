@@ -2,7 +2,7 @@ import { getDeferredPromise, type AnyObject } from "softkave-js-utils";
 import { v4 as uuidv4 } from "uuid";
 import { assert } from "vitest";
 import { getCoreConfig } from "./getCoreConfig.js";
-import { fimidxLogger } from "./logger/fimidx-logger.js";
+import { fimidxConsoleLogger } from "./logger/fimidx-console-logger.js";
 
 export enum WsReadyState {
   Connecting = 0,
@@ -28,10 +28,10 @@ export function getWs(getWsClient: (host: string) => IWsBase) {
   assert(wsConfig.host, "ws.host is required");
   const ws = getWsClient(wsConfig.host);
   ws.addOpenListener(() => {
-    fimidxLogger.log("Connected to WebSocket server");
+    fimidxConsoleLogger.log("Connected to WebSocket server");
   });
   ws.addErrorListener((...args) => {
-    fimidxLogger.error("WebSocket error", ...args);
+    fimidxConsoleLogger.error("WebSocket error", ...args);
   });
 
   return ws;
@@ -74,7 +74,7 @@ export async function sendMessageToWs(
       try {
         input = JSON.parse(messageRaw);
       } catch (error) {
-        fimidxLogger.error("Error parsing message", error, messageRaw);
+        fimidxConsoleLogger.error("Error parsing message", error, messageRaw);
       }
 
       if (input?.messageId === output.messageId) {

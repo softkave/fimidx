@@ -1,4 +1,4 @@
-import { getClientConfig } from "../common/getClientConfig";
+import { getClientConfig } from "fimidx-core/common/index";
 
 const kBaseUrl = getClientConfig().publicURL ?? "https://fimidx.fimidara.com";
 

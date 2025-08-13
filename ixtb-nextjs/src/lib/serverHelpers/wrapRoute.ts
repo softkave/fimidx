@@ -3,7 +3,7 @@ import { OwnError, OwnServerError } from "fimidx-core/common/error";
 import { NextRequest } from "next/server";
 import { AnyFn, AnyObject } from "softkave-js-utils";
 import { ZodError } from "zod";
-import { fimidxLogger } from "../common/logger/fimidx-logger";
+import { ixtbConsoleLogger } from "../common/ixtb-loggers";
 
 export interface IRouteContext {
   params: Promise<AnyObject>;
@@ -21,7 +21,7 @@ export const wrapRoute =
         status: 200,
       });
     } catch (error) {
-      fimidxLogger.error(error);
+      ixtbConsoleLogger.error(error);
 
       if (OwnServerError.isOwnServerError(error)) {
         return Response.json(

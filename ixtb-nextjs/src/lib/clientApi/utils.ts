@@ -5,7 +5,7 @@ import { useCallback, useMemo } from "react";
 import { AnyFn, OrArray, convertToArray } from "softkave-js-utils";
 import { toast } from "sonner";
 import { Arguments, Key as SWRKey, useSWRConfig } from "swr";
-import { fimidxLogger } from "../common/logger/fimidx-logger";
+import { ixtbConsoleLogger } from "../common/ixtb-loggers";
 
 export async function handleResponseError(res: Response) {
   if (res.status !== 200) {
@@ -140,7 +140,7 @@ export function useMutationHandler<TFn extends AnyFn>(
         onSuccess.forEach((fn) => fn?.(args, res));
         return res;
       } catch (error) {
-        fimidxLogger.error(error);
+        ixtbConsoleLogger.error(error);
         convertToArray(opts.onError)?.forEach((fn) => fn?.(error, args));
         if (showToast) {
           toast.error("Error", {

@@ -1,6 +1,6 @@
 import {kCallbackStore} from '../../ctx/callback.js';
 import {kPromiseStore} from '../../ctx/promiseStore.js';
-import {winstonLogger} from '../../utils/loggers/winston.js';
+import {fimidxNodeWinstonLogger} from '../../utils/fimidxNodeloggers.js';
 import {executeCallback} from './executeCallback.js';
 
 export function addCallbackToStore(params: {
@@ -12,7 +12,7 @@ export function addCallbackToStore(params: {
   // TODO: implement timeout packing
 
   if (kCallbackStore[params.id]) {
-    winstonLogger.info('Callback already exists', {id: params.id});
+    fimidxNodeWinstonLogger.info('Callback already exists', {id: params.id});
     return;
   }
 
@@ -39,7 +39,7 @@ export function addCallbackToStore(params: {
       };
     };
 
-    winstonLogger.info('Adding callback to store', {
+    fimidxNodeWinstonLogger.info('Adding callback to store', {
       id: params.id,
     });
 

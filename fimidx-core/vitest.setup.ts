@@ -45,7 +45,7 @@ async function deleteAllMongoCollections() {
   console.log("Done deleting all Mongo collections");
 }
 
-async function runMigrationsForPostgresUsingShell() {
+async function runMigrationsForSQLDbsUsingShell() {
   const postgresMigrationCommand = "pnpm db:migrate:postgres:test";
   const sqliteMigrationCommand = "pnpm db:migrate:sqlite:test";
   const commands = [postgresMigrationCommand, sqliteMigrationCommand];
@@ -61,7 +61,7 @@ async function runMigrationsForPostgresUsingShell() {
 }
 
 export async function setup() {
-  await runMigrationsForPostgresUsingShell();
+  await runMigrationsForSQLDbsUsingShell();
 }
 
 export async function teardown() {
