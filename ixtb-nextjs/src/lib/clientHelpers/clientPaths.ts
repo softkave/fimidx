@@ -1,6 +1,6 @@
 import { getClientConfig } from "fimidx-core/common/index";
 
-const kBaseUrl = getClientConfig().publicURL ?? "https://fimidx.fimidara.com";
+const kBaseUrl = getClientConfig().publicURL ?? "https://dx.fimidara.com";
 
 export const kClientPaths = {
   index: "/",
