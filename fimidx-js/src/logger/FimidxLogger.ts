@@ -75,7 +75,7 @@ export class FimidxLogger {
     // Initialize FimidxEndpoints
     this.fimidx = new FimidxEndpoints({
       authToken: this.clientToken,
-      serverURL: this.serverURL,
+      ...(this.serverURL ? {serverURL: this.serverURL} : {}),
     });
   }
 
