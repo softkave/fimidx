@@ -19,7 +19,8 @@
     "pretest": "npm run compile",
     "posttest": "npm run lint",
     "dev": "npm run clean && tsc && env-cmd -f \".env.local\" node build/src/index.js",
-    "start:prod": "env-cmd -f \".env.local\" node build/src/index.js"
+    "start:prod": "env-cmd -f \".env.local\" node build/src/index.js",
+    "dev:prod": "env-cmd -f \".env.prod\" node build/src/index.js"
   },
   "devDependencies": {
     "@faker-js/faker": "^9.5.0",

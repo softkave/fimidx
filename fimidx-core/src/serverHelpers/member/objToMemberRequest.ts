@@ -1,4 +1,3 @@
-import { uniqBy } from "lodash-es";
 import {
   type IMember,
   type IMemberRequest,
@@ -9,25 +8,24 @@ import { getGroups } from "../group/getGroups.js";
 export async function objToMemberRequest(params: { requests: IMember[] }) {
   const { requests } = params;
 
-  // Get unique groupIds from all requests
-  const uniqueGroupIds = uniqBy(requests, (request) => request.groupId).map(
-    (request) => request.groupId
-  );
+  if (requests.length === 0) {
+    return [];
+  }
 
   // Get all groups for the app (since we need to filter by groupId)
   const { groups } = await getGroups({
     args: {
       query: {
         appId: requests[0]?.appId || "",
+        id: { in: requests.map((request) => request.groupId) },
       },
-      limit: 1000, // Get all groups to filter by groupId
     },
   });
 
   // Create a map of groupId to group
   const groupMap = new Map();
   groups.forEach((group) => {
-    groupMap.set(group.groupId, group);
+    groupMap.set(group.id, group);
   });
 
   const requestsWithGroup = requests
