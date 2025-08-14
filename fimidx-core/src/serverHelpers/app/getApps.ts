@@ -45,7 +45,7 @@ export function getAppsObjQuery(params: { args: GetAppsEndpointArgs }) {
   if (groupId) {
     filterArr.push({
       op: "eq",
-      field: "groupId",
+      field: "orgId",
       value: groupId,
     });
   }
