@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
-import { ClientTokensPage } from "@/src/components/client-token/client-tokens-page";
+import { kAppTabs } from "@/src/components/app/app";
+import { AppPage } from "@/src/components/app/app-page";
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
 import { kAppConstants } from "fimidx-core/definitions/appConstants";
 import { Metadata } from "next";
@@ -33,5 +34,5 @@ export default async function Page(
     );
   }
 
-  return <ClientTokensPage orgId={orgId} appId={appId} />;
+  return <AppPage appId={appId} defaultTab={kAppTabs.clientTokens} />;
 }

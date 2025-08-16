@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
-import { AppsPage } from "@/src/components/app/apps-page";
+import { kOrgTabs } from "@/src/components/org/org";
+import { OrgPage } from "@/src/components/org/org-page";
 import { kClientPaths } from "@/src/lib/clientHelpers/clientPaths";
 import { kAppConstants } from "fimidx-core/definitions/appConstants";
 import { Metadata } from "next";
@@ -30,5 +31,5 @@ export default async function Page(
     );
   }
 
-  return <AppsPage orgId={orgId} />;
+  return <OrgPage orgId={orgId} defaultTab={kOrgTabs.apps} />;
 }

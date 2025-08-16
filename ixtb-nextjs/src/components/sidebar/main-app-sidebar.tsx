@@ -16,7 +16,7 @@ export function MainAppSidebar(props: { orgId?: string; appId?: string }) {
   const sidebar = (
     <Sidebar>
       <SidebarHeader>
-        <div className="text-2xl font-bold p-2 pt-3">
+        <div className="text-lg font-black p-2 pt-3 text-muted-foreground">
           <Link href={kClientPaths.app.index}>{kAppConstants.name}</Link>
         </div>
       </SidebarHeader>

@@ -48,6 +48,9 @@ export async function addMember(params: {
     const existingMemberId = await getManyObjs({
       objQuery: {
         appId,
+        topLevelFields: {
+          groupId: groupId ? { eq: groupId } : undefined,
+        },
         partQuery: {
           and: [
             {
@@ -76,6 +79,9 @@ export async function addMember(params: {
     const existingEmail = await getManyObjs({
       objQuery: {
         appId,
+        topLevelFields: {
+          groupId: groupId ? { eq: groupId } : undefined,
+        },
         partQuery: {
           and: [
             {

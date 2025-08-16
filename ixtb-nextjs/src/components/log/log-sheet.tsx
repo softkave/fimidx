@@ -1,6 +1,7 @@
 "use client";
 
 import { ILog } from "fimidx-core/definitions/log";
+import { MaybeScroll } from "../internal/maybe-scroll.tsx";
 import { Sheet, SheetContent } from "../ui/sheet.tsx";
 import { Log } from "./log.tsx";
 
@@ -16,7 +17,9 @@ export function LogSheet(props: ILogSheetProps) {
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
       <SheetContent className="w-full max-w-[640px] sm:max-w-[640px] p-0">
-        <Log log={log} />
+        <MaybeScroll className="h-[calc(100vh)]">
+          <Log log={log} />
+        </MaybeScroll>
       </SheetContent>
     </Sheet>
   );

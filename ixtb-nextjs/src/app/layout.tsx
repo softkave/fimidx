@@ -5,6 +5,7 @@ import { SessionProvider } from "next-auth/react";
 import { Geist, Geist_Mono } from "next/font/google";
 import { SidebarProvider } from "../components/ui/sidebar";
 import "./globals.css";
+import { GlobalStateProvider } from "../components/contexts/global-state-context";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,7 +33,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <SessionProvider>
-          <SidebarProvider>{children}</SidebarProvider>
+          <GlobalStateProvider>
+            <SidebarProvider>{children}</SidebarProvider>
+          </GlobalStateProvider>
         </SessionProvider>
         <Toaster />
       </body>

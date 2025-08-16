@@ -72,7 +72,10 @@ export function WrapLoader<T>({
     return renderLoading ? (
       renderLoading()
     ) : (
-      <PageLoading className={cn(loadingClassName)} variant={loadingVariant} />
+      <PageLoading
+        className={cn("max-w-lg mx-auto", loadingClassName)}
+        variant={loadingVariant}
+      />
     );
   } else if (error && showError) {
     return renderError ? (
@@ -80,7 +83,7 @@ export function WrapLoader<T>({
     ) : (
       <PageError
         error={error}
-        className={cn(errorClassName)}
+        className={cn("max-w-lg mx-auto", errorClassName)}
         variant={errorVariant}
       />
     );

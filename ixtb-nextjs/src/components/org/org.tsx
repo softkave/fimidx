@@ -1,7 +1,7 @@
 import { IOrg } from "@/src/definitions/org";
 import { ValueOf } from "type-fest";
 import { AppsPage } from "../app/apps-page";
-import { OrgHeader } from "./org-header";
+import { OrgUpdateState } from "./org-update-state";
 
 export const kOrgTabs = {
   apps: "apps",
@@ -19,12 +19,12 @@ export function Org(props: IOrgProps) {
   let contentNode: React.ReactNode = null;
 
   if (defaultTab === kOrgTabs.apps) {
-    contentNode = <AppsPage orgId={props.org.id} />;
+    contentNode = <AppsPage orgId={props.org.id} withAppWrapper={false} />;
   }
 
   return (
     <div className="max-w-md md:max-w-lg mx-auto w-full">
-      <OrgHeader org={props.org} />
+      <OrgUpdateState org={props.org} />
       {contentNode}
     </div>
   );

@@ -14,12 +14,15 @@ export function AppHeader(props: IAppHeaderProps) {
   return (
     <div
       className={cn(
-        "flex justify-between p-4 items-center space-x-2",
+        "grid p-4 items-center gap-x-2",
+        showSidebarTrigger
+          ? "grid-cols-[auto_1fr_auto]"
+          : "grid-cols-[1fr_auto]",
         props.className
       )}
     >
       {showSidebarTrigger && (
-        <SidebarTrigger variant="secondary" className="size-9 cursor-pointer" />
+        <SidebarTrigger variant="outline" className="size-9 cursor-pointer" />
       )}
       <AppHeaderTitle />
       <UserMenu />
